@@ -5,7 +5,7 @@ const isEnvProduction = process.env.NODE_ENV === 'production';            // 是
 const miniCss = isEnvProduction ? { 
   loader: miniCssExtractPlugin.loader, 
   options: { 
-    publickPath: '/', 
+    publickPath: '/',
     modules: { namedExport: true }
   }
 } : 'style-loader';

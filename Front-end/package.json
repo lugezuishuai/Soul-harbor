@@ -6,7 +6,8 @@
   "sideEffects": [
     "*.css",
     "*.scss",
-    "*.sass"
+    "*.sass",
+    "*.less"
   ],
   "scripts": {
     "start": "cross-env NODE_ENV=development webpack-dev-server --mode=development --history-api-fallback --config ./config/webpack.config.js",
