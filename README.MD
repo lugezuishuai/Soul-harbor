@@ -1,16 +1,16 @@
-# 简易版员工管理系统
+# soul-harbor
 
 <font size = 6>**介绍**</font>
 
-./ts-express：后端相关文件
+./Back-end：后端相关文件
 
-./TS-IN-ACTION: 前端相关文件
+./Front-end: 前端相关文件
 
 <font size = 6>**使用**</font>
 
 <font size = 4>**后端**</font>
 
-安装依赖：`cd ./ts-express npm install`
+安装依赖：`cd ./Back-end npm install`
 
 构建后端dist文件夹：`npm run build`
 
@@ -20,7 +20,7 @@
 
 <font size = 4>**前端**</font>
 
-安装依赖：`cd ./TS-IN-ACTION npm install`
+安装依赖：`cd ./Front-end npm install`
 
 开启本地前端服务：`npm run start`
 
