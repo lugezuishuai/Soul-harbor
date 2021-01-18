@@ -1,0 +1,50 @@
+@import '~antd/lib/style/themes/default.less';
+:global {
+  .config_data_item {
+    &:last-child {
+      margin-bottom: 0;
+    }
+    margin-bottom: 20px;
+    .config_data_label {
+      margin-bottom: 8px;
+      display: block;
+      height: 22px;
+      line-height: 22px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .config_data_text {
+      display: block;
+      height: 22px;
+      line-height: 22px;
+      color: #3370FF;
+      font-size: 16px;
+    }
+    .item_input_frame {
+      display: flex;
+      height: 32px;
+      width: 420px;
+      justify-content: space-between;
+      align-items: center;
+      .ant-input {
+        font-size: 16px;
+      }
+    }
+    .ant-form-item-control {
+      line-height: 1;
+    }
+    .config_data_textarea {
+      width: 400px;
+      height: 32px;
+      margin-bottom: 0 !important;
+    }
+    .config_data_avatar {
+      transition: 0.5s;
+      border: 1px solid #b3b8bd;
+      &:hover {
+        cursor: pointer;
+        border: 1px solid rgb(255, 174, 191);
+      }
+    }
+  }
+}
