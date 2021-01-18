@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Avatar, Input } from 'antd';
 import { UserBasicInfo } from '../index';
 import { inputProps } from '@/constants/inputProps';
