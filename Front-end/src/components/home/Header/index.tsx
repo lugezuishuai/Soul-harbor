@@ -6,6 +6,7 @@ import SignUp from '@/components/signUp';
 import Register from '@/components/register';
 import ForgetPw from '@/components/forgetPassword';
 import UserInfo from '@/components/Operation';
+import { GetUserInfoResponse } from '@/interface/userInfo';
 import { Link } from 'react-router-dom';
 import style from '../index.less';
 import { State } from '@/redux/reducers/state';
@@ -14,10 +15,12 @@ import { Action } from '@/redux/actions';
 interface Props {
   dispatch(action: Action): void;
   selectMenu: string;
+  userInfo: GetUserInfoResponse
 }
 
 function Header(props: Props) {
-  const { selectMenu, dispatch } = props;
+  const { selectMenu, dispatch, userInfo } = props;
+  const { nickName } = userInfo;
   const [showSignUpModal, setShowSignUpModal] = useState(false);            // 控制'登录'弹窗是否可见
   const [showRegisterModal, setShowRegisterModal] = useState(false);        // 控制'注册'弹窗是否可见
   const [showForgetPwModal, setShowForgetPwModal] = useState(false);        // 控制'忘记密码'弹窗是否可见
@@ -70,7 +73,7 @@ function Header(props: Props) {
         <Icon component={Heart as any} className={style.back_to_home_icon}/>
         <span className={style.back_to_home_text}>Soul Harbor</span>
       </Link>
-      { login ? <UserInfo handleMenuChange={handleMenuChange}/> : 
+      { login ? <UserInfo handleMenuChange={handleMenuChange} nickName={nickName}/> : 
         (<div className={style.home_user}>
           <Button type="primary" className={style.home_login} onClick={handleSignUpClick}>登录</Button>
           <Button className={style.home_login} onClick={handleRegisterClick}>注册</Button>
@@ -84,5 +87,6 @@ function Header(props: Props) {
 }
 
 export default connect((state: State) => ({
-  selectMenu: state.header.selectMenu
+  selectMenu: state.header.selectMenu,
+  userInfo: state.user.userInfo,
 }))(Header);

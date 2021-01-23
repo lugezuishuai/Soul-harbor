@@ -3,11 +3,15 @@ import { Avatar, Icon, Menu, Dropdown } from 'antd';
 import { Link } from 'react-router-dom';
 import style from './index.less';
 
-interface Props {
+interface MenuProps {
   handleMenuChange(obj: any): void;
 }
 
-function UserMenu(props: Props) {
+interface Props extends MenuProps {
+  nickName: string;
+}
+
+function UserMenu(props: MenuProps) {
   const { handleMenuChange } = props;
   const handleClickItem = () => {
     const obj = {
@@ -33,18 +37,21 @@ function UserMenu(props: Props) {
   )
 }
 
-export default function UserInfo(props: Props) {
-  const { handleMenuChange } = props;
+export default function UserInfo(props: Props): any {
+  const { handleMenuChange, nickName } = props;
   return (
-    <div className={style.operation}>
-      <Avatar size="large" icon="user" />
-      <Dropdown overlay={<UserMenu handleMenuChange={handleMenuChange}/>} trigger={['hover']}>
-        <a className="ant-dropdown-link" onClick={e => {
-          e.preventDefault();
-        }}>
-          <Icon type="down" className={style.operation_icon}/>
-        </a>
-      </Dropdown>
+    <div className={style.user_operation}>
+      <span className={style.nick_name}>{nickName}</span>
+      <div className={style.operation}>
+        <Avatar size="large" icon="user" />
+        <Dropdown overlay={<UserMenu handleMenuChange={handleMenuChange}/>} trigger={['hover']}>
+          <a className="ant-dropdown-link" onClick={e => {
+            e.preventDefault();
+          }}>
+            <Icon type="down" className={style.operation_icon}/>
+          </a>
+        </Dropdown>
+      </div>
     </div>
   )
 }

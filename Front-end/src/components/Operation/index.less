@@ -1,19 +1,34 @@
 @import 'antd/dist/antd.css';
-.operation {
+.user_operation {
   position: relative;
   margin-right: 32px;
-  width: 64px;
   height: 64px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  .operation_icon {
-    font-size: 14px !important;
-    width: 16px;
-    height: 16px;
+  .nick_name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1890ff;
+    display: inline-block;
+    line-height: 22px;
+    height: 22px;
+    margin-right: 12px;
+  }
+  .operation {
+    position: relative;
+    width: 64px;
+    height: 64px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    .operation_icon {
+      font-size: 14px !important;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   }
 }
 .operation_menu {

@@ -32,7 +32,7 @@ export const initialUserState: UserState = {
     nickName: 'jackson',
     PersonalSignature: '人生真美丽',
     avatar: 'https://s1-fs.pstatp.com/static-resource-staging/v1/78c99186-2f3c-40aa-81b8-18591041db2g',
-    birth: ''
+    birth: '1999-07-27'
   },
   userNameShow: false,         // 显示或隐藏用户名
   userIdShow: false,           // 显示或隐藏用户ID        

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Form, Avatar, Input } from 'antd';
+import { Form, Avatar, Input, DatePicker } from 'antd';
 import { UserBasicInfo } from '../index';
 import { inputProps } from '@/constants/inputProps';
 import { FormComponentProps } from 'antd/lib/form';
+import moment from 'moment';
 import './index.less';
 const { TextArea } = Input;
 
@@ -37,6 +38,10 @@ function ConfigData(props: Props) {
                 required: true,
                 whitespace: true,
                 message: '请输入昵称'
+              }, 
+              { 
+                max: 20,
+                message: '昵称不能超过20个字符'
               }]
             })(
               <Input
@@ -54,6 +59,7 @@ function ConfigData(props: Props) {
           <div>
             {getFieldDecorator('PersonalSignature', {
               initialValue: PersonalSignature,
+              rules: [{ max: 100, message: '不能超过100字' }]
             })(
               <TextArea
                 placeholder="请输入个性签名"
@@ -68,7 +74,14 @@ function ConfigData(props: Props) {
       <Form.Item className="config_data_item">
         <label htmlFor="nickName" className="config_data_label">出生年月</label>
         {edit ? (
-          <div></div>
+          getFieldDecorator('birth', {
+            initialValue: birth ? moment(birth) : undefined,
+          })(
+            <DatePicker
+              placeholder="出生日期"
+              style={{ width: 200, height: 32 }}
+            />
+          )
         ) : birth && <span className="config_data_text">{birth}</span>}
       </Form.Item>
     </>
