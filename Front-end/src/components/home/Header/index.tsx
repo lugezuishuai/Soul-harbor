@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Button, Icon } from 'antd';
+import { Menu, Button, Icon, Dropdown } from 'antd';
 import { connect } from 'react-redux';
+import DropdownMenu from '@/assets/icon/menu.svg';
 import Heart from '@/assets/icon/heart.svg';
 import SignUp from '@/components/signUp';
 import Register from '@/components/register';
 import ForgetPw from '@/components/forgetPassword';
-import UserInfo from '@/components/Operation';
+import Operation from '@/components/Operation';
 import { GetUserInfoResponse } from '@/interface/userInfo';
 import { Link } from 'react-router-dom';
-import style from '../index.less';
 import { State } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
+import { screen } from '@/constants/screen';
+import './index.less';
 
 interface Props {
   dispatch(action: Action): void;
@@ -20,7 +22,7 @@ interface Props {
 
 function Header(props: Props) {
   const { selectMenu, dispatch, userInfo } = props;
-  const { nickName } = userInfo;
+  const { nickName, avatar } = userInfo;
   const [showSignUpModal, setShowSignUpModal] = useState(false);            // 控制'登录'弹窗是否可见
   const [showRegisterModal, setShowRegisterModal] = useState(false);        // 控制'注册'弹窗是否可见
   const [showForgetPwModal, setShowForgetPwModal] = useState(false);        // 控制'忘记密码'弹窗是否可见
@@ -55,28 +57,51 @@ function Header(props: Props) {
     });
   }
 
+  const menu = (
+    <Menu
+      selectable={false}
+      className="little_screen_menu"
+    >
+      <Menu.Item key="user" className="little_screen_menu_item"><Link to="/user">个人信息</Link></Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="chat" className="little_screen_menu_item"><Link to="/chat">聊天</Link></Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="blog" className="little_screen_menu_item"><Link to="/blog">博客</Link></Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="news" className="little_screen_menu_item"><Link to="/news">资讯</Link></Menu.Item>
+    </Menu>
+  )
+
   return (
-    <div className={style.home_header}> 
-      <Menu
+    <div className="home_header"> 
+      { screen.isLittleScreen ? (
+        <Dropdown overlay={menu} trigger={['click']}>
+          <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+            <Icon component={DropdownMenu as any} className="home_menu_little_icon" />
+          </a>
+        </Dropdown>
+      ) : (
+        <Menu
         // theme="dark"
-        mode="horizontal"
-        className={style.home_menu}
-        selectedKeys={selectMenu ? [selectMenu] : []}
-        onSelect={handleMenuChange}
-      >
-        <Menu.Item key="user" className={style.home_menu_item}><Link to="/user">个人信息</Link></Menu.Item>
-        <Menu.Item key="chat" className={style.home_menu_item}><Link to="/chat">聊天</Link></Menu.Item>
-        <Menu.Item key="blog" className={style.home_menu_item}><Link to="/blog">博客</Link></Menu.Item>
-        <Menu.Item key="news" className={style.home_menu_item}><Link to="/news">资讯</Link></Menu.Item>
-      </Menu>
-      <Link to="/" className={style.back_to_home}>
-        <Icon component={Heart as any} className={style.back_to_home_icon}/>
-        <span className={style.back_to_home_text}>Soul Harbor</span>
+          mode="horizontal"
+          className="home_menu"
+          selectedKeys={selectMenu ? [selectMenu] : []}
+          onSelect={handleMenuChange}
+        >
+          <Menu.Item key="user" className="home_menu_item"><Link to="/user">个人信息</Link></Menu.Item>
+          <Menu.Item key="chat" className="home_menu_item"><Link to="/chat">聊天</Link></Menu.Item>
+          <Menu.Item key="blog" className="home_menu_item"><Link to="/blog">博客</Link></Menu.Item>
+          <Menu.Item key="news" className="home_menu_item"><Link to="/news">资讯</Link></Menu.Item>
+        </Menu>
+      )}
+      <Link to="/" className="back_to_home">
+        <Icon component={Heart as any} className="back_to_home_icon"/>
+        <span className="back_to_home_text">Soul Harbor</span>
       </Link>
-      { login ? <UserInfo handleMenuChange={handleMenuChange} nickName={nickName}/> : 
-        (<div className={style.home_user}>
-          <Button type="primary" className={style.home_login} onClick={handleSignUpClick}>登录</Button>
-          <Button className={style.home_login} onClick={handleRegisterClick}>注册</Button>
+      { login ? <Operation handleMenuChange={handleMenuChange} nickName={nickName} avatar={avatar}/> : 
+        (<div className="home_user">
+          <Button type="primary" className="home_user_login" onClick={handleSignUpClick}>登录</Button>
+          <Button className="home_user_login" onClick={handleRegisterClick}>注册</Button>
         </div>)
       }
       { showSignUpModal && <SignUp visible={showSignUpModal} hide={hideSignUpModal} showForgetPwModal={showForgetPassword} /> }

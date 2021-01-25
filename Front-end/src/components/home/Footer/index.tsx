@@ -1,10 +1,10 @@
 import React from 'react';
-import style from '../index.less';
+import './index.less';
 
-export default function Content() {
+export default function Footer() {
   return (
-    <div className={style.home_footer}>
-      <span className={style.home_footer_text}>Footer</span>
+    <div className="home_footer">
+      <span className="home_footer_text">Footer</span>
     </div>
   )
 }

@@ -29,7 +29,7 @@ export const initialUserState: UserState = {
     login: false,
     userName: 'jackson huang',
     userId: '12345678',
-    nickName: 'jackson',
+    nickName: 'jackson huang huang',
     PersonalSignature: '人生真美丽',
     avatar: 'https://s1-fs.pstatp.com/static-resource-staging/v1/78c99186-2f3c-40aa-81b8-18591041db2g',
     birth: '1999-07-27'

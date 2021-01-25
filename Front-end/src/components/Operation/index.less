@@ -1,58 +1,91 @@
-@import 'antd/dist/antd.css';
-.user_operation {
-  position: relative;
-  margin-right: 32px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  .nick_name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #1890ff;
-    display: inline-block;
-    line-height: 22px;
-    height: 22px;
-    margin-right: 12px;
-  }
-  .operation {
+@import '~antd/lib/style/themes/default.less';
+:global {
+  .user_operation {
     position: relative;
-    width: 64px;
+    margin-right: 32px;
     height: 64px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    .operation_icon {
-      font-size: 14px !important;
-      width: 16px;
-      height: 16px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-  }
-}
-.operation_menu {
-  position: relative;
-  top: 18px;
-  width: 100px;
-  box-sizing: border-box;
-  border: 1px solid rgba(0, 0, 0, 0.30);
-  border-radius: 4px;
-  .operation_menu_item {
-    width: 100%;
-    height: 28px;
-    padding: 0;
-    margin-top: 4px;
-    margin-bottom: 4px !important;
-    font-weight: normal;
-    font-size: 14px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    .menu_item_text {
-      display: block;
-      height: 22px;
+    &_nick_name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1890ff;
+      display: inline-block;
       line-height: 22px;
+      height: 22px;
+      margin-right: 12px;
+    }
+    &_avatar {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      &_icon {
+        font-size: 14px !important;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+    &_menu {
+      position: relative;
+      top: 18px;
+      width: 100px;
+      box-sizing: border-box;
+      border: 1px solid rgba(0, 0, 0, 0.30);
+      border-radius: 4px;
+      &_item {
+        width: 100%;
+        height: 28px;
+        padding: 0;
+        margin-top: 4px;
+        margin-bottom: 4px !important;
+        font-weight: normal;
+        font-size: 14px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &_text {
+          display: block;
+          height: 22px;
+          line-height: 22px;
+        }
+      }
+    }
+    @media screen and (max-width: 480px) {
+      margin-right: 0;
+      height: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      &_nick_name {
+        font-size: 12px;
+        display: block;
+        line-height: 18px;
+        height: 18px;
+        margin-right: 0;
+        overflow: hidden; //超出的文本隐藏
+        text-overflow: ellipsis; //溢出用省略号显示
+        white-space: nowrap; //溢出不换行
+        max-width: 80px;
+      }
+      &_avatar {
+        height: 30px;
+        width: 48px;
+      }
+      &_menu {
+        position: relative;
+        top: 1px;
+        width: 80px;
+        border-radius: 2px;
+        .ant-menu-item {
+          height: 24px;
+        }
+      }
     }
   }
 }

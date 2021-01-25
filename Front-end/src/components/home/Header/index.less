@@ -1,0 +1,85 @@
+@import '~antd/lib/style/themes/default.less';
+:global {
+  .home_header {
+    background: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    position: relative;
+    top: 0;
+    width: 100%;
+    padding: 0 20px;
+    height: 64px;
+    .home_menu {
+      line-height: 64px;
+      margin-bottom: 2px;
+      &_item {
+        padding: 0 30px;
+      }
+      &_little_icon {
+        font-size: 16px;
+      }
+    }
+    .back_to_home {
+      display: flex;
+      align-items: center;
+      height: 64px;
+      font-size: 24px;
+      font-weight: 500;
+      &_icon {
+        margin-right: 24px;
+      }
+      &_text {
+        display: inline-block;
+        height: 28px;
+        line-height: 28px;
+        transition: 0.5s;
+        &:hover {
+          color: rgb(255, 174, 191) !important;
+        }
+      }
+      @media screen and (max-width: 480px) {
+        right: 0;
+        font-size: 20px;
+        height: 48px;
+        &_icon {
+          margin-right: 12px;
+        }
+        &_text {
+          height: 24px;
+          line-height: 24px;
+        }
+      }
+    }
+    .home_user {
+      display: flex;
+      justify-content: space-between;
+      height: 30px;
+      width: 180px;
+      margin: 17px 0;
+      &_login {
+        height: 30px;
+        width: 80px;
+      }
+      @media screen and (max-width: 480px) {
+        // 这里还要填
+      }
+    }
+    @media screen and (max-width: 480px) {
+      padding: 0 10px;
+      height: 48px;
+    }
+  }
+  .little_screen_menu {
+    position: relative;
+    top: 12px;
+    width: 80px;
+    &_item {
+      height: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
