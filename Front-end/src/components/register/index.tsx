@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Modal, Button, message } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { inputProps } from '@/constants/inputProps';
-import style from './index.less';
+import './index.less';
 
 interface Props extends FormComponentProps {
   hide(): void;
@@ -58,9 +58,9 @@ function Register(props: Props) {
         centered
         title="注册账号"
         footer={
-          <div className={style.register_footer}>
-            <span className={style.register_go_login} onClick={handleClick}>马上登录</span>
-            <div className={style.register_button}>
+          <div className="register_footer">
+            <span className="register_footer_go_login" onClick={handleClick}>马上登录</span>
+            <div className="register_footer_button">
               <Button onClick={handleCancel}>取消</Button>
               <Button type="primary" onClick={handleOk}>{loading? '注册中' : '注册'}</Button>
             </div>
@@ -71,7 +71,7 @@ function Register(props: Props) {
         confirmLoading={loading}
         destroyOnClose={true}           // 关闭时销毁 Modal 里的子元素
       >
-        <Form className={style.register_centent}>
+        <Form className="register_content">
           <Form.Item>
             <label htmlFor="username">账号：</label>
             { getFieldDecorator('username', {

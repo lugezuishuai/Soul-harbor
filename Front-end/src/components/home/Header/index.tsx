@@ -47,7 +47,7 @@ function Header(props: Props) {
   useEffect(() => {
     // 请求接口判断token是否过期，如果token没有过期则设置login为true，接着请求用户信息接口获取用户信息
     // 用户信息用redux来维护
-    setLogin(true);
+    setLogin(false);
   }, [login]);         // 每当login发生改变的时候就去请求一次
 
   const handleMenuChange = ({ key }: any) => {

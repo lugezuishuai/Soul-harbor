@@ -3,7 +3,7 @@ import { message, Button, Form, Tooltip, Icon } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Rewrite from '@/assets/icon/rewrite.svg';
 import ConfigData from './configData';
-import style from '../index.less';
+import '../index.less';
 import './index.less';
 
 export interface UserBasicInfo {
@@ -42,21 +42,21 @@ function BasicInfo(props: Props) {
 
   return (
     <div className="basic_info">
-      <div className={style.info_title}>
-        <span className={style.info_title_text}>基本信息</span>
+      <div className="user_info_title">
+        <span className="user_info_title_text">基本信息</span>
         {!edit && <Tooltip title="编辑" placement="right">
-          <Icon component={Rewrite as any} onClick={handleClickEdit} className={style.info_icon}/>
+          <Icon component={Rewrite as any} onClick={handleClickEdit} className="user_info_title_icon"/>
         </Tooltip>}
       </div>
-      <Form className={style.info_form}>
+      <Form className="user_info_form">
         <ConfigData basicInfo={basicInfo} edit={edit}/>
       </Form>
       {edit && (
         <div className="basic_info_footer">
-          <Button className="basic_info_button" onClick={handleCancel}>取消</Button>
+          <Button className="basic_info_footer_button" onClick={handleCancel}>取消</Button>
           <Button
             type="primary"
-            className="basic_info_button"
+            className="basic_info_footer_button"
             loading={loading}
             disabled={loading}
             onClick={handleSubmit}

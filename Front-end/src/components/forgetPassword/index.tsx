@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Modal, Button, message } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { inputProps } from '@/constants/inputProps';
-import style from './index.less';
+import './index.less';
 
 interface Props extends FormComponentProps {
   visible: boolean;
@@ -51,8 +51,8 @@ function ForgetPassword(props: Props) {
       centered
       title="忘记密码"
       footer={
-        <div className={style.forget_password_footer}>
-          <div className={style.forget_password_button}>
+        <div className="forget_password_footer">
+          <div className="forget_password_footer_button">
             <Button onClick={handleCancel}>取消</Button>
             <Button type="primary" onClick={handleOk}>{loading? '修改中' : '确认修改'}</Button>
           </div>
@@ -63,7 +63,7 @@ function ForgetPassword(props: Props) {
       confirmLoading={loading}
       destroyOnClose={true}
     >
-      <Form className={style.forget_password_form}>
+      <Form className="forget_password_form">
         <Form.Item>
           <label htmlFor="username">账号：</label>
           { getFieldDecorator('username', {

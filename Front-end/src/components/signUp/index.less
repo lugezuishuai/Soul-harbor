@@ -1,29 +1,31 @@
-.sign_up_login {
-  display: flex;
-  flex-flow: column;
-  justify-content: center;
-  align-items: center;
-}
-.sign_up_footer {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  box-sizing: border-box;
-  height: 32px;
-  .sign_up_forget {
-    color: #3370FF;
-    cursor: pointer;
-    line-height: 32px;
-    position: absolute;
-    left: 0;
-    bottom: 0;
+:global {
+  .sign_up_login {
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
   }
-  .sign_up_forget:hover {
-    text-decoration: underline;
-  }
-  .sign_up_button {
-    position: absolute;
-    right: 0;
-    bottom: 0;
+  .sign_up_footer {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    box-sizing: border-box;
+    height: 32px;
+    &_forget {
+      color: #3370FF;
+      cursor: pointer;
+      line-height: 32px;
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    &_button {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+    }
   }
 }

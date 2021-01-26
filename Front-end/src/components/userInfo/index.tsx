@@ -5,7 +5,7 @@ import { GetUserInfoResponse } from '@/interface/userInfo';
 import { Action } from '@/redux/actions/index';
 import BasicInfo from './basicInfo';
 import AccountInfo from './accountInfo';
-import style from './index.less';
+import './index.less';
 
 interface Props {
   userInfo: GetUserInfoResponse;
@@ -43,7 +43,7 @@ function UserInfo(props: Props) {
   const handleShowUserId = () => setShowUserId(!showUserId);
 
   return (
-    <div className={style.user_info}>
+    <div className="user_info">
       <AccountInfo userName={userName} userId={userId} showUserName={showUserName} showUserId={showUserId} handleShowUserName={handleShowUserName} handleShowUserId={handleShowUserId}/>
       <BasicInfo basicInfo={basicInfo} edit={edit} handleEdit={handleEdit}/>
     </div>

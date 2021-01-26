@@ -3,7 +3,7 @@ import { Form, Tooltip, Icon } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Show from '@/assets/icon/show.svg';
 import Hide from '@/assets/icon/hide.svg';
-import style from '../index.less';
+import '../index.less';
 import './index.less';
 
 interface Props extends FormComponentProps {
@@ -22,11 +22,11 @@ function AccountInfo(props: Props) {
 
   return (
     <div className="account_info">
-      <div className={style.info_title}>
-        <span className={style.info_title_text}>账号信息</span>
+      <div className="user_info_title">
+        <span className="user_info_title_text">账号信息</span>
       </div>
-      <Form className={style.info_form}>
-        <Form.Item className={style.info_form_item}>
+      <Form className="user_info_form">
+        <Form.Item className="user_info_form_item">
           <label htmlFor="username" className="account_info_label">账号</label>
           <div className="account_info_show">
             <span className="account_info_text">{ showUserName ? userName : new Array(userNameLen).fill('*') }</span>
@@ -40,7 +40,7 @@ function AccountInfo(props: Props) {
             }
           </div>
         </Form.Item>
-        <Form.Item className={style.info_form_item}>
+        <Form.Item className="user_info_form_item">
           <label htmlFor="userId" className="account_info_label">用户ID</label>
           <div className="account_info_show">
             <span className="account_info_text">{ showUserId ? userId : new Array(userIdLen).fill('*') }</span>

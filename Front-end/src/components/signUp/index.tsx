@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Modal, Button, message } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { inputProps } from '@/constants/inputProps';
-import style from './index.less';
+import './index.less';
 
 interface Props extends FormComponentProps {
   showForgetPwModal(username: string): void;
@@ -49,9 +49,9 @@ function SignUp(props: Props) {
         centered
         title="欢迎登录"
         footer={
-          <div className={style.sign_up_footer}>
-            <span className={style.sign_up_forget} onClick={handleClickForgetPw}>忘记密码？</span>
-            <div className={style.sign_up_button}>
+          <div className="sign_up_footer">
+            <span className="sign_up_footer_forget" onClick={handleClickForgetPw}>忘记密码？</span>
+            <div className="sign_up_footer_button">
               <Button onClick={handleCancel}>取消</Button>
               <Button type="primary" onClick={handleOk}>{loading? '登录中' : '登录'}</Button>
             </div>
@@ -62,7 +62,7 @@ function SignUp(props: Props) {
         confirmLoading={loading}
         destroyOnClose={true}         // 关闭时销毁 Modal 里的子元素
       >
-        <Form className={style.sign_up_login}>
+        <Form className="sign_up_login">
           <Form.Item>
             <label htmlFor="username">账号：</label>
             { getFieldDecorator('username', {
