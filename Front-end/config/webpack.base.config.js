@@ -1,5 +1,7 @@
+/* eslint-disable */
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const miniCssExtractPlugin = require("mini-css-extract-plugin");          // 单独抽离css文件
+const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const resolve = require('./helper/resolve')
 const isEnvProduction = process.env.NODE_ENV === 'production';            // 是否是生产环境
 const miniCss = isEnvProduction ? { 
@@ -18,7 +20,7 @@ module.exports = {
     filename: isEnvProduction ? '[name].[chunkhash:8].js' : '[name].[hash:8].js'
   },
   resolve: {
-    extensions: ['.js', '.ts', '.tsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
     alias: { '@': resolve('src') }
   },
   module: {
@@ -54,7 +56,7 @@ module.exports = {
       },
       {
         test: /\.less$/i,
-        include: /node_modules\/antd/,
+        include: /node_modules\/(antd|slick-carousel)/,
         use: [
           miniCss,
           { loader: 'css-loader', options: { modules: false } },
@@ -65,7 +67,7 @@ module.exports = {
       },
       {
         test: /\.less$/i,
-        exclude: /node_modules\/antd/,
+        exclude: /node_modules\/(antd|slick-carousel)/,
         use: [
           miniCss,
           { loader: 'css-loader', options: { modules: true, import: true } },
@@ -107,6 +109,9 @@ module.exports = {
     }),
     new miniCssExtractPlugin({
       filename: isEnvProduction ? '[name].[contenthash:8].css' : '[name].[hash:8].css'
+    }),
+    new AntdDayjsWebpackPlugin({
+      preset: 'antdv3'
     })
   ],
 }

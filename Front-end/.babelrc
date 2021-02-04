@@ -5,6 +5,14 @@
   ],
   "plugins":[
     [
+      "named-asset-import",
+      {
+        "loaderMap": {
+          "svg": { "ReactComponent": "@svgr/webpack?-svgo,+titleProp,+ref![path]" }
+        }
+      }
+    ],
+    [
       "import",{
         "libraryName": "antd",
         "style": true

@@ -3,7 +3,7 @@ import { Form, Avatar, Input, DatePicker } from 'antd';
 import { UserBasicInfo } from '../index';
 import { inputProps } from '@/constants/inputProps';
 import { FormComponentProps } from 'antd/lib/form';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import './index.less';
 const { TextArea } = Input;
 
@@ -75,7 +75,7 @@ function ConfigData(props: Props) {
         <label htmlFor="nickName" className="config_data_label">出生年月</label>
         {edit ? (
           getFieldDecorator('birth', {
-            initialValue: birth ? moment(birth) : undefined,
+            initialValue: birth ? dayjs(birth) : undefined,
           })(
             <DatePicker
               placeholder="出生日期"

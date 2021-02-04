@@ -1,3 +1,4 @@
+/* eslint-disable */
 const devServerConfig = require('./setupProxy');
 const { developServer: { proxy } } = devServerConfig;
 const webpack = require('webpack');

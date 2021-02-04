@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Modal, Form, Input, Select, DatePicker } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 import { EmployeeInfo, CreateRequest, UpdateRequest } from '../../interface/employee';
 
@@ -96,7 +96,7 @@ class InfoModal extends Component<Props, State> {
                     </Form.Item>
                     <Form.Item>
                         { getFieldDecorator("hiredate", {
-                            initialValue: hiredate ? moment(hiredate) : undefined,
+                            initialValue: hiredate ? dayjs(hiredate) : undefined,
                             rules: [{ required: true, message: '请选择入职日期' }]
                         })(<DatePicker
                             placeholder="入职日期"
