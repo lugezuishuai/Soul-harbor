@@ -44,13 +44,14 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: [miniCss, 'css-loader']
+        use: [miniCss, 'css-loader', 'postcss-loader']
       },
       {
         test: /\.(sa|sc)ss$/i,
         use: [
           miniCss,
           'css-loader',
+          'postcss-loader',
           'sass-loader'
         ]
       },
@@ -60,6 +61,7 @@ module.exports = {
         use: [
           miniCss,
           { loader: 'css-loader', options: { modules: false } },
+          { loader: 'postcss-loader' },
           { loader: 'less-loader', options: { 
             lessOptions: { javascriptEnabled: true }
           }}          //javascriptEnabled: true  ------  在less里面可以使用JavaScript表达式
@@ -71,6 +73,7 @@ module.exports = {
         use: [
           miniCss,
           { loader: 'css-loader', options: { modules: true, import: true } },
+          { loader: 'postcss-loader' },
           { loader: 'less-loader', options: { 
             lessOptions: { javascriptEnabled: true },
           }}          //javascriptEnabled: true  ------  在less里面可以使用JavaScript表达式
