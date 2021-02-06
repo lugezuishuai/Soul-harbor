@@ -23,7 +23,15 @@ module.exports = {
           name: 'vendor',
           chunks: 'initial',
           priority: -10       // 当一个第三方库被引用超过2次的时候，不会打包到业务模块里了
-        }
+        },
+        reactBase: {
+          name: 'reactBase',
+          test: module => {
+            return /react|redux/.test(module.context);
+          },
+          chunks: 'initial',
+          priority: 10,
+        },
       }
     }
   }
