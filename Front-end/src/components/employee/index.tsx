@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import './index.css';
 import QueryForm from './QueryForm';
 import InfoModal from './InfoModal';
-import getColunms from './colums';
+import getColumns from './colums';
 import { DOWNLOAD_EMPLOYEE_URL } from '../../constants/urls';
 import {
     EmployeeInfo,
@@ -92,7 +92,7 @@ class Employee extends Component<Props, State> {
                     updateData={updateEmployee}
                 />
                 <Table
-                    columns={getColunms(this.handleUpdate, this.handleDelete)}
+                    columns={getColumns(this.handleUpdate, this.handleDelete)}
                     dataSource={employeeList}
                     loading={this.state.loading}
                     className="table"

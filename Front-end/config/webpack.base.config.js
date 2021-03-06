@@ -3,14 +3,66 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const miniCssExtractPlugin = require("mini-css-extract-plugin");          // 单独抽离css文件
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const resolve = require('./helper/resolve')
+const px2rem = require('postcss-px2rem-exclude');
 const isEnvProduction = process.env.NODE_ENV === 'production';            // 是否是生产环境
-const miniCss = isEnvProduction ? { 
+const sourceMap = !isEnvProduction; // 生产模式不开启sourceMap
+const miniCssLoader = isEnvProduction ? { 
   loader: miniCssExtractPlugin.loader, 
   options: { 
-    publickPath: '/',
+    publicPath: '/',
     modules: { namedExport: true }
   }
 } : 'style-loader';
+
+const cssLoader = {
+  loader: 'css-loader',
+  options: {
+    sourceMap,
+  }
+}
+
+const postcssPlugins = [
+  require('postcss-import'),
+  require('postcss-url'),
+  require('postcss-flexbugs-fixes'),
+  require('postcss-preset-env')({
+    autoprefixer: {
+      flexbox: 'no-2009',
+    },
+    stage: 3,
+  }),
+  // 移动端适配
+  px2rem({
+    remUnit: 53.99, // 1rem = 53.99px
+    exclude: /node_modules/i,
+  }),
+]
+
+const postcssLoader = {
+  loader: 'postcss-loader',
+  options: {
+    sourceMap,
+    ident: 'postcss',
+    plugins: () => isEnvProduction ? [...postcssPlugins, require('cssnano')] : postcssPlugins, // 生产环境压缩css代码
+  },
+};
+
+const lessLoader = {
+  loader: 'less-loader', 
+  options: {
+    sourceMap,
+    lessOptions: {
+      javascriptEnabled: true // javascriptEnabled: true  ------  在less里面可以使用JavaScript表达式
+    }
+  }
+}
+
+const sassLoader = {
+  loader: 'sass-loader',
+  options: {
+    sourceMap,
+  }
+}
 
 module.exports = {
   entry: {
@@ -44,39 +96,39 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: [miniCss, 'css-loader', 'postcss-loader']
+        use: [
+          miniCssLoader,
+          cssLoader, 
+          postcssLoader,
+        ]
       },
       {
         test: /\.(sa|sc)ss$/i,
         use: [
-          miniCss,
-          'css-loader',
-          'postcss-loader',
-          'sass-loader'
+          miniCssLoader,
+          cssLoader,
+          postcssLoader,
+          sassLoader,
         ]
       },
       {
         test: /\.less$/i,
         include: /node_modules\/(antd|slick-carousel)/,
         use: [
-          miniCss,
-          { loader: 'css-loader', options: { modules: false } },
-          { loader: 'postcss-loader' },
-          { loader: 'less-loader', options: { 
-            lessOptions: { javascriptEnabled: true }
-          }}          //javascriptEnabled: true  ------  在less里面可以使用JavaScript表达式
+          miniCssLoader,
+          { loader: 'css-loader', options: { sourceMap, modules: false } },
+          postcssLoader,
+          lessLoader,
         ]
       },
       {
         test: /\.less$/i,
         exclude: /node_modules\/(antd|slick-carousel)/,
         use: [
-          miniCss,
-          { loader: 'css-loader', options: { modules: true, import: true } },
-          { loader: 'postcss-loader' },
-          { loader: 'less-loader', options: { 
-            lessOptions: { javascriptEnabled: true },
-          }}          //javascriptEnabled: true  ------  在less里面可以使用JavaScript表达式
+          miniCssLoader,
+          { loader: 'css-loader', options: { sourceMap, modules: true, import: true } },
+          postcssLoader,
+          lessLoader,
         ]
       },
       {

@@ -31,7 +31,7 @@ class InfoModal extends Component<Props, State> {
                     confirmLoading: true
                 });
 
-                let param = this.props.form.getFieldsValue();
+                const param = this.props.form.getFieldsValue();
                 param.hiredate = param.hiredate.format('YYYY-MM-DD');
 
                 if (!this.props.edit) {
@@ -53,9 +53,9 @@ class InfoModal extends Component<Props, State> {
         });
     }
     render() {
-        let title = this.props.edit ? '编辑' : '添加新员工';
+        const title = this.props.edit ? '编辑' : '添加新员工';
         const { getFieldDecorator } = this.props.form;
-        let { name, departmentId, hiredate, levelId } = this.props.rowData;
+        const { name, departmentId, hiredate, levelId } = this.props.rowData;
         
         return (
             <Modal
