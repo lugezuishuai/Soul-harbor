@@ -44,9 +44,20 @@ function Header(props: Props) {
   };
   const hideForgetPassword = () => setShowForgetPwModal(false);
 
+  // 获取初始选中的菜单
+  const setInitialMenu = () => {
+    const pathArr = window.location.href.split('/');
+    const activeMenu = pathArr[3];
+    dispatch({
+      type: 'CHANGE_SELECT_MENU',
+      payload: activeMenu,
+    })
+  }
+
   useEffect(() => {
     // 请求接口判断token是否过期，如果token没有过期则设置login为true，接着请求用户信息接口获取用户信息
     // 用户信息用redux来维护
+    setInitialMenu()
     setLogin(false);
   }, [login]);         // 每当login发生改变的时候就去请求一次
 
@@ -57,18 +68,35 @@ function Header(props: Props) {
     });
   }
 
+  const handleBackHome = () => {
+    dispatch({
+      type: 'CHANGE_SELECT_MENU',
+      payload: '',
+    })
+  }
+
   const menu = (
     <Menu
-      selectable={false}
+      selectable={true}
       className="little_screen_menu"
+      selectedKeys={selectMenu ? [selectMenu] : []}
+      onSelect={handleMenuChange}
     >
-      <Menu.Item key="user" className="little_screen_menu_item"><Link to="/user">个人信息</Link></Menu.Item>
+      <Menu.Item key="user" className="little_screen_menu_item">
+        <Link to="/user">个人信息</Link>
+      </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="chat" className="little_screen_menu_item"><Link to="/chat">聊天</Link></Menu.Item>
+      <Menu.Item key="chat" className="little_screen_menu_item">
+        <Link to="/chat">聊天</Link>
+      </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="blog" className="little_screen_menu_item"><Link to="/blog">博客</Link></Menu.Item>
+      <Menu.Item key="blog" className="little_screen_menu_item">
+        <Link to="/blog">博客</Link>
+      </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="news" className="little_screen_menu_item"><Link to="/news">资讯</Link></Menu.Item>
+      <Menu.Item key="news" className="little_screen_menu_item">
+        <Link to="/news">资讯</Link>
+      </Menu.Item>
     </Menu>
   )
 
@@ -82,7 +110,7 @@ function Header(props: Props) {
         </Dropdown>
       ) : (
         <Menu
-        // theme="dark"
+          // theme="dark"
           mode="horizontal"
           className="home_menu"
           selectedKeys={selectMenu ? [selectMenu] : []}
@@ -94,11 +122,11 @@ function Header(props: Props) {
           <Menu.Item key="news" className="home_menu_item"><Link to="/news">资讯</Link></Menu.Item>
         </Menu>
       )}
-      <Link to="/" className="back_to_home">
+      <Link to="/" className="back_to_home" onClick={handleBackHome}>
         <Icon component={Heart as any} className="back_to_home_icon"/>
         <span className="back_to_home_text">Soul Harbor</span>
       </Link>
-      { login ? <Operation handleMenuChange={handleMenuChange} nickName={nickName} avatar={avatar}/> : 
+      { !login ? <Operation handleMenuChange={handleMenuChange} nickName={nickName} avatar={avatar}/> : 
         (<div className="home_user">
           <Button type="primary" className="home_user_login" onClick={handleSignUpClick}>登录</Button>
           <Button className="home_user_login" onClick={handleRegisterClick}>注册</Button>
