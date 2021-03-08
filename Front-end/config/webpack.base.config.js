@@ -132,22 +132,28 @@ module.exports = {
         ]
       },
       {
-        test: /\.(png|jpg|gif)$/,
+        test: /\.(png|jpe?g|gif)$/,
         use: [{
           loader: 'url-loader',
           options: {
             // outputPath:'../',//输出**文件夹
             publicPath: '/',
-            name: "images/[name].[ext]",
-            limit: 1000  //是把小于1000B的文件打成Base64的格式，写入JS
+            name: "images/[name].[hash:8].[ext]",
+            limit: 8192  //把小于8MB的文件打成Base64的格式，写入JS
           }
         }]
       },
       {
         test: /\.(woff|eot|woff2|tff)$/,
-        use: 'url-loader',
+        use: [{
+          loader: 'url-loader',
+          options: {
+            publicPath: '/',
+            name: "fonts/[name].[hash:8].[ext]",
+            limit: 8192
+          }
+        }],
         exclude: /node_modules/
-        // exclude忽略/node_modules/的文件夹
       },
       {
         test: /\.svg$/,

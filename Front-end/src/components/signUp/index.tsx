@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Form, Input, Modal, Button, message } from 'antd';
+import { Form, Input, Modal, Button, message, Icon } from 'antd';
+import close from '@/assets/icon/close.svg';
 import { FormComponentProps } from 'antd/lib/form';
 import { inputProps } from '@/constants/inputProps';
 import './index.less';
@@ -43,75 +44,96 @@ function SignUp(props: Props) {
   }
 
   return (
-    <>
-      <Modal
-        visible={visible}
-        centered
-        title="欢迎登录"
-        footer={
-          <div className="sign_up_footer">
-            <span className="sign_up_footer_forget" onClick={handleClickForgetPw}>忘记密码？</span>
-            <div className="sign_up_footer_button">
-              <Button onClick={handleCancel}>取消</Button>
-              <Button type="primary" onClick={handleOk}>{loading? '登录中' : '登录'}</Button>
-            </div>
+    <Modal
+      visible={visible}
+      centered
+      closable={false}
+      className="sign-up"
+      title={
+        <div className="sign-up-title">
+          <div className="sign-up-title__text">欢迎登录</div>
+          <Icon
+            className="sign-up-title__icon"
+            component={close as any}
+            onClick={handleCancel}
+          />
+        </div>
+      }
+      footer={
+        <div className="sign-up-footer">
+          <div className="sign-up-footer-forget" onClick={handleClickForgetPw}>忘记密码？</div>
+          <div className="sign-up-footer-operation">
+            <Button key="cancel" onClick={handleCancel} className="sign-up-footer-operation-cancel">
+              取消
+            </Button>
+            <Button
+              key="ok"
+              type="primary"
+              onClick={handleOk}
+              loading={loading}
+              className="sign-up-footer-operation-login"
+            >
+              登录
+            </Button>
           </div>
-        }
-        onCancel={handleCancel}
-        onOk={handleOk}
-        confirmLoading={loading}
-        destroyOnClose={true}         // 关闭时销毁 Modal 里的子元素
-      >
-        <Form className="sign_up_login">
-          <Form.Item>
-            <label htmlFor="username">账号：</label>
-            { getFieldDecorator('username', {
-              rules: [
-                { validator(rule, value, callback) {
-                  if(!value || value.length === 0) {
-                    callback('请输入账号');
-                  } else if(/\s+/g.test(value)) {
-                    callback('账号中不能有空格')
-                  } else {
-                    callback();
-                  }
-                }}
-              ]
-            })(
-              <Input
-                id="username"
-                placeholder="账号"
-                autoFocus
-                { ...inputProps }
-              />
-            )}
-          </Form.Item>
-          <Form.Item>
-            <label htmlFor="password">密码：</label>
-            { getFieldDecorator('password', {
-              rules: [
-                {
-                  required: true,
-                  whitespace: true,
-                  message: '请输入密码'
+        </div>
+      }
+      onCancel={handleCancel}
+      onOk={handleOk}
+      confirmLoading={loading}
+      destroyOnClose={true}         // 关闭时销毁 Modal 里的子元素
+    >
+      <Form className="sign-up-form">
+        <Form.Item className="sign-up-form-item">
+          <div className="sign-up-form-item-text">账号：</div>
+          { getFieldDecorator('username', {
+            rules: [
+              { validator(rule, value, callback) {
+                if(!value || value.length === 0) {
+                  callback('请输入账号');
+                } else if(/\s+/g.test(value)) {
+                  callback('账号中不能有空格')
+                } else {
+                  callback();
                 }
-              ]
-            })(
-              <Input.Password
-                id="password"
-                placeholder="密码"
-                { ...inputProps }
-              />
-            )}
-          </Form.Item>
-        </Form>
-      </Modal>
-    </>
+              }}
+            ]
+          })(
+            <Input
+              className="sign-up-form-item-input"
+              id="username"
+              placeholder="账号"
+              autoFocus
+              { ...inputProps }
+            />
+          )}
+        </Form.Item>
+        <Form.Item>
+          <div className="sign-up-form-item-text">密码：</div>
+          { getFieldDecorator('password', {
+            rules: [
+              {
+                required: true,
+                whitespace: true,
+                message: '请输入密码'
+              }
+            ]
+          })(
+            <Input.Password
+              className="sign-up-form-item-input"
+              id="password"
+              placeholder="密码"
+              { ...inputProps }
+            />
+          )}
+        </Form.Item>
+      </Form>
+    </Modal>
   )
 }
 
 const WrapSignUp = Form.create<Props>({
-  name: 'sign_up'
+  name: 'sign-up'
 })(SignUp);
 
 export default WrapSignUp;

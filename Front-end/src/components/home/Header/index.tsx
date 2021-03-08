@@ -126,7 +126,7 @@ function Header(props: Props) {
         <Icon component={Heart as any} className="back_to_home_icon"/>
         <span className="back_to_home_text">Soul Harbor</span>
       </Link>
-      { !login ? <Operation handleMenuChange={handleMenuChange} nickName={nickName} avatar={avatar}/> : 
+      { login ? <Operation handleMenuChange={handleMenuChange} nickName={nickName} avatar={avatar}/> : 
         (<div className="home_user">
           <Button type="primary" className="home_user_login" onClick={handleSignUpClick}>登录</Button>
           <Button className="home_user_login" onClick={handleRegisterClick}>注册</Button>

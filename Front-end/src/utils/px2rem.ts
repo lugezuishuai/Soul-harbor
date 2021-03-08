@@ -1,0 +1,1 @@
+export const px2rem = (d: number) => `${d / 53.99}rem`;
