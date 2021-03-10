@@ -3,15 +3,14 @@ import { Menu, Button, Icon, Dropdown } from 'antd';
 import { connect } from 'react-redux';
 import DropdownMenu from '@/assets/icon/menu.svg';
 import Heart from '@/assets/icon/heart.svg';
-import SignUp from '@/components/signUp';
-import Register from '@/components/register';
-import ForgetPw from '@/components/forgetPassword';
+import { WrapSignUp } from '@/components/signUp';
 import Operation from '@/components/Operation';
 import { GetUserInfoResponse } from '@/interface/userInfo';
 import { Link } from 'react-router-dom';
 import { State } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { screen } from '@/constants/screen';
+import { MenuItem } from '@/components/signUp';
 import './index.less';
 
 interface Props {
@@ -23,26 +22,21 @@ interface Props {
 function Header(props: Props) {
   const { selectMenu, dispatch, userInfo } = props;
   const { nickName, avatar } = userInfo;
-  const [showSignUpModal, setShowSignUpModal] = useState(false);            // 控制'登录'弹窗是否可见
-  const [showRegisterModal, setShowRegisterModal] = useState(false);        // 控制'注册'弹窗是否可见
-  const [showForgetPwModal, setShowForgetPwModal] = useState(false);        // 控制'忘记密码'弹窗是否可见
-  const [username, setUsername] = useState('');          // 用户名
-  const [login, setLogin] = useState(false);                                // 判断用户是否已经登录
+  const [visible, setVisible] = useState(false);
+  const [login, setLogin] = useState(false); // 判断用户是否已经登录
+  const [signUpMenu, setSignUpMenu] = useState<MenuItem | null>(null);
 
-  // 登录弹窗配置
-  const handleSignUpClick = () => setShowSignUpModal(true);
-  const hideSignUpModal = () => setShowSignUpModal(false);
+  const hideModal = () => setVisible(false);
 
-  // 登录弹窗配置
-  const handleRegisterClick = () => setShowRegisterModal(true);
-  const hideRegisterModal = () => setShowRegisterModal(false);
+  const handleClickLogin = () => {
+    setVisible(true);
+    setSignUpMenu('login');
+  }
 
-  // 忘记密码弹窗配置
-  const showForgetPassword = (username: string) => {
-    setShowForgetPwModal(true);
-    setUsername(username);
-  };
-  const hideForgetPassword = () => setShowForgetPwModal(false);
+  const handleClickRegister = () => {
+    setVisible(true);
+    setSignUpMenu('register');
+  }
 
   // 获取初始选中的菜单
   const setInitialMenu = () => {
@@ -59,7 +53,7 @@ function Header(props: Props) {
     // 用户信息用redux来维护
     setInitialMenu()
     setLogin(false);
-  }, [login]);         // 每当login发生改变的时候就去请求一次
+  }, [login]);
 
   const handleMenuChange = ({ key }: any) => {
     dispatch({
@@ -126,15 +120,15 @@ function Header(props: Props) {
         <Icon component={Heart as any} className="back_to_home_icon"/>
         <span className="back_to_home_text">Soul Harbor</span>
       </Link>
-      { login ? <Operation handleMenuChange={handleMenuChange} nickName={nickName} avatar={avatar}/> : 
-        (<div className="home_user">
-          <Button type="primary" className="home_user_login" onClick={handleSignUpClick}>登录</Button>
-          <Button className="home_user_login" onClick={handleRegisterClick}>注册</Button>
-        </div>)
+      {login ? <Operation handleMenuChange={handleMenuChange} nickName={nickName} avatar={avatar}/> : 
+        screen.isLittleScreen ? 
+          <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>登录/注册</Button> : 
+          (<div className="home_user">
+            <Button type="primary" className="home_user_login" onClick={handleClickLogin}>登录</Button>
+            <Button className="home_user_login" onClick={handleClickRegister}>注册</Button>
+          </div>)
       }
-      { showSignUpModal && <SignUp visible={showSignUpModal} hide={hideSignUpModal} showForgetPwModal={showForgetPassword} /> }
-      { showRegisterModal && <Register visible={showRegisterModal} hide={hideRegisterModal} showSignUpModal={handleSignUpClick} /> }
-      { showForgetPwModal && <ForgetPw visible={showForgetPwModal} hide={hideForgetPassword} showSignUpModal={handleSignUpClick} username={username} /> }
+      {visible && menu && <WrapSignUp menu={signUpMenu} visible={visible} hide={hideModal} />}
     </div>
   )
 }

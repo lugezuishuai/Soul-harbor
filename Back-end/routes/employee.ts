@@ -4,7 +4,7 @@ import excelExport from 'excel-export';
 import query from '../models/query';
 
 const router = express.Router();
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
+const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
 
 let queryAllSQL = `select employee.*, level.level, department.department from employee, level, department where employee.levelId = level.id and employee.departmentId = department.id`;
 

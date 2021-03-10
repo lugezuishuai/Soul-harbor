@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 
 import indexRouter from './routes/index';
-import usersRouter from './routes/users';
+import userInfoRouter from './routes/user/userInfo'; // 用户信息相关
 import employeeRouter from './routes/employee';
 
 let app = express();
@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/api/user', userInfoRouter);
 app.use('/api/employee', employeeRouter);           // 添加接口的路由
 
 // catch 404 and forward to error handler

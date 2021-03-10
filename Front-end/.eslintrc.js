@@ -22,10 +22,12 @@ module.exports = {
     "@typescript-eslint"
   ],
   "rules": {
-    '@typescript-eslint/ban-ts-ignore': 0,
+    '@typescript-eslint/ban-ts-ignore': 'off',
+    "@typescript-eslint/ban-ts-comment": "off",
     '@typescript-eslint/camelcase': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
     'promise/no-promise-in-callback': 'off',
     'react/prop-types': 'off',
   }

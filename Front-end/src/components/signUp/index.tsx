@@ -1,66 +1,84 @@
-import React, { useState } from 'react';
-import { Form, Input, Modal, Button, message, Icon, Menu } from 'antd';
+import React, { ReactNode, useState } from 'react';
+import { Form, Modal, Button, message, Icon, Menu } from 'antd';
 import close from '@/assets/icon/close.svg';
 import closeMobile from '@/assets/icon/close_mobile.svg';
 import { screen } from '@/constants/screen';
 import { FormComponentProps } from 'antd/lib/form';
-import { inputProps } from '@/constants/inputProps';
+import { Login } from './login';
+import { Register } from './register';
+import { ForgetPw } from './forgetPw';
+import md5 from 'md5';
 import './index.less';
 
+export type MenuItem = 'login' | 'register' | 'forgetPw';
 interface Props extends FormComponentProps {
-  showForgetPwModal(username: string): void;
   hide(): void;
   visible: boolean;
+  menu: MenuItem | null;
 }
 
-export interface Account {
+interface Login {
   username: string;
   password: string;
 }
 
-type MenuItem = 'login' | 'register' | 'forgetPw';
+interface Register {
+  username: string;
+  password: string;
+  passwordAgain: string;
+  nickname: string;
+}
+
+interface ForgetPw {
+  username: string;
+  newPassword: string;
+  newPasswordAgain: string;
+}
+
+export const prefix = (str?: string): string => str ? `sign-up-${str}` : 'sign-up';
 
 function SignUp(props: Props) {
-  const { visible, hide, form, showForgetPwModal } = props;
-  const prefix = (str?: string) => str ? `sign-up-${str}` : 'sign-up';
+  const { visible, hide, form, menu } = props;
   const [loading, setLoading] = useState(false); // 控制登录按钮的loading
-  const [disabled, setDisabled] = useState(true); // 控制按钮的disable
-  const [selectMenu, setSelectMenu] = useState<MenuItem>('login');
-  const [formData, setFormData] = useState({}); // 这里还需要定义类型
-  const { getFieldDecorator, getFieldValue, validateFields } = form;
+  const [selectMenu, setSelectMenu] = useState<MenuItem | null>(menu);
+  const { validateFields } = form;
 
-  const handleLogin = () => {
-    // 发送登录的请求
+  const handleLogin = (values: Login) => {
+    console.log('来到了这里', md5(md5(values.username + md5(values.password)))); // 采用md5(md5(username + md5(password)))形式加密
     hide();
   }
 
-  const handleRegister = () => {
+  const handleRegister = (values: Register) => {
     // 发送注册的请求
+    console.log(values);
     hide();
   }
 
-  const handleForgetPw = () => {
+  const handleForgetPw = (values: ForgetPw) => {
     // 发送重置密码的请求
+    console.log(values);
     hide();
   }
 
   const handleOk = (e: any) => {
     e.preventDefault();
-    // validateFields((errors: Record<string, any>, values: Account) => {
-    //   if(!errors) {
-    //     // 发送请求
-    //     message.success('登录成功');
-    //     setLoading(false);
-    //     hide();
-    //   }
-    // })
-    if (selectMenu === 'login') {
-      handleLogin();
-    } else if (selectMenu === 'register') {
-      handleRegister();
-    } else {
-      handleForgetPw();
-    }
+    validateFields((errors: Record<string, any>, values: Login | Register | ForgetPw) => {
+      if(!errors && values) {
+        switch(selectMenu) {
+          case 'login':
+            // @ts-ignore
+            handleLogin(values);
+            break;
+          case 'register':
+            // @ts-ignore
+            handleRegister(values);
+            break;
+          case 'forgetPw':
+            // @ts-ignore
+            handleForgetPw(values);
+        }
+      }
+    })
   }
 
   // 忘记密码配置
@@ -75,11 +93,6 @@ function SignUp(props: Props) {
 
   const handleMenuChange = ({ key }: any) => setSelectMenu(key);
 
-  // 传递给子组件的函数
-  const checkDisable = (value: boolean) => setDisabled(value);
-
-  const setRequestData = (data: any) => setFormData(data);
-
   const checkMenuItem = () => {
     switch(selectMenu) {
       case 'login':
@@ -89,7 +102,44 @@ function SignUp(props: Props) {
       default:
         return <div/>
     }
-  }
+  };
+
+  const PCFooter: ReactNode = (
+    <div className={prefix('footer')}>
+      {checkMenuItem()}
+      <div className={prefix('footer-operation')}>
+        <Button key="cancel" onClick={hide} className={prefix('footer-operation-btn')}>
+          取消
+        </Button>
+        <Button
+          key="confirm"
+          type="primary"
+          onClick={handleOk}
+          loading={loading}
+          className={prefix('footer-operation-btn')}
+        >
+          {selectMenu === 'login' ? '登录' : selectMenu === 'register' ? '注册' : '确定修改'}
+        </Button>
+      </div>
+    </div>
+  );
+
+  const MobileFooter: ReactNode = (
+    <div className={prefix('footer__mobile')}>
+      <Button
+        key="confirm"
+        type="primary"
+        onClick={handleOk}
+        loading={loading}
+        className={prefix('footer__mobile-btn')}
+      >
+        {selectMenu === 'login' ? '登录' : selectMenu === 'register' ? '注册' : '确定修改'}
+      </Button>
+      <Button key="cancel" onClick={hide} className={prefix('footer__mobile-btn')}>
+        取消
+      </Button>
+    </div>
+  )
 
   return (
     <Modal
@@ -102,92 +152,31 @@ function SignUp(props: Props) {
           <Menu
             mode="horizontal"
             className={prefix('title-menu')}
-            selectedKeys={[selectMenu]}
+            selectedKeys={selectMenu ? [selectMenu] : []}
             onSelect={handleMenuChange}
           >
             <Menu.Item key="login" className={prefix('title-menu-item')}>登录</Menu.Item>
             <Menu.Item key="register" className={prefix('title-menu-item')}>注册</Menu.Item>
             <Menu.Item key="forgetPw" className={prefix('title-menu-item')}>忘记密码</Menu.Item>
           </Menu>
-          <Icon className={prefix('title-icon')} component={screen.isLittleScreen ? closeMobile as any : close as any} />
+          <Icon className={prefix('title-icon')} component={screen.isLittleScreen ? closeMobile as any : close as any} onClick={hide} />
         </div>
       }
       footer={
-        <div className={prefix('footer')}>
-          {checkMenuItem()}
-          <div className={prefix('footer-operation')}>
-            <Button key="cancel" onClick={hide} className={prefix('footer-operation-btn')}>
-              取消
-            </Button>
-            <Button
-              key="ok"
-              type="primary"
-              onClick={handleOk}
-              loading={loading}
-              disabled={disabled}
-              className={prefix('footer-operation-btn')}
-            >
-              {selectMenu === 'login' ? '登录' : selectMenu === 'register' ? '注册' : '确定修改'}
-            </Button>
-          </div>
-        </div>
+        screen.isLittleScreen ? MobileFooter : PCFooter
       }
       onCancel={hide}
       onOk={handleOk}
       confirmLoading={loading}
       destroyOnClose={true}
     >
-      <Form className="sign-up-form">
-        <Form.Item className="sign-up-form-item">
-          <div className="sign-up-form-item-text">账号：</div>
-          { getFieldDecorator('username', {
-            rules: [
-              { validator(rule, value, callback) {
-                if(!value || value.length === 0) {
-                  callback('请输入账号');
-                } else if(/\s+/g.test(value)) {
-                  callback('账号中不能有空格')
-                } else {
-                  callback();
-                }
-              }}
-            ]
-          })(
-            <Input
-              className="sign-up-form-item-input"
-              id="username"
-              placeholder="账号"
-              autoFocus
-              { ...inputProps }
-            />
-          )}
-        </Form.Item>
-        <Form.Item>
-          <div className="sign-up-form-item-text">密码：</div>
-          { getFieldDecorator('password', {
-            rules: [
-              {
-                required: true,
-                whitespace: true,
-                message: '请输入密码'
-              }
-            ]
-          })(
-            <Input.Password
-              className="sign-up-form-item-input"
-              id="password"
-              placeholder="密码"
-              { ...inputProps }
-            />
-          )}
-        </Form.Item>
+      <Form className={prefix('form')}>
+        {selectMenu === 'login' ? <Login form={form} /> : selectMenu === 'register' ? <Register form={form} /> : <ForgetPw form={form} />}
       </Form>
     </Modal>
   )
 }
 
-const WrapSignUp = Form.create<Props>({
+export const WrapSignUp = Form.create<Props>({
   name: 'sign-up'
 })(SignUp);
-
-export default WrapSignUp;

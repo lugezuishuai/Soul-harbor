@@ -1,23 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Input } from 'antd';
 import { inputProps } from '@/constants/inputProps';
-import { FormComponentProps } from 'antd/lib/form';
+import { prefix } from './index';
+import { WrappedFormUtils } from 'antd/lib/form/Form';
 import './index.less';
 
-interface Props extends FormComponentProps {
-  checkDisable(value: boolean): void;
-  setRequestData(data: any): void;
+interface Props {
+  form: WrappedFormUtils<any>;
 }
 
-function Login(props: Props) {
-  const { form, checkDisable, setRequestData } = props;
-  const { getFieldDecorator, validateFields, getFieldsError, getFieldsValue } = form;
-  const prefix = (str?: string) => str ? `sign-up-login-${str}` : 'sign-up-login';
+export function Login(props: Props) {
+  const { form } = props;
+  const { getFieldDecorator } = form;
 
   return (
-    <Form className={prefix()}>
-      <Form.Item className={prefix('item')}>
-        <div className={prefix('item-text')}>账号：</div>
+    <>
+      <Form.Item className={prefix('form-item')}>
+        <div className={prefix('form-item-text')}>账号：</div>
         { getFieldDecorator('username', {
           rules: [
             { validator(rule, value, callback) {
@@ -32,7 +31,7 @@ function Login(props: Props) {
           ]
         })(
           <Input
-            className={prefix('item-input')}
+            className={prefix('form-item-input')}
             placeholder="账号"
             autoFocus
             { ...inputProps }
@@ -40,7 +39,7 @@ function Login(props: Props) {
         )}
       </Form.Item>
       <Form.Item>
-        <div className={prefix('item-text')}>密码：</div>
+        <div className={prefix('form-item-text')}>密码：</div>
         { getFieldDecorator('password', {
           rules: [
             {
@@ -51,17 +50,12 @@ function Login(props: Props) {
           ]
         })(
           <Input.Password
-            className={prefix('item-input')}
+            className={prefix('form-item-input')}
             placeholder="密码"
             { ...inputProps }
           />
         )}
       </Form.Item>
-    </Form>
+    </>
   )
 }
-
-export const WrapLogin = Form.create<Props>({
-  name: 'login'
-})(Login);
-
