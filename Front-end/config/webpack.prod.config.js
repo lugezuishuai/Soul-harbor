@@ -6,7 +6,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin()
   ],
-  devtool: 'source-map',
+  // devtool: 'source-map', // 生产环境不要用source-map
   optimization: {
     splitChunks: {
       minSize: 20000,

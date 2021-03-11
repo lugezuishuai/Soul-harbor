@@ -8,6 +8,11 @@ import { Login } from './login';
 import { Register } from './register';
 import { ForgetPw } from './forgetPw';
 import md5 from 'md5';
+import dayjs from 'dayjs';
+import { REGISTER } from '@/constants/urls';
+import { handleErrorMsg } from '@/utils/handleErrorMsg'
+import { get, post } from '@/utils/request';
+import { RegisterRequest } from '@/interface/user/register';
 import './index.less';
 
 export type MenuItem = 'login' | 'register' | 'forgetPw';
@@ -41,17 +46,41 @@ function SignUp(props: Props) {
   const { visible, hide, form, menu } = props;
   const [loading, setLoading] = useState(false); // 控制登录按钮的loading
   const [selectMenu, setSelectMenu] = useState<MenuItem | null>(menu);
-  const { validateFields } = form;
+  const [username, setUsername] = useState('');
+  const { validateFields, resetFields } = form;
 
   const handleLogin = (values: Login) => {
     console.log('来到了这里', md5(md5(values.username + md5(values.password)))); // 采用md5(md5(username + md5(password)))形式加密
     hide();
   }
 
+  const changeMenu = (value: MenuItem, clear = true) => {
+    if (clear) {
+      resetFields();
+      setSelectMenu(value);
+    } else {
+      setSelectMenu(value);
+    }
+  }
+
   const handleRegister = (values: Register) => {
-    // 发送注册的请求
-    console.log(values);
-    hide();
+    const nowDate = new Date();
+    const reqData: RegisterRequest = {
+      username: values.username,
+      password: md5(md5(values.username + md5(values.passwordAgain))), // 采用md5(md5(username + md5(password)))形式加密
+      nickname: values.nickname,
+      createTime: dayjs(nowDate).format('YYYY-MM-DD'),
+    };
+    setLoading(true);
+    post(REGISTER, reqData).then(() => {
+      message.success('注册成功');
+      setUsername(reqData.username);
+      setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 切不要清空表单
+    }).catch(e => {
+      handleErrorMsg(e);
+    }).finally(() => {
+      setLoading(false);
+    })
   }
 
   const handleForgetPw = (values: ForgetPw) => {
@@ -83,15 +112,15 @@ function SignUp(props: Props) {
 
   // 忘记密码配置
   const handleClickForgetPw = () => {
-    setSelectMenu('forgetPw');
+    changeMenu('forgetPw');
   }
 
   // 马上登录配置
   const handleClickLogin = () => {
-    setSelectMenu('login');
+    changeMenu('login');
   }
 
-  const handleMenuChange = ({ key }: any) => setSelectMenu(key);
+  const handleMenuChange = ({ key }: any) => changeMenu(key);
 
   const checkMenuItem = () => {
     switch(selectMenu) {
@@ -171,7 +200,7 @@ function SignUp(props: Props) {
       destroyOnClose={true}
     >
       <Form className={prefix('form')}>
-        {selectMenu === 'login' ? <Login form={form} /> : selectMenu === 'register' ? <Register form={form} /> : <ForgetPw form={form} />}
+        {selectMenu === 'login' ? <Login form={form} username={username}/> : selectMenu === 'register' ? <Register form={form} /> : <ForgetPw form={form} />}
       </Form>
     </Modal>
   )

@@ -3,4 +3,5 @@ export const CREATE_EMPLOYEE_URL = '/api/employee/createEmployee';
 export const DELETE_EMPLOYEE_URL = '/api/employee/deleteEmployee';
 export const UPDATE_EMPLOYEE_URL = '/api/employee/updateEmployee';
 export const DOWNLOAD_EMPLOYEE_URL = '/api/employee/downloadEmployee';
-export const GET_USERINFO_URL = '/api/user/getUserInfo';        // 获取用户信息接口url
+export const REGISTER = '/api/user/register'; // 注册用户的接口
+export const INIT = '/api/user/init'; // 获取token的接口

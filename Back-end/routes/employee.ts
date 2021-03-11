@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+// @ts-ignore
 import excelExport from 'excel-export';
 import query from '../models/query';
 

@@ -7,7 +7,7 @@ const axios = originAxios.create({
 
 axios.interceptors.response.use(
   function(response) {
-    if(response.data && response.data.code === 1) {
+    if(response.data && response.data.code !== 0) {
       /*
       successful response: 
       { "code": 0, "data": "" }
@@ -22,14 +22,14 @@ axios.interceptors.response.use(
     return response.data;
   },
   function(error) {
-    return Promise.reject(error);
+    return error?.response?.data ? Promise.reject(error.response.data) : Promise.reject();
   }
 );
 
 //get请求
-export function get(url: string, data: any) {
+export function get(url: string, data?: any) {
   return axios.get(url, {
-      params: data
+    params: data
   })
 }
 

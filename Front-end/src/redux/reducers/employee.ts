@@ -20,14 +20,15 @@ export default function(state = initialEmployeeState, action: Action) {
         ...state,
         employeeList: action.payload
       }
-    case CREATE_EMPLOYEE:
-      let newList = [action.payload, ...(state.employeeList as EmployeeInfo[])]
+    case CREATE_EMPLOYEE: {
+      const newList = [action.payload, ...(state.employeeList as EmployeeInfo[])]
       return {
         ...state,
         employeeList: newList
       }
-    case DELETE_EMPLOYEE:
-      let reducedList = [...(state.employeeList as EmployeeInfo[])];
+    }
+    case DELETE_EMPLOYEE: {
+      const reducedList = [...(state.employeeList as EmployeeInfo[])];
       _.remove(reducedList, (item: EmployeeInfo) => {
         return item.id === action.payload
       });
@@ -35,10 +36,11 @@ export default function(state = initialEmployeeState, action: Action) {
         ...state,
         employeeList: reducedList
       }
-    case UPDATE_EMPLOYEE:
-      let updatedList = [...(state.employeeList as EmployeeInfo[])];
-      let item: UpdateRequest = action.payload;
-      let index = _.findIndex(updatedList, {
+    }
+    case UPDATE_EMPLOYEE: {
+      const updatedList = [...(state.employeeList as EmployeeInfo[])];
+      const item: UpdateRequest = action.payload;
+      const index = _.findIndex(updatedList, {
         id: item.id
       });
       updatedList[index] = {
@@ -55,6 +57,7 @@ export default function(state = initialEmployeeState, action: Action) {
         ...state,
         employeeList: updatedList
       }
+    }
     default:
       return state
   }

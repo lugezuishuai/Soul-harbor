@@ -1,5 +1,5 @@
 // 数据库相关配置
-const dbConfig = {
+export const employeeDbConfig = {
   host: 'localhost',
   port: 3306,
   user: 'jackson',
@@ -7,4 +7,11 @@ const dbConfig = {
   database: 'employee_system'
 };
 
-export default dbConfig;
+// soul-harbor相关
+export const userInfoDbConfig = {
+  host: 'localhost',
+  port: 3306,
+  user: 'jackson',
+  password: '000008053927',
+  database: 'soul-harbor'
+}

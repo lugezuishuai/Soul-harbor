@@ -7,10 +7,11 @@ import './index.less';
 
 interface Props {
   form: WrappedFormUtils<any>;
+  username: string;
 }
 
 export function Login(props: Props) {
-  const { form } = props;
+  const { form, username } = props;
   const { getFieldDecorator } = form;
 
   return (
@@ -18,6 +19,7 @@ export function Login(props: Props) {
       <Form.Item className={prefix('form-item')}>
         <div className={prefix('form-item-text')}>账号：</div>
         { getFieldDecorator('username', {
+          initialValue: username,
           rules: [
             { validator(rule, value, callback) {
               if(!value || value.length === 0) {

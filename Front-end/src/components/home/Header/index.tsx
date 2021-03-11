@@ -5,7 +5,10 @@ import DropdownMenu from '@/assets/icon/menu.svg';
 import Heart from '@/assets/icon/heart.svg';
 import { WrapSignUp } from '@/components/signUp';
 import Operation from '@/components/Operation';
-import { GetUserInfoResponse } from '@/interface/userInfo';
+import { get } from '@/utils/request';
+import { GetUserInfoResponse } from '@/interface/user/userInfo';
+import { handleErrorMsg } from '@/utils/handleErrorMsg';
+import { INIT } from '@/constants/urls';
 import { Link } from 'react-router-dom';
 import { State } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
@@ -51,6 +54,11 @@ function Header(props: Props) {
   useEffect(() => {
     // 请求接口判断token是否过期，如果token没有过期则设置login为true，接着请求用户信息接口获取用户信息
     // 用户信息用redux来维护
+    get(INIT).then(res => {
+      console.log(res.data);
+    }).catch(e => {
+      handleErrorMsg(e);
+    })
     setInitialMenu()
     setLogin(false);
   }, [login]);
