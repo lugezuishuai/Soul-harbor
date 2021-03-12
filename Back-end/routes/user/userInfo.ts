@@ -4,6 +4,7 @@ import query from '../../models/query';
 import { v4 as uuidv4 } from 'uuid';
 import md5 from 'md5';
 import { setToken } from '../../token/token';
+import * as _ from 'lodash';
 
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
@@ -19,11 +20,6 @@ router.post('/register', urlencodedParser, async (req, res) => {
   query(checkUsername, 'userInfo')
   .then(result => {
     if (result.length > 0) {
-      res.status(500).json({
-        code: 2,
-        data: {},
-        msg: 'username already exists',
-      })
       throw new Error('username already exists');
     } else {
       return query(checkNickname, 'userInfo');
@@ -31,11 +27,6 @@ router.post('/register', urlencodedParser, async (req, res) => {
   })
   .then(result => {
     if (result.length > 0) {
-      res.status(500).json({
-        code: 3,
-        data: {},
-        msg: 'nickname already exists',
-      })
       throw new Error('nickname already exists');
     } else {
       return query(registerSql, 'userInfo');
@@ -52,7 +43,19 @@ router.post('/register', urlencodedParser, async (req, res) => {
     })
   })
   .catch(e => {
-    if (e.message !== 'username already exists' && e.message !== 'nickname already exists') {
+    if (e.message === 'username already exists') {
+      res.status(500).json({
+        code: 2,
+        data: {},
+        msg: 'username already exists',
+      })
+    } else if (e.message === 'nickname already exists') {
+      res.status(500).json({
+        code: 3,
+        data: {},
+        msg: 'nickname already exists',
+      })
+    } else {
       res.status(500).json({
         code: 1,
         data: {},
@@ -71,53 +74,55 @@ router.post('/login', urlencodedParser, async (req, res) => {
   query(checkUsername, 'userInfo')
   .then(result => {
     if (!result || result.length === 0) {
-      res.status(500).json({
-        code: 2,
-        data: {},
-        msg: 'username or password error'
-      });
-      throw new Error('username or password error');
+      throw new Error('username error');
     } else {
       return query(checkUserInfo, 'userInfo');
     }
   })
   .then(result => {
     if (!result || result.length === 0) {
-      res.status(500).json({
-        code: 2,
-        data: {},
-        msg: 'username or password error'
-      });
-      throw new Error('username or password error');
+      throw new Error('password error');
     } else if (result.length > 1) {
-      res.status(500).json({
-        code: 3,
-        data: {},
-        msg: 'already register',
-      })
       throw new Error('already register');
     } else {
-      const uuid = result['soulUuid'];
-      return setToken(username, uuid);
+      const { soulUsername, soulUuid, soulNickname, soulSignature, soulBirth } = result[0];
+      const userInfo = {
+        username: soulUsername,
+        uid: soulUuid,
+        signature: soulSignature,
+        birth: soulBirth,
+        nickname: soulNickname,
+      }
+      return setToken(userInfo);
     }
   })
   .then(result => {
     res.json({
       code: 0,
-      data: {
-        token: result,
-      },
+      data: result,
       msg: 'login success',
     });
   })
   .catch(e => {
-    if (e.message === 'token is empty') {
-      res.status(400).json({
-        code: 1,
+    if (e.message === 'username error') {
+      res.status(500).json({
+        code: 2,
         data: {},
-        msg: 'token is empty',
+        msg: 'username error'
+      });
+    } else if (e.message === 'password error') {
+      res.status(500).json({
+        code: 3,
+        data: {},
+        msg: 'password error'
+      });
+    } else if (e.message === 'already register') {
+      res.status(500).json({
+        code: 4,
+        data: {},
+        msg: 'already register',
       })
-    } else if (e.message !== 'username or password error' && e.message !== 'already register') {
+    } else {
       res.status(500).json({
         code: 1,
         data: {},
@@ -133,7 +138,9 @@ router.get('/init', function(req, res) {
 
   res.status(200).json({
     code: 0,
-    data: req.user,
+    data: {
+      userInfo: _.pick(req.user, ['username', 'uid', 'nickname', 'signature', 'birth']),
+    },
     msg: 'init success',
   });
 })

@@ -6,7 +6,7 @@ import Heart from '@/assets/icon/heart.svg';
 import { WrapSignUp } from '@/components/signUp';
 import Operation from '@/components/Operation';
 import { get } from '@/utils/request';
-import { GetUserInfoResponse } from '@/interface/user/userInfo';
+import { UserInfo, InitResponse } from '@/interface/user/init';
 import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { INIT } from '@/constants/urls';
 import { Link } from 'react-router-dom';
@@ -19,14 +19,14 @@ import './index.less';
 interface Props {
   dispatch(action: Action): void;
   selectMenu: string;
-  userInfo: GetUserInfoResponse
+  userInfo: UserInfo;
+  login: boolean;
 }
 
 function Header(props: Props) {
-  const { selectMenu, dispatch, userInfo } = props;
-  const { nickName, avatar } = userInfo;
+  const { selectMenu, dispatch, userInfo, login } = props;
+  const { nickname, avatar } = userInfo;
   const [visible, setVisible] = useState(false);
-  const [login, setLogin] = useState(false); // 判断用户是否已经登录
   const [signUpMenu, setSignUpMenu] = useState<MenuItem | null>(null);
 
   const hideModal = () => setVisible(false);
@@ -52,16 +52,21 @@ function Header(props: Props) {
   }
 
   useEffect(() => {
-    // 请求接口判断token是否过期，如果token没有过期则设置login为true，接着请求用户信息接口获取用户信息
-    // 用户信息用redux来维护
-    get(INIT).then(res => {
-      console.log(res.data);
+    // @ts-ignore
+    get(INIT).then((res: InitResponse) => {
+      dispatch({
+        type: 'GET_USERINFO',
+        payload: res.data.userInfo,
+      });
+      dispatch({
+        type: 'CHANGE_LOGIN_STATE',
+        payload: true,
+      })
     }).catch(e => {
       handleErrorMsg(e);
     })
     setInitialMenu()
-    setLogin(false);
-  }, [login]);
+  }, []);
 
   const handleMenuChange = ({ key }: any) => {
     dispatch({
@@ -104,7 +109,7 @@ function Header(props: Props) {
 
   return (
     <div className="home_header"> 
-      { screen.isLittleScreen ? (
+      {screen.isLittleScreen ? (
         <Dropdown overlay={menu} trigger={['click']}>
           <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
             <Icon component={DropdownMenu as any} className="home_menu_little_icon" />
@@ -128,7 +133,7 @@ function Header(props: Props) {
         <Icon component={Heart as any} className="back_to_home_icon"/>
         <span className="back_to_home_text">Soul Harbor</span>
       </Link>
-      {login ? <Operation handleMenuChange={handleMenuChange} nickName={nickName} avatar={avatar}/> : 
+      {login ? <Operation handleMenuChange={handleMenuChange} nickName={nickname} avatar={avatar} /> : 
         screen.isLittleScreen ? 
           <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>登录/注册</Button> : 
           (<div className="home_user">
@@ -144,4 +149,5 @@ function Header(props: Props) {
 export default connect((state: State) => ({
   selectMenu: state.header.selectMenu,
   userInfo: state.user.userInfo,
+  login: state.user.login,
 }))(Header);

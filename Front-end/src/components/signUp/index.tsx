@@ -9,10 +9,12 @@ import { Register } from './register';
 import { ForgetPw } from './forgetPw';
 import md5 from 'md5';
 import dayjs from 'dayjs';
-import { REGISTER } from '@/constants/urls';
+import { REGISTER, LOGIN } from '@/constants/urls';
 import { handleErrorMsg } from '@/utils/handleErrorMsg'
 import { get, post } from '@/utils/request';
 import { RegisterRequest } from '@/interface/user/register';
+import { LoginRequest, LoginResponse } from '@/interface/user/login';
+import cookies from 'js-cookie';
 import './index.less';
 
 export type MenuItem = 'login' | 'register' | 'forgetPw';
@@ -46,13 +48,25 @@ function SignUp(props: Props) {
   const { visible, hide, form, menu } = props;
   const [loading, setLoading] = useState(false); // 控制登录按钮的loading
   const [selectMenu, setSelectMenu] = useState<MenuItem | null>(menu);
-  const [username, setUsername] = useState('');
   const { validateFields, resetFields } = form;
 
   const handleLogin = (values: Login) => {
-    console.log('来到了这里', md5(md5(values.username + md5(values.password)))); // 采用md5(md5(username + md5(password)))形式加密
-    hide();
-  }
+    const reqData: LoginRequest = {
+      ...values,
+      password: md5(md5(values.username + md5(values.password))),
+    };
+    setLoading(true);
+    // @ts-ignore
+    post(LOGIN, reqData).then((res: LoginResponse) => {
+      message.success('登录成功');
+      setLoading(false);
+      hide();
+      res.data.token && cookies.set('token', res.data.token, { expires: 1, path: '/' });
+    }).catch(e => {
+      setLoading(false);
+      handleErrorMsg(e);
+    })
+  };
 
   const changeMenu = (value: MenuItem, clear = true) => {
     if (clear) {
@@ -61,7 +75,7 @@ function SignUp(props: Props) {
     } else {
       setSelectMenu(value);
     }
-  }
+  };
 
   const handleRegister = (values: Register) => {
     const nowDate = new Date();
@@ -74,14 +88,13 @@ function SignUp(props: Props) {
     setLoading(true);
     post(REGISTER, reqData).then(() => {
       message.success('注册成功');
-      setUsername(reqData.username);
       setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 切不要清空表单
     }).catch(e => {
       handleErrorMsg(e);
     }).finally(() => {
       setLoading(false);
     })
-  }
+  };
 
   const handleForgetPw = (values: ForgetPw) => {
     // 发送重置密码的请求
@@ -200,7 +213,7 @@ function SignUp(props: Props) {
       destroyOnClose={true}
     >
       <Form className={prefix('form')}>
-        {selectMenu === 'login' ? <Login form={form} username={username}/> : selectMenu === 'register' ? <Register form={form} /> : <ForgetPw form={form} />}
+        {selectMenu === 'login' ? <Login form={form}/> : selectMenu === 'register' ? <Register form={form} /> : <ForgetPw form={form} />}
       </Form>
     </Modal>
   )

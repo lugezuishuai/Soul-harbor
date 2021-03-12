@@ -27,6 +27,14 @@ app.all('*', function (req, res, next) {
   next();
 });
 
+// 验证token是否过期并规定那些路由不需要验证
+app.use(expressJWT({
+  secret: jwtSecret,
+  algorithms:['HS256'],
+}).unless({
+  path: notTokenPath,
+}));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -41,22 +49,14 @@ app.use('/', indexRouter);
 app.use('/api/user', userInfoRouter);
 app.use('/api/employee', employeeRouter);
 
-//验证token是否过期并规定那些路由不需要验证
-app.use(expressJWT({
-  secret: jwtSecret,
-  algorithms:['HS256']
-}).unless({
-  path: notTokenPath,
-}))
-
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// token失效返回信息
-// @ts-ignore
+// error handler(错误处理中间件)
 app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
   if (err.name === 'UnauthorizedError') {
     // 返回401状态码
     res.status(401).json({
@@ -64,18 +64,14 @@ app.use(function(err, req, res, next) {
       data: {},
       msg: 'invalid token',
     })
+  } else {
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
+  
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
   }
-})
-
-// error handler(错误处理中间件)
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
 } as express.ErrorRequestHandler);
 
 export default app;
