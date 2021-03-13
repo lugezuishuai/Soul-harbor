@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
-import { GetUserInfoResponse } from '@/interface/userInfo';
+import { UserInfo } from '@/interface/user/login';
 import { Action } from '@/redux/actions/index';
 import BasicInfo from './basicInfo';
 import AccountInfo from './accountInfo';
 import './index.less';
 
 interface Props {
-  userInfo: GetUserInfoResponse;
+  userInfo: UserInfo;
   userNameShow: boolean;
   userIdShow: boolean;
   dispatch(action: Action): void;
@@ -16,7 +16,7 @@ interface Props {
 
 function UserInfo(props: Props) {
   const { userInfo, userIdShow, userNameShow, dispatch } = props;
-  const { userName, userId, ...basicInfo } = userInfo;
+  const { username, uid, ...basicInfo } = userInfo;
 
   const [edit, setEdit] = useState(false);                             // 基本信息编辑态
   const [showUserName, SetShowUserName] = useState(userNameShow);      // 是否显示用户名
@@ -44,7 +44,7 @@ function UserInfo(props: Props) {
 
   return (
     <div className="user_info">
-      <AccountInfo userName={userName} userId={userId} showUserName={showUserName} showUserId={showUserId} handleShowUserName={handleShowUserName} handleShowUserId={handleShowUserId}/>
+      <AccountInfo userName={username} userId={uid} showUserName={showUserName} showUserId={showUserId} handleShowUserName={handleShowUserName} handleShowUserId={handleShowUserId}/>
       <BasicInfo basicInfo={basicInfo} edit={edit} handleEdit={handleEdit}/>
     </div>
   )

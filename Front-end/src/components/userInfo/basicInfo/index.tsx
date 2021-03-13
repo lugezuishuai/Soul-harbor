@@ -7,10 +7,10 @@ import '../index.less';
 import './index.less';
 
 export interface UserBasicInfo {
-  nickName: string;
-  PersonalSignature: string;
-  avatar: string;
-  birth: string;
+  nickname: string;
+  signature?: string | null;
+  avatar?: string | null;
+  birth?: string | null;
 }
 
 interface Props extends FormComponentProps {

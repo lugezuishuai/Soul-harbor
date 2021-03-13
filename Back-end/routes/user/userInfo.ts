@@ -132,10 +132,15 @@ router.post('/login', urlencodedParser, async (req, res) => {
   })
 })
 
+// 修改密码
+router.post('/forgetPw', urlencodedParser, async (req, res) => {
+  const { username, newPasswordAgain } = req.body;
+  const encryptedPw = md5(md5(username + md5(newPasswordAgain))); // 获取加密后的password
+  const checkUsername = `select * from soulUserInfo where binary soulUsername = '${username}'`;
+})
+
 // 初始化，验证token
 router.get('/init', function(req, res) {
-  console.log('token', req.user);
-
   res.status(200).json({
     code: 0,
     data: {

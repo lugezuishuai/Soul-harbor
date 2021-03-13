@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Menu, Button, Icon, Dropdown } from 'antd';
 import { connect } from 'react-redux';
 import DropdownMenu from '@/assets/icon/menu.svg';
@@ -14,6 +14,7 @@ import { State } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { screen } from '@/constants/screen';
 import { MenuItem } from '@/components/signUp';
+import { Skeleton } from '@/components/Skeleton';
 import './index.less';
 
 interface Props {
@@ -23,11 +24,32 @@ interface Props {
   login: boolean;
 }
 
+const { Block, InlineBlock, Avatar } = Skeleton;
+
+function UserSkeleton() {
+  return screen.isLittleScreen ? 
+    (
+      <Skeleton className="user-skeleton__mobile">
+        <Block className="nickname-skeleton__mobile" />
+        <Avatar className="avatar-skeleton__mobile" />
+      </Skeleton>
+    ) :
+    (
+      <Skeleton className="row-flex" style={{marginRight: 24}}>
+        <InlineBlock className="nickname-skeleton" />
+        <Avatar className="avatar-skeleton" />
+        <InlineBlock className="dropdown-skeleton" />
+      </Skeleton>
+    )
+}
+
 function Header(props: Props) {
   const { selectMenu, dispatch, userInfo, login } = props;
-  const { nickname, avatar } = userInfo;
+  const { nickname, avatar, uid } = userInfo;
+  console.log('uid', uid);
   const [visible, setVisible] = useState(false);
   const [signUpMenu, setSignUpMenu] = useState<MenuItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const hideModal = () => setVisible(false);
 
@@ -52,11 +74,13 @@ function Header(props: Props) {
   }
 
   useEffect(() => {
-    // @ts-ignore
     get(INIT).then((res: InitResponse) => {
       dispatch({
         type: 'GET_USERINFO',
-        payload: res.data.userInfo,
+        payload: {
+          ...res.data.userInfo,
+          uid: res.data.userInfo.uid.slice(0, 8),
+        },
       });
       dispatch({
         type: 'CHANGE_LOGIN_STATE',
@@ -64,6 +88,8 @@ function Header(props: Props) {
       })
     }).catch(e => {
       handleErrorMsg(e);
+    }).finally(() => {
+      setLoading(false);
     })
     setInitialMenu()
   }, []);
@@ -90,7 +116,7 @@ function Header(props: Props) {
       onSelect={handleMenuChange}
     >
       <Menu.Item key="user" className="little_screen_menu_item">
-        <Link to="/user">个人信息</Link>
+        <Link to={`/user/${uid}`}>个人信息</Link>
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item key="chat" className="little_screen_menu_item">
@@ -106,6 +132,23 @@ function Header(props: Props) {
       </Menu.Item>
     </Menu>
   )
+
+  const renderUserState = useCallback((login: boolean) => {
+    if (login) {
+      return <Operation handleMenuChange={handleMenuChange} nickName={nickname} avatar={avatar} />;
+    } else {
+      if (screen.isLittleScreen) {
+        return <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>登录/注册</Button>;
+      } else {
+        return (
+          <div className="home_user">
+            <Button type="primary" className="home_user_login" onClick={handleClickLogin}>登录</Button>
+            <Button className="home_user_login" onClick={handleClickRegister}>注册</Button>
+          </div>
+        )
+      }
+    }
+  }, [login, screen.isLittleScreen]);
 
   return (
     <div className="home_header"> 
@@ -123,7 +166,7 @@ function Header(props: Props) {
           selectedKeys={selectMenu ? [selectMenu] : []}
           onSelect={handleMenuChange}
         >
-          <Menu.Item key="user" className="home_menu_item"><Link to="/user">个人信息</Link></Menu.Item>
+          <Menu.Item key="user" className="home_menu_item"><Link to={`/user/${uid}`}>个人信息</Link></Menu.Item>
           <Menu.Item key="chat" className="home_menu_item"><Link to="/chat">聊天</Link></Menu.Item>
           <Menu.Item key="blog" className="home_menu_item"><Link to="/blog">博客</Link></Menu.Item>
           <Menu.Item key="news" className="home_menu_item"><Link to="/news">资讯</Link></Menu.Item>
@@ -133,14 +176,7 @@ function Header(props: Props) {
         <Icon component={Heart as any} className="back_to_home_icon"/>
         <span className="back_to_home_text">Soul Harbor</span>
       </Link>
-      {login ? <Operation handleMenuChange={handleMenuChange} nickName={nickname} avatar={avatar} /> : 
-        screen.isLittleScreen ? 
-          <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>登录/注册</Button> : 
-          (<div className="home_user">
-            <Button type="primary" className="home_user_login" onClick={handleClickLogin}>登录</Button>
-            <Button className="home_user_login" onClick={handleClickRegister}>注册</Button>
-          </div>)
-      }
+      {loading ? <UserSkeleton /> : renderUserState(login)}
       {visible && menu && <WrapSignUp menu={signUpMenu} visible={visible} hide={hideModal} />}
     </div>
   )

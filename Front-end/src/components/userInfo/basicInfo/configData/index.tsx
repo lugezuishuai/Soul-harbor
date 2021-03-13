@@ -12,10 +12,12 @@ interface Props extends FormComponentProps {
   edit: boolean;
 }
 
+const defaultAvatar = 'https://s1-fs.pstatp.com/static-resource-staging/v1/78c99186-2f3c-40aa-81b8-18591041db2g';
+
 function ConfigData(props: Props) {
   const { basicInfo, form, edit } = props;
   const { getFieldDecorator, getFieldValue } = form;
-  const { nickName, PersonalSignature, avatar, birth } = basicInfo;
+  const { nickname, signature, avatar, birth } = basicInfo;
   return (
     <>
       <Form.Item className="config_data_item">
@@ -23,7 +25,7 @@ function ConfigData(props: Props) {
         { avatar ? 
           <Avatar
             size={64}
-            src={avatar}
+            src={avatar || defaultAvatar}
             className="config_data_avatar"
           /> : <div></div>
         }
@@ -33,7 +35,7 @@ function ConfigData(props: Props) {
         {edit ? (
           <div className="item_input_frame">
             {getFieldDecorator('nickName', {
-              initialValue: nickName,
+              initialValue: nickname,
               rules: [{
                 required: true,
                 whitespace: true,
@@ -51,14 +53,14 @@ function ConfigData(props: Props) {
             )}
             <span style={{ display: 'block', color: '#F54A45', fontSize: 16}}>*</span>
           </div>
-        ) : nickName && <span className="config_data_text">{nickName}</span>}
+        ) : nickname && <span className="config_data_text">{nickname}</span>}
       </Form.Item>
       <Form.Item className="config_data_item">
         <label htmlFor="nickName" className="config_data_label">个性签名</label>
         {edit ? (
           <div>
             {getFieldDecorator('PersonalSignature', {
-              initialValue: PersonalSignature,
+              initialValue: signature,
               rules: [{ max: 100, message: '不能超过100字' }]
             })(
               <TextArea
@@ -69,7 +71,7 @@ function ConfigData(props: Props) {
               />
             )}
           </div>
-        ) : PersonalSignature && <span className="config_data_text">{PersonalSignature}</span>}
+        ) : signature && <span className="config_data_text">{signature}</span>}
       </Form.Item>
       <Form.Item className="config_data_item">
         <label htmlFor="nickName" className="config_data_label">出生年月</label>

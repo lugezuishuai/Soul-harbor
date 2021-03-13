@@ -30,5 +30,6 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     'promise/no-promise-in-callback': 'off',
     'react/prop-types': 'off',
+    'react/display-name': 'off',
   }
 };

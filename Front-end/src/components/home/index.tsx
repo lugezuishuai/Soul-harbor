@@ -28,7 +28,7 @@ export default function Home() {
                 <Route path="/chat" component={Employee}/>
                 <Route path="/news" component={Settings}/>
                 <Route path="/blog" component={Employee}/>
-                <Route path="/user" component={UserInfo}/>
+                <Route path="/user/:id" exact component={UserInfo}/>
               </ScrollToTop>
             </div>
             <Footer/>

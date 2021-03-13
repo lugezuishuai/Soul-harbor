@@ -28,7 +28,7 @@ axios.interceptors.response.use(
 );
 
 //get请求
-export function get(url: string, data?: any) {
+export function get(url: string, data?: any): Promise<any> {
   return axios.get(url, {
     headers: {
       Authorization: cookies.get('token')?.replace('%20', ' '),
@@ -38,7 +38,7 @@ export function get(url: string, data?: any) {
 }
 
 //post请求
-export function post(url: string, data: any) {
+export function post(url: string, data: any): Promise<any> {
   return axios({
     method: 'post',
     url,

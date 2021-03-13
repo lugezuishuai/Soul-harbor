@@ -56,7 +56,6 @@ function SignUp(props: Props) {
       password: md5(md5(values.username + md5(values.password))),
     };
     setLoading(true);
-    // @ts-ignore
     post(LOGIN, reqData).then((res: LoginResponse) => {
       message.success('登录成功');
       setLoading(false);
