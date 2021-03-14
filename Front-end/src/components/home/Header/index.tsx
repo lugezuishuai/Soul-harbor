@@ -30,13 +30,13 @@ function UserSkeleton() {
   return screen.isLittleScreen ? 
     (
       <Skeleton className="user-skeleton__mobile">
-        <Block className="nickname-skeleton__mobile" />
+        <Block className="email-skeleton__mobile" />
         <Avatar className="avatar-skeleton__mobile" />
       </Skeleton>
     ) :
     (
       <Skeleton className="row-flex" style={{marginRight: 24}}>
-        <InlineBlock className="nickname-skeleton" />
+        <InlineBlock className="email-skeleton" />
         <Avatar className="avatar-skeleton" />
         <InlineBlock className="dropdown-skeleton" />
       </Skeleton>
@@ -45,7 +45,7 @@ function UserSkeleton() {
 
 function Header(props: Props) {
   const { selectMenu, dispatch, userInfo, login } = props;
-  const { nickname, avatar, uid } = userInfo;
+  const { username, avatar, uid } = userInfo;
   console.log('uid', uid);
   const [visible, setVisible] = useState(false);
   const [signUpMenu, setSignUpMenu] = useState<MenuItem | null>(null);
@@ -135,7 +135,7 @@ function Header(props: Props) {
 
   const renderUserState = useCallback((login: boolean) => {
     if (login) {
-      return <Operation handleMenuChange={handleMenuChange} nickName={nickname} avatar={avatar} />;
+      return <Operation handleMenuChange={handleMenuChange} username={username} avatar={avatar} />;
     } else {
       if (screen.isLittleScreen) {
         return <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>登录/注册</Button>;
@@ -177,7 +177,7 @@ function Header(props: Props) {
         <span className="back_to_home_text">Soul Harbor</span>
       </Link>
       {loading ? <UserSkeleton /> : renderUserState(login)}
-      {visible && menu && <WrapSignUp menu={signUpMenu} visible={visible} hide={hideModal} />}
+      {visible && menu && <WrapSignUp dispatch={dispatch} menu={signUpMenu} visible={visible} hide={hideModal} />}
     </div>
   )
 }

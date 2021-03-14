@@ -4,8 +4,8 @@ import { employeeDbConfig, userInfoDbConfig } from '../config/db';
 
 type DbName = 'userInfo' | 'employee';
 
-const query = (sql: string, dbName: DbName = 'employee') => {
-  const pool = mysql.createPool(dbName === 'employee' ? employeeDbConfig : userInfoDbConfig);
+const query = (sql: string, dbName: DbName = 'userInfo') => {
+  const pool = mysql.createPool(dbName === 'userInfo' ? userInfoDbConfig : employeeDbConfig);
   return new Promise<any>((resolve, reject) => {
     pool.getConnection((error, connection) => {
       if(error) {

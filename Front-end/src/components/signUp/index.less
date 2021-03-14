@@ -1,6 +1,6 @@
 @import '~antd/lib/style/themes/default.less';
 @N900: #1F2329;
-@N500: #3370FF;
+@B500: #3370FF;
 :global {
   .sign-up {
     width: 420px !important;
@@ -50,6 +50,7 @@
       margin-top: 24px;
       .ant-form-item {
         line-height: 1;
+        margin-bottom: 24px;
       }
       .ant-form-item-control {
         line-height: 1;
@@ -73,12 +74,25 @@
             line-height: 28px;
           }
         }
+        &-verify {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
         &-input {
           width: 100%;
           height: 32px;
+          &-verify {
+            width: 60%;
+            height: 32px;
+          }
           @media screen and (max-width: 480px) {
             height: 48px;
           }
+        }
+        &-send {
+          height: 32px;
+          font-size: 14px;
         }
       }
     }
@@ -89,12 +103,30 @@
       justify-content: space-between;
       align-items: center;
       box-sizing: border-box;
+      &-login {
+        height: 100px;
+        padding: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+      }
+      &-container {
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+      }
       &-item {
         flex: 0;
-        color: @N500;
+        color: @B500;
         line-height: 24px;
         font-size: 16px;
         white-space: nowrap;
+        margin: 4px auto 0;
+        user-select: none;
+        &:first-child {
+          margin: 0 auto;
+        }
         &:hover {
           cursor: pointer;
           text-decoration: underline;
@@ -138,6 +170,27 @@
         &:last-child {
           margin-bottom: 0;
         }
+      }
+    }
+    &-content-bottom {
+      height: 48px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      &-text {
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 26px;
+        color: @B500;
+        white-space: nowrap;
+        user-select: none;
+      }
+      &-btn {
+        height: 48px;
+        font-size: 18px;
+        border-radius: 24px;
       }
     }
   }

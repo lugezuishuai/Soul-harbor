@@ -4,10 +4,17 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface EmailLoginRequest {
+  email: string;
+  verifyCode: string;
+}
+
+export type WrapLoginRequest = LoginRequest | EmailLoginRequest;
+
 export interface UserInfo {
   username: string;
   uid: string;
-  nickname: string;
+  email: string;
   birth?: string | null;
   signature?: string | null;
   avatar?: string | null;

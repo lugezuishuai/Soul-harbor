@@ -9,31 +9,27 @@ import { Register } from './register';
 import { ForgetPw } from './forgetPw';
 import md5 from 'md5';
 import dayjs from 'dayjs';
-import { REGISTER, LOGIN } from '@/constants/urls';
+import { REGISTER_URL, USERNAMELOGIN_URL, EMAILLOGIN_URL } from '@/constants/urls';
 import { handleErrorMsg } from '@/utils/handleErrorMsg'
 import { get, post } from '@/utils/request';
 import { RegisterRequest } from '@/interface/user/register';
-import { LoginRequest, LoginResponse } from '@/interface/user/login';
+import { LoginResponse, WrapLoginRequest } from '@/interface/user/login';
 import cookies from 'js-cookie';
+import { Action } from '@/redux/actions';
 import './index.less';
 
 export type MenuItem = 'login' | 'register' | 'forgetPw';
 interface Props extends FormComponentProps {
+  dispatch(action: Action): void;
   hide(): void;
   visible: boolean;
   menu: MenuItem | null;
 }
-
-interface Login {
-  username: string;
-  password: string;
-}
-
 interface Register {
   username: string;
   password: string;
   passwordAgain: string;
-  nickname: string;
+  email: string;
 }
 
 interface ForgetPw {
@@ -45,22 +41,40 @@ interface ForgetPw {
 export const prefix = (str?: string): string => str ? `sign-up-${str}` : 'sign-up';
 
 function SignUp(props: Props) {
-  const { visible, hide, form, menu } = props;
+  const { visible, hide, form, menu, dispatch } = props;
   const [loading, setLoading] = useState(false); // 控制登录按钮的loading
   const [selectMenu, setSelectMenu] = useState<MenuItem | null>(menu);
+  const [emailLogin, setEmailLogin] = useState(false); // 登录方式, 默认是用户名登录
   const { validateFields, resetFields } = form;
 
-  const handleLogin = (values: Login) => {
-    const reqData: LoginRequest = {
+  const handleLogin = (values: WrapLoginRequest) => {
+    const reqData = emailLogin ? {
       ...values,
+      // @ts-ignore
+      verifyCode: md5(md5(values.email + md5(values.verifyCode.toLowerCase()))),
+    } : {
+      ...values,
+      // @ts-ignore
       password: md5(md5(values.username + md5(values.password))),
     };
     setLoading(true);
-    post(LOGIN, reqData).then((res: LoginResponse) => {
+    const LOGINURL = emailLogin ? EMAILLOGIN_URL : USERNAMELOGIN_URL;
+    post(LOGINURL, reqData).then((res: LoginResponse) => {
       message.success('登录成功');
       setLoading(false);
       hide();
       res.data.token && cookies.set('token', res.data.token, { expires: 1, path: '/' });
+      dispatch({
+        type: 'GET_USERINFO',
+        payload: {
+          ...res.data.userInfo,
+          uid: res.data.userInfo && res.data.userInfo.uid.slice(0, 8),
+        },
+      });
+      dispatch({
+        type: 'CHANGE_LOGIN_STATE',
+        payload: true,
+      });
     }).catch(e => {
       setLoading(false);
       handleErrorMsg(e);
@@ -81,11 +95,11 @@ function SignUp(props: Props) {
     const reqData: RegisterRequest = {
       username: values.username,
       password: md5(md5(values.username + md5(values.passwordAgain))), // 采用md5(md5(username + md5(password)))形式加密
-      nickname: values.nickname,
+      email: values.email,
       createTime: dayjs(nowDate).format('YYYY-MM-DD'),
     };
     setLoading(true);
-    post(REGISTER, reqData).then(() => {
+    post(REGISTER_URL, reqData).then(() => {
       message.success('注册成功');
       setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 切不要清空表单
     }).catch(e => {
@@ -103,7 +117,7 @@ function SignUp(props: Props) {
 
   const handleOk = (e: any) => {
     e.preventDefault();
-    validateFields((errors: Record<string, any>, values: Login | Register | ForgetPw) => {
+    validateFields((errors: Record<string, any>, values: WrapLoginRequest | Register | ForgetPw) => {
       if(!errors && values) {
         switch(selectMenu) {
           case 'login':
@@ -132,12 +146,20 @@ function SignUp(props: Props) {
     changeMenu('login');
   }
 
+  // 切换登录方式
+  const handleChangeLogin = () => setEmailLogin(!emailLogin);
+
   const handleMenuChange = ({ key }: any) => changeMenu(key);
 
   const checkMenuItem = () => {
     switch(selectMenu) {
       case 'login':
-        return <div className={prefix('footer-item')} onClick={handleClickForgetPw}>忘记密码？</div>;
+        return (
+          <div className={prefix('footer-container')}>
+            <div className={prefix('footer-item')} onClick={handleChangeLogin}>{emailLogin ? '用户名密码登录' : '邮箱验证码登录'}</div>
+            <div className={prefix('footer-item')} onClick={handleClickForgetPw}>忘记密码？</div>
+          </div>
+        );
       case 'register':
         return <div className={prefix('footer-item')} onClick={handleClickLogin}>马上登录</div>;
       default:
@@ -146,7 +168,7 @@ function SignUp(props: Props) {
   };
 
   const PCFooter: ReactNode = (
-    <div className={prefix('footer')}>
+    <div className={selectMenu === 'login' ? prefix('footer-login') : prefix('footer')}>
       {checkMenuItem()}
       <div className={prefix('footer-operation')}>
         <Button key="cancel" onClick={hide} className={prefix('footer-operation-btn')}>
@@ -212,7 +234,7 @@ function SignUp(props: Props) {
       destroyOnClose={true}
     >
       <Form className={prefix('form')}>
-        {selectMenu === 'login' ? <Login form={form}/> : selectMenu === 'register' ? <Register form={form} /> : <ForgetPw form={form} />}
+        {selectMenu === 'login' ? <Login form={form} emailLogin={emailLogin} handleChangeLogin={handleChangeLogin}/> : selectMenu === 'register' ? <Register form={form} /> : <ForgetPw form={form} />}
       </Form>
     </Modal>
   )

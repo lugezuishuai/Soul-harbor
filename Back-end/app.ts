@@ -6,11 +6,13 @@ import logger from 'morgan';
 import cors from 'cors';
 import expressJWT from 'express-jwt';
 
-import { jwtSecret } from './token/token';
-import { notTokenPath } from './token/path';
+import { jwtSecret } from './config/token/token';
+import { notTokenPath } from './config/token/path';
 import indexRouter from './routes/index';
 import userInfoRouter from './routes/user/userInfo'; // 用户信息相关
 import employeeRouter from './routes/employee';
+import passport from 'passport';
+import './config/passport';
 
 let app = express();
 
@@ -44,6 +46,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize()); // 初始化passport
 
 app.use('/', indexRouter);
 app.use('/api/user', userInfoRouter);

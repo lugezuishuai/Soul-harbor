@@ -1,5 +1,5 @@
 export const inputProps = {
-  autoComplete: 'off',
+  autoComplete: 'on',
   allowClear: true,
   maxLength: 20
 };

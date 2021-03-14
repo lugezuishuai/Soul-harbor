@@ -7,7 +7,7 @@ import '../index.less';
 import './index.less';
 
 export interface UserBasicInfo {
-  nickname: string;
+  email: string;
   signature?: string | null;
   avatar?: string | null;
   birth?: string | null;

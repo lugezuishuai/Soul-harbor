@@ -16,25 +16,34 @@ export function Register(props: Props) {
   return (
     <>
        <Form.Item className={prefix('form-item')}>
-        <div className={prefix('form-item-text')}>账号：</div>
+        <div className={prefix('form-item-text')}>用户名：</div>
         { getFieldDecorator('username', {
           rules: [
-            { validator(rule, value, callback) {
-              if(!value || value.length === 0) {
-                callback('请输入账号');
-              } else if(/\s+/g.test(value)) {
-                callback('账号中不能有空格');
-              } else if(value.length < 6) {
-                callback('账号不能少于6个字符');
-              } else {
-                callback();
-              }
-            }}
+            // { validator(rule, value, callback) {
+            //   if(!value || value.length === 0) {
+            //     callback('请输入用户名');
+            //   } else if(/\s+/g.test(value)) {
+            //     callback('用户名中不能有空格');
+            //   } else if(value.length < 6) {
+            //     callback('用户名不能少于6个字符');
+            //   } else {
+            //     callback();
+            //   }
+            // }}
+            {
+              required: true,
+              whitespace: true,
+              message: '请输入用户名',
+            },
+            {
+              max: 10,
+              message: '不能多于十个字符',
+            },
           ]
         })(
           <Input
             className={prefix('form-item-input')}
-            placeholder="账号"
+            placeholder="用户名"
             autoFocus
             { ...inputProps }
           />
@@ -86,13 +95,13 @@ export function Register(props: Props) {
         )}
       </Form.Item>
       <Form.Item className={prefix('form-item')}>
-        <div className={prefix('form-item-text')}>昵称：</div>
-        { getFieldDecorator('nickname', {
+        <div className={prefix('form-item-text')}>邮箱：</div>
+        { getFieldDecorator('email', {
           rules: [
             {
               required: true,
               whitespace: true,
-              message: '请输入昵称'
+              message: '请输入邮箱'
             },
             {
               max: 20,
@@ -102,7 +111,7 @@ export function Register(props: Props) {
         })(
           <Input
             className={prefix('form-item-input')}
-            placeholder="昵称"
+            placeholder="邮箱"
             { ...inputProps }
           />
         )}

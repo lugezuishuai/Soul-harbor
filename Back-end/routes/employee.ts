@@ -18,7 +18,7 @@ router.get('/getEmployee', async (req, res) => {
   }
   let sql = `${queryAllSQL} ${conditions} order by employee.id desc`;           // 根据id降序排序
   try {
-    let result = await query(sql);
+    let result = await query(sql, 'employee');
     result.forEach((i: any) => {
       i.key = i.id;
     })
@@ -40,7 +40,7 @@ router.post('/createEmployee', urlencodedParser, async(req, res) => {
   let { name, departmentId, hiredate, levelId } = req.body;
   let sql = `insert into employee (name, departmentId, hiredate, levelId) values ('${name}', ${departmentId}, '${hiredate}', ${levelId})`;
   try {
-    let result = await query(sql);
+    let result = await query(sql, 'employee');
     res.json({
       code: 0,
       data: {
@@ -62,7 +62,7 @@ router.post('/deleteEmployee', async(req, res) => {
   let { id } = req.body;
   let sql = `delete from employee where id=${id}`;
   try {
-    let result = await query(sql);
+    let result = await query(sql, 'employee');
     res.json({
       code: 0,
       msg: 'success'
@@ -80,7 +80,7 @@ router.post('/updateEmployee', async(req, res) => {
   let { id, name, departmentId, hiredate, levelId } = req.body;
   let sql = `update employee set name='${name}', departmentId=${departmentId}, hiredate='${hiredate}', levelId=${levelId} where id=${id}`;
   try {
-    let result = await query(sql);
+    let result = await query(sql, 'employee');
     res.json({
       code: 0,
       msg: 'success'
@@ -108,7 +108,7 @@ let conf: excelExport.Config = {
 // 导出excel表格
 router.get('/downloadEmployee', async(req, res) => {
   try {
-    let result = await query(queryAllSQL);
+    let result = await query(queryAllSQL, 'employee');
     conf.rows = result.map((i: any) => {
       return [i.id, i.name, i.department, i.hiredate, i.level];
     });

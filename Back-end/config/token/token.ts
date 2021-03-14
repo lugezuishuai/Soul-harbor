@@ -4,7 +4,7 @@ export const jwtSecret = 'soulHarbor';
 interface UserInfo {
   username: string;
   uid: string;
-  nickname: string;
+  email: string;
   signature: string;
   birth: string;
 }

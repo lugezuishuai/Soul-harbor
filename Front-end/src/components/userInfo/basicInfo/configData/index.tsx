@@ -17,7 +17,7 @@ const defaultAvatar = 'https://s1-fs.pstatp.com/static-resource-staging/v1/78c99
 function ConfigData(props: Props) {
   const { basicInfo, form, edit } = props;
   const { getFieldDecorator, getFieldValue } = form;
-  const { nickname, signature, avatar, birth } = basicInfo;
+  const { email, signature, avatar, birth } = basicInfo;
   return (
     <>
       <Form.Item className="config_data_item">
@@ -31,11 +31,11 @@ function ConfigData(props: Props) {
         }
       </Form.Item>
       <Form.Item className="config_data_item">
-        <label htmlFor="nickName" className="config_data_label">昵称</label>
+        <label htmlFor="email" className="config_data_label">昵称</label>
         {edit ? (
           <div className="item_input_frame">
-            {getFieldDecorator('nickName', {
-              initialValue: nickname,
+            {getFieldDecorator('email', {
+              initialValue: email,
               rules: [{
                 required: true,
                 whitespace: true,
@@ -53,10 +53,10 @@ function ConfigData(props: Props) {
             )}
             <span style={{ display: 'block', color: '#F54A45', fontSize: 16}}>*</span>
           </div>
-        ) : nickname && <span className="config_data_text">{nickname}</span>}
+        ) : email && <span className="config_data_text">{email}</span>}
       </Form.Item>
       <Form.Item className="config_data_item">
-        <label htmlFor="nickName" className="config_data_label">个性签名</label>
+        <label htmlFor="email" className="config_data_label">个性签名</label>
         {edit ? (
           <div>
             {getFieldDecorator('PersonalSignature', {
@@ -74,7 +74,7 @@ function ConfigData(props: Props) {
         ) : signature && <span className="config_data_text">{signature}</span>}
       </Form.Item>
       <Form.Item className="config_data_item">
-        <label htmlFor="nickName" className="config_data_label">出生年月</label>
+        <label htmlFor="email" className="config_data_label">出生年月</label>
         {edit ? (
           getFieldDecorator('birth', {
             initialValue: birth ? dayjs(birth) : undefined,

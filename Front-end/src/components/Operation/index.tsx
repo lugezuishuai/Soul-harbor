@@ -9,14 +9,14 @@ interface MenuProps {
 }
 
 interface Props extends MenuProps {
-  nickName: string;
+  username: string;
   avatar?: string | null;
 }
 
 const defaultAvatar = 'https://s1-fs.pstatp.com/static-resource-staging/v1/78c99186-2f3c-40aa-81b8-18591041db2g';
 
 export default function Operation(props: Props): any {
-  const { handleMenuChange, nickName, avatar } = props;
+  const { handleMenuChange, username, avatar } = props;
   const handleClickItem = () => {
     const obj = {
       key: 'user'
@@ -42,7 +42,7 @@ export default function Operation(props: Props): any {
 
   return (
     <div className="user_operation">
-      <span className="user_operation_nick_name">{nickName}</span>
+      <span className="user_operation_nick_name">{username}</span>
       <div className="user_operation_avatar">
         <Avatar className={screen.isLittleScreen ? "user_operation_avatar_img__small" : "user_operation_avatar_img"} icon="user" src={avatar || defaultAvatar}/>
         <Dropdown overlay={menu} trigger={screen.isLittleScreen ? ['click'] : ['hover']}>
