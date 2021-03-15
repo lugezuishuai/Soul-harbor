@@ -5,13 +5,13 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import cors from 'cors';
 import expressJWT from 'express-jwt';
+import passport from 'passport';
 
 import { jwtSecret } from './config/token/token';
 import { notTokenPath } from './config/token/path';
 import indexRouter from './routes/index';
 import userInfoRouter from './routes/user/userInfo'; // 用户信息相关
 import employeeRouter from './routes/employee';
-import passport from 'passport';
 import './config/passport';
 
 let app = express();

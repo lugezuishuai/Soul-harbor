@@ -1,5 +1,5 @@
 import originAxios from 'axios';
-import cookies from 'js-cookie';
+import Cookies from 'js-cookie';
 import { message } from 'antd';
 
 const axios = originAxios.create({
@@ -31,7 +31,7 @@ axios.interceptors.response.use(
 export function get(url: string, data?: any): Promise<any> {
   return axios.get(url, {
     headers: {
-      Authorization: cookies.get('token')?.replace('%20', ' '),
+      Authorization: Cookies.get('token')?.replace('%20', ' '),
     },
     params: data
   })
@@ -44,7 +44,7 @@ export function post(url: string, data: any): Promise<any> {
     url,
     data,
     headers: {
-      Authorization: cookies.get('token')?.replace('%20', ' '),
+      Authorization: Cookies.get('token')?.replace('%20', ' '),
     },
   });
 }

@@ -3,6 +3,7 @@ import { Form, Input } from 'antd';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { inputProps } from '@/constants/inputProps';
 import { prefix } from './index';
+import { screen } from '@/constants/screen';
 import './index.less';
 
 interface Props {
@@ -33,7 +34,7 @@ export function ForgetPw(props: Props) {
           <Input
             className={prefix('form-item-input')}
             placeholder="账号"
-            autoFocus
+            autoFocus={screen.isBigScreen}
             { ...inputProps }
           />
         )}

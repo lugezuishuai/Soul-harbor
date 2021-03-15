@@ -32,5 +32,6 @@ module.exports = {
     'promise/no-promise-in-callback': 'off',
     'react/prop-types': 'off',
     'react/display-name': 'off',
+    'no-useless-escape': 'off',
   }
 };

@@ -46,7 +46,6 @@ function UserSkeleton() {
 function Header(props: Props) {
   const { selectMenu, dispatch, userInfo, login } = props;
   const { username, avatar, uid } = userInfo;
-  console.log('uid', uid);
   const [visible, setVisible] = useState(false);
   const [signUpMenu, setSignUpMenu] = useState<MenuItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +78,7 @@ function Header(props: Props) {
         type: 'GET_USERINFO',
         payload: {
           ...res.data.userInfo,
-          uid: res.data.userInfo.uid.slice(0, 8),
+          uid: res.data.userInfo.uid && res.data.userInfo.uid.slice(0, 8),
         },
       });
       dispatch({
@@ -87,6 +86,10 @@ function Header(props: Props) {
         payload: true,
       })
     }).catch(e => {
+      dispatch({
+        type: 'CHANGE_LOGIN_STATE',
+        payload: false,
+      });
       handleErrorMsg(e);
     }).finally(() => {
       setLoading(false);
@@ -135,7 +138,7 @@ function Header(props: Props) {
 
   const renderUserState = useCallback((login: boolean) => {
     if (login) {
-      return <Operation handleMenuChange={handleMenuChange} username={username} avatar={avatar} />;
+      return <Operation handleMenuChange={handleMenuChange} username={username} avatar={avatar} dispatch={dispatch} />;
     } else {
       if (screen.isLittleScreen) {
         return <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>登录/注册</Button>;

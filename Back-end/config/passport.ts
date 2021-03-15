@@ -17,29 +17,59 @@ passport.use('register', new LocalStrategy(
     session: false,
   },
   (req, username, password, done) => {
-    const { email } = req.body;
+    const { email, verifyCode } = req.body;
 
     const searchUsernameAndEmail = `select * from soulUserInfo where binary soulUsername = '${username}' or binary soulEmail = '${email}'`;
 
     query(searchUsernameAndEmail)
     .then(result => {
       if (result.length > 0) {
-        console.log('username or email already taken');
+        // 已经注册过用户名或邮箱
         return done(null, false, {
           message: 'username or email already taken',
         });
       } else {
-        bcrypt.hash(password, BCRYPT_SALT_ROUNDS)
-        .then(hashedPassword => {
-          const createUser = `insert into soulUserInfo (soulUsername, soulEmail, soulPassword, soulUuid) values ('${username}', '${email}', '${hashedPassword}', '${uuidv4()}')`;
-          const searchNewUser = `select * from soulUserInfo where binary soulUsername = '${username}' and binary soulEmail = '${email}' and soulPassword = '${hashedPassword}'`;
-          query(createUser)
-          .then(() => {
-            return query(searchNewUser);
-          })
-          .then(user => {
-            return done(null, user[0]);
-          });
+        // 用户名和邮箱尚未被注册过，查找该邮箱的验证码
+        const searchVerifyCode = `select * from registerVerifyCode where email = '${email}'`;
+        query(searchVerifyCode)
+        .then(result => {
+          if (!result || result.length === 0) {
+            // 该邮箱尚未发送过验证码
+            return done(null, false, {
+              message: 'verifyCode do not match',
+            });
+          } else {
+            // 已经发送过验证码
+            bcrypt.compare(verifyCode, result[0].verifyCode)
+            .then(response => {
+              if (!response) {
+                return done(null, false, {
+                  message: 'verifyCode do not match',
+                });
+              } else {
+                if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
+                  // 验证码尚未过期，生成密码
+                  bcrypt.hash(password, BCRYPT_SALT_ROUNDS)
+                  .then(hashedPassword => {
+                    const createUser = `insert into soulUserInfo (soulUsername, soulPassword, soulEmail, soulUuid) values ('${username}', '${hashedPassword}', '${email}', '${uuidv4()}')`;
+                    const searchNewUser = `select * from soulUserInfo where binary soulUsername = '${username}' and soulPassword = '${hashedPassword}'`;
+                    query(createUser)
+                    .then(() => {
+                      return query(searchNewUser);
+                    })
+                    .then(user => {
+                      return done(null, user[0]);
+                    });
+                  });
+                } else {
+                  // 验证码已过期
+                  return done(null, false, {
+                    message: 'verifyCode already expired',
+                  })
+                }
+              }
+            });
+          }
         });
       }
     })
@@ -69,12 +99,10 @@ passport.use('login', new LocalStrategy(
         bcrypt.compare(password, user[0].soulPassword)
         .then(response => {
           if (!response) {
-            console.log('password do not match');
             return done(null, false, {
               message: 'password do not match',
             })
           } else {
-            console.log('user found & authenticated');
             return done(null, user[0]); // 第二个参数就是req.user
           }
         });
@@ -106,27 +134,32 @@ passport.use('loginByEmail', new LocalStrategy(
         const searchVerifyCode = `select * from loginVerifyCode where email = '${username}'`;
         query(searchVerifyCode)
         .then(result => {
-          bcrypt.compare(password, result[0].verifyCode)
-          .then(response => {
-            if (!response) {
-              console.log('verifyCode do not match');
-              return done(null, false, {
-                message: 'verifyCode do not match',
-              });
-            } else {
-              if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
-                // 验证码尚未过期
-                console.log('verifyCode is valid');
-                return done(null, user[0]);
-              } else {
-                // 验证码已过期
-                console.log('verifyCode already expired');
+          if (!result || result.length === 0) {
+            // 该邮箱尚未发送过验证码
+            return done(null, false, {
+              message: 'verifyCode do not match',
+            });
+          } else {
+            // 已经发送过验证码
+            bcrypt.compare(password, result[0].verifyCode)
+            .then(response => {
+              if (!response) {
                 return done(null, false, {
-                  message: 'verifyCode already expired',
+                  message: 'verifyCode do not match',
                 });
+              } else {
+                if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
+                  // 验证码尚未过期
+                  return done(null, user[0]);
+                } else {
+                  // 验证码已过期
+                  return done(null, false, {
+                    message: 'verifyCode already expired',
+                  });
+                }
               }
-            }
-          });
+            });
+          }
         });
       }
     })

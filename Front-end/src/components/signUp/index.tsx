@@ -14,7 +14,7 @@ import { handleErrorMsg } from '@/utils/handleErrorMsg'
 import { get, post } from '@/utils/request';
 import { RegisterRequest } from '@/interface/user/register';
 import { LoginResponse, WrapLoginRequest } from '@/interface/user/login';
-import cookies from 'js-cookie';
+import Cookies from 'js-cookie';
 import { Action } from '@/redux/actions';
 import './index.less';
 
@@ -30,6 +30,7 @@ interface Register {
   password: string;
   passwordAgain: string;
   email: string;
+  verifyCode: string;
 }
 
 interface ForgetPw {
@@ -63,7 +64,7 @@ function SignUp(props: Props) {
       message.success('登录成功');
       setLoading(false);
       hide();
-      res.data.token && cookies.set('token', res.data.token, { expires: 1, path: '/' });
+      res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });
       dispatch({
         type: 'GET_USERINFO',
         payload: {
@@ -96,6 +97,7 @@ function SignUp(props: Props) {
       username: values.username,
       password: md5(md5(values.username + md5(values.passwordAgain))), // 采用md5(md5(username + md5(password)))形式加密
       email: values.email,
+      verifyCode: md5(md5(values.email + md5(values.verifyCode.toLowerCase()))),
       createTime: dayjs(nowDate).format('YYYY-MM-DD'),
     };
     setLoading(true);
