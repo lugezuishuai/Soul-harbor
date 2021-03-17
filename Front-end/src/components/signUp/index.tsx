@@ -11,7 +11,7 @@ import md5 from 'md5';
 import dayjs from 'dayjs';
 import { REGISTER_URL, USERNAMELOGIN_URL, EMAILLOGIN_URL } from '@/constants/urls';
 import { handleErrorMsg } from '@/utils/handleErrorMsg'
-import { get, post } from '@/utils/request';
+import { post } from '@/utils/request';
 import { RegisterRequest } from '@/interface/user/register';
 import { LoginResponse, WrapLoginRequest } from '@/interface/user/login';
 import Cookies from 'js-cookie';
@@ -31,12 +31,6 @@ interface Register {
   passwordAgain: string;
   email: string;
   verifyCode: string;
-}
-
-interface ForgetPw {
-  username: string;
-  newPassword: string;
-  newPasswordAgain: string;
 }
 
 export const prefix = (str?: string): string => str ? `sign-up-${str}` : 'sign-up';
@@ -111,28 +105,16 @@ function SignUp(props: Props) {
     })
   };
 
-  const handleForgetPw = (values: ForgetPw) => {
-    // 发送重置密码的请求
-    console.log(values);
-    hide();
-  }
-
   const handleOk = (e: any) => {
     e.preventDefault();
-    validateFields((errors: Record<string, any>, values: WrapLoginRequest | Register | ForgetPw) => {
+    validateFields((errors: Record<string, any>, values: WrapLoginRequest | Register) => {
       if(!errors && values) {
-        switch(selectMenu) {
-          case 'login':
-            // @ts-ignore
-            handleLogin(values);
-            break;
-          case 'register':
-            // @ts-ignore
-            handleRegister(values);
-            break;
-          case 'forgetPw':
-            // @ts-ignore
-            handleForgetPw(values);
+        if (selectMenu === 'login') {
+          // @ts-ignore
+          handleLogin(values);
+        } else if (selectMenu === 'register') {
+          // @ts-ignore
+          handleRegister(values);
         }
       }
     })
@@ -165,7 +147,7 @@ function SignUp(props: Props) {
       case 'register':
         return <div className={prefix('footer-item')} onClick={handleClickLogin}>马上登录</div>;
       default:
-        return <div/>
+        return <div />
     }
   };
 
@@ -176,30 +158,36 @@ function SignUp(props: Props) {
         <Button key="cancel" onClick={hide} className={prefix('footer-operation-btn')}>
           取消
         </Button>
-        <Button
-          key="confirm"
-          type="primary"
-          onClick={handleOk}
-          loading={loading}
-          className={prefix('footer-operation-btn')}
-        >
-          {selectMenu === 'login' ? '登录' : selectMenu === 'register' ? '注册' : '确定修改'}
-        </Button>
+        {
+          selectMenu !== 'forgetPw' &&
+          <Button
+            key="confirm"
+            type="primary"
+            onClick={handleOk}
+            loading={loading}
+            className={prefix('footer-operation-btn')}
+          >
+            {selectMenu === 'login' ? '登录' : '注册'}
+          </Button>
+        }
       </div>
     </div>
   );
 
   const MobileFooter: ReactNode = (
     <div className={prefix('footer__mobile')}>
-      <Button
-        key="confirm"
-        type="primary"
-        onClick={handleOk}
-        loading={loading}
-        className={prefix('footer__mobile-btn')}
-      >
-        {selectMenu === 'login' ? '登录' : selectMenu === 'register' ? '注册' : '确定修改'}
-      </Button>
+      {
+        selectMenu !== 'forgetPw' &&
+        <Button
+          key="confirm"
+          type="primary"
+          onClick={handleOk}
+          loading={loading}
+          className={prefix('footer__mobile-btn')}
+        >
+          {selectMenu === 'login' ? '登录' : '注册'}
+        </Button>
+      }
       <Button key="cancel" onClick={hide} className={prefix('footer__mobile-btn')}>
         取消
       </Button>

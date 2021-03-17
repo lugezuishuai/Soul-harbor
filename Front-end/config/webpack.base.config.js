@@ -69,7 +69,8 @@ module.exports = {
     'app': './src/index.tsx'
   },
   output: {
-    filename: isEnvProduction ? '[name].[chunkhash:8].js' : '[name].[hash:8].js'
+    filename: isEnvProduction ? '[name].[chunkhash:8].js' : '[name].[hash:8].js',
+    publicPath: '/',
   },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
@@ -139,7 +140,7 @@ module.exports = {
             // outputPath:'../',//输出**文件夹
             publicPath: '/',
             name: "images/[name].[hash:8].[ext]",
-            limit: 8192  //把小于8MB的文件打成Base64的格式，写入JS
+            limit: 8192  //把小于8kB的文件打成Base64的格式，写入JS
           }
         }]
       },

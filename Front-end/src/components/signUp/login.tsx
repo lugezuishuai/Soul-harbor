@@ -8,6 +8,7 @@ import { post } from '@/utils/request';
 import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { screen } from '@/constants/screen';
 import './index.less';
+import { SendLoginVCRequest } from '@/interface/user/sendLoginVerifyCode';
 
 interface Props {
   form: WrappedFormUtils<any>;
@@ -30,7 +31,10 @@ export function Login(props: Props) {
       if (!errors && values) {
         setLoading(true);
         setDisabled(disabled => !disabled);
-        post(SENDLOGINVC_URL, { email: getFieldValue('email') })
+        const reqData: SendLoginVCRequest = {
+          email: getFieldValue('email'),
+        }
+        post(SENDLOGINVC_URL, reqData)
         .then(() => {
           message.success('发送验证码成功');
           setTimer(setInterval(() => {

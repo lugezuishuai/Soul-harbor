@@ -1,0 +1,165 @@
+:global {
+  .update-password {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(180deg, rgba(51, 112, 255, 0.12) 0%, rgba(51, 112, 255, 0) 100%);
+    &-invalid {
+      width: 420px;
+      height: 420px;
+      background: #fff;
+      padding: 24px;
+      display: flex;
+      flex-flow: column;
+      justify-content: center;
+      border-radius: 6px;
+      @media screen and (max-width: 370px) {
+        padding: 16px;
+      }
+      &-img {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 24px;
+      }
+      &-back {
+        height: 32px;
+        display: flex;
+        align-items: center;
+        margin: 0 auto 24px;
+        &-icon {
+          font-size: 24px;
+          margin-right: 8px;
+        }
+        &-text {
+          font-weight: 500;
+          font-size: 20px;
+          line-height: 32px;
+          @media screen and (max-width: 370px) {
+            font-size: 16px;
+            line-height: 24px;
+          }
+        }
+      }
+      &-btn {
+        width: 100%;
+        height: 40px;
+        color: #fff;
+        background: #3370FF;
+        border-radius: 40px;
+        font-size: 20px;
+        line-height: 40px;
+        text-align: center;
+        &:hover {
+          color: #fff;
+        }
+      }
+    }
+    &-container {
+      width: 420px;
+      // height: 420px;
+      background: #fff;
+      border-radius: 6px;
+    }
+    &-header {
+      box-sizing: border-box;
+      width: 100%;
+      height: 80px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #8F959E;
+      &-icon {
+        font-size: 24px;
+        margin-right: 12px;
+      }
+      &-text {
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 32px;
+      }
+    }
+    &-form {
+      margin-top: 24px;
+      padding: 0 24px;
+      .ant-form-item {
+        line-height: 1;
+        margin-bottom: 24px;
+      }
+      .ant-form-item-control {
+        line-height: 1;
+      }
+      .ant-input {
+        height: 32px;
+        @media screen and (max-width: 480px) {
+          height: 48px;
+        }
+      }
+      &-item {
+        margin-bottom: 24px;
+        &-text {
+          font-weight: 500;
+          font-size: 14px;
+          line-height: 22px;
+          color: #1F2329;
+          margin-bottom: 8px;
+          @media screen and (max-width: 480px) {
+            font-size: 20px;
+            line-height: 28px;
+          }
+        }
+        &-input {
+          width: 100%;
+          height: 32px;
+          &-verify {
+            width: 60%;
+            height: 32px;
+          }
+          @media screen and (max-width: 480px) {
+            height: 48px;
+          }
+        }
+      }
+    }
+    &-footer {
+      width: 100%;
+      padding: 0 24px;
+      &-btn {
+        display: block;
+        width: 100%;
+        height: 40px;
+        font-weight: 500;
+        font-size: 20px;
+        border-radius: 40px;
+        margin-bottom: 12px;
+        @media screen and (max-width: 480px) {
+          height: 48px;
+          border-radius: 48px;
+        }
+      }
+      &-back {
+        display: block;
+        width: 100%;
+        height: 40px;
+        color: #fff;
+        background: #BBBFC4;
+        border-radius: 40px;
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 40px;
+        text-align: center;
+        margin-bottom: 24px;
+        @media screen and (max-width: 480px) {
+          height: 48px;
+          border-radius: 48px;
+          line-height: 48px;
+        }
+        &:hover {
+          color: #fff;
+        }
+      }
+    }
+  }
+}

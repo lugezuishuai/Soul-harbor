@@ -37,6 +37,8 @@ app.use(expressJWT({
   path: notTokenPath,
 }));
 
+app.set('trust proxy', true);
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');

@@ -231,6 +231,7 @@ router.post('/sendRegisterVerifyCode', (req, res) => {
 
 // 忘记密码
 router.post('/forgetPassword', (req, res) => {
+  const ipArr = req.connection.remoteAddress?.split(':');
   const { email } = req.body;
   if (!email) {
     res.status(400).json({
@@ -256,7 +257,7 @@ router.post('/forgetPassword', (req, res) => {
     })
     .then(result => {
       const token = crypto.randomBytes(20).toString('hex'); // 生成一个随机的令牌
-      const expireTime = (dayjs(new Date()).valueOf() + 300000).toString(); // 5min过期时间
+      const expireTime = (dayjs(new Date()).valueOf() + 3600000).toString(); // 1h过期时间
 
       const mailOptions = {
         from: `${process.env.EMAIL_ADDRESS}`,
@@ -267,6 +268,10 @@ router.post('/forgetPassword', (req, res) => {
                 <br/>
                 <a href="http://localhost:5000/reset/${token}" target="_blank">http://localhost:5000/reset/${token}</a>
                 <br/>
+                <h2>Note: the IP address to send the link is:</h2>
+                <br/>
+                <h3>${ipArr && ipArr[ipArr.length - 1]}</h3>
+                <br/>
                 <div>This link is valid for 5 minutes. Please enter this link within 5 minutes to reset your password</div>
               </div>`,
       };
@@ -275,11 +280,8 @@ router.post('/forgetPassword', (req, res) => {
 
       if (!result || result.length === 0) {
         // 新增链接令牌
-        bcrypt.hash(token, BCRYPT_SALT_ROUNDS)
-        .then(hashedToken => {
-          const insertToken = `insert into forgetPwToken (email, token, expireTime) values ('${email}', '${hashedToken}', '${expireTime}')`;
-          return query(insertToken);
-        })
+        const insertToken = `insert into forgetPwToken (email, token, expireTime) values ('${email}', '${token}', '${expireTime}')`;
+        query(insertToken)
         .then(() => {
           transporter.sendMail(mailOptions, (err, response) => {
             if (err) {
@@ -301,11 +303,8 @@ router.post('/forgetPassword', (req, res) => {
         });
       } else {
         // 更新链接令牌
-        bcrypt.hash(token, BCRYPT_SALT_ROUNDS)
-        .then(hashedToken => {
-          const updateToken = `update forgetPwToken set token = '${hashedToken}', expireTime = '${expireTime}' where binary email = '${email}'`;
-          return query(updateToken);
-        })
+        const updateToken = `update forgetPwToken set token = '${token}', expireTime = '${expireTime}' where binary email = '${email}'`;
+        query(updateToken)
         .then(() => {
           transporter.sendMail(mailOptions, (err, response) => {
             if (err) {
@@ -341,9 +340,9 @@ router.post('/forgetPassword', (req, res) => {
 
 // 检查忘记密码token是否有效
 router.get('/checkTokenValid', (req, res) => {
-  const { resetPasswordToken, email } = req.query;
-  const searchTokenAndUser = `select soulUserInfo.soulUsername, forgetPwToken.token, forgetPwToken.expireTime from soulUserInfo, forgetPwToken where binary email = '${email}'`;
-  query(searchTokenAndUser)
+  const { resetPasswordToken } = req.query;
+  const searchToken = `select * from forgetPwToken where token = '${resetPasswordToken}'`;
+  query(searchToken)
   .then(result => {
     if (!result || result.length === 0) {
       res.status(403).json({
@@ -352,33 +351,25 @@ router.get('/checkTokenValid', (req, res) => {
         msg: 'no valid link or link expired',
       });
     } else {
-      resetPasswordToken && 
-      bcrypt.compare(resetPasswordToken.toString(), result[0].token)
-      .then(response => {
-        if (!response) {
-          res.status(403).json({
-            code: 3,
-            data: {},
-            msg: 'no valid link or link expired',
+      if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
+        const searchUsername = `select soulUsername from soulUserInfo where binary soulEmail = '${result[0].email}'`;
+        query(searchUsername)
+        .then(username => {
+          res.status(200).json({
+            code: 0,
+            data: {
+              username: username[0].soulUsername,
+            },
+            msg: 'password reset link a-ok',
           });
-        } else {
-          if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
-            res.status(200).json({
-              code: 0,
-              data: {
-                username: result[0].soulUsername,
-              },
-              msg: 'password reset link a-ok',
-            });
-          } else {
-            res.status(403).json({
-              code: 3,
-              data: {},
-              msg: 'no valid link or link expired',
-            });
-          }
-        }
-      });
+        })
+      } else {
+        res.status(403).json({
+          code: 3,
+          data: {},
+          msg: 'no valid link or link expired',
+        });
+      }
     }
   })
   .catch(e => {
@@ -394,7 +385,7 @@ router.get('/checkTokenValid', (req, res) => {
 // 重新设置密码
 router.post('/updatePassword', (req, res) => {
   const { username, password } = req.body;
-  const searchUserInfo = `select soulUserInfo.soulUsername, forgetPwToken.token, forgetPwToken.expireTime from soulUserInfo, forgetPwToken where soulUserInfo.email = forgetPwToken.email`;
+  const searchUserInfo = `select soulUserInfo.soulUsername, forgetPwToken.token, forgetPwToken.expireTime from soulUserInfo, forgetPwToken where binary soulUserInfo.soulEmail = forgetPwToken.email`;
   query(searchUserInfo)
   .then(result => {
     if (!result || result.length === 0) {
@@ -408,7 +399,7 @@ router.post('/updatePassword', (req, res) => {
         // 链接没有失效
         bcrypt.hash(password, BCRYPT_SALT_ROUNDS)
         .then(hashedPassword => {
-          const updatePassword = `update soulUserInfo, forgetPwToken set soulUserInfo.soulUsername = '${username}', soulUserInfo.soulPassword = '${hashedPassword}', forgetPwToken.token = '', forgetPwToken.expireTime = '' where soulUserInfo.email = forgetPwToken.email`;
+          const updatePassword = `update soulUserInfo, forgetPwToken set soulUserInfo.soulUsername = '${username}', soulUserInfo.soulPassword = '${hashedPassword}', forgetPwToken.token = '', forgetPwToken.expireTime = '' where binary soulUserInfo.soulEmail = forgetPwToken.email`;
           return query(updatePassword);
         })
         .then(() => {
