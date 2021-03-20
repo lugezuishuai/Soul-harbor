@@ -16,7 +16,7 @@
 
 开启后端本地服务：`npm run watch`
 
-**注意**：每次修改后端相关代码都要先构建后运行
+后端本地服务热更新：`npm run watchDev`
 
 <font size = 4>**前端**</font>
 
