@@ -68,7 +68,7 @@ app.use(function(err, req, res, next) {
       code: 1,
       data: {},
       msg: 'invalid token',
-    })
+    });
   } else {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
