@@ -138,7 +138,15 @@ function Header(props: Props) {
 
   const renderUserState = useCallback((login: boolean) => {
     if (login) {
-      return <Operation handleMenuChange={handleMenuChange} username={username} avatar={avatar} dispatch={dispatch} />;
+      return (
+        <Operation
+          handleMenuChange={handleMenuChange}
+          username={username}
+          avatar={avatar}
+          uid={uid}
+          dispatch={dispatch}
+        />
+      );
     } else {
       if (screen.isLittleScreen) {
         return <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>登录/注册</Button>;

@@ -9,20 +9,18 @@ import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { Action } from '@/redux/actions';
 import './index.less';
 
-interface MenuProps {
+interface Props {
   dispatch(action: Action): void;
   handleMenuChange(obj: any): void;
-}
-
-interface Props extends MenuProps {
   username?: string;
   avatar?: string | null;
+  uid?: string | number;
 }
 
 const defaultAvatar = 'https://s1-fs.pstatp.com/static-resource-staging/v1/78c99186-2f3c-40aa-81b8-18591041db2g';
 
 export default function Operation(props: Props): any {
-  const { handleMenuChange, username, avatar, dispatch } = props;
+  const { handleMenuChange, username, avatar, dispatch, uid } = props;
   const handleClickItem = () => {
     const obj = {
       key: 'user'
@@ -49,7 +47,7 @@ export default function Operation(props: Props): any {
   const menu = (
     <Menu className="user_operation_menu" selectable={false}>
       <Menu.Item key="0" onClick={handleClickItem} className="user_operation_menu_item">
-        <Link to="/user" className="user_operation_menu_item_text">个人信息</Link>
+        <Link to={`/user/${uid}`} className="user_operation_menu_item_text">个人信息</Link>
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item key="1" className="user_operation_menu_item">
