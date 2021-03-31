@@ -28,7 +28,7 @@ export function Register(props: Props) {
       if (!errors && values) {
         setLoading(true);
         setDisabled(disabled => !disabled);
-        post(SENDREGISTERVC_URL, { email: getFieldValue('email') })
+        post(SENDREGISTERVC_URL, { email: getFieldValue('email') }).requestObj
         .then(() => {
           message.success('发送验证码成功');
           setTimer(setInterval(() => {

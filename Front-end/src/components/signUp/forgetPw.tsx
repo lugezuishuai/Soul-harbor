@@ -34,7 +34,7 @@ export function ForgetPw(props: Props) {
         const reqData: ForgetPasswordRequest = {
           email: getFieldValue('email'),
         }
-        post(SENDFORGETPASSWORD_LINK, reqData)
+        post(SENDFORGETPASSWORD_LINK, reqData).requestObj
         .then(() => {
           message.success('发送验证链接成功');
           setTimer(setInterval(() => {

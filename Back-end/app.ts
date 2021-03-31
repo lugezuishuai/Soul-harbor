@@ -10,9 +10,13 @@ import passport from 'passport';
 import { jwtSecret } from './config/token/token';
 import { notTokenPath } from './config/token/path';
 import indexRouter from './routes/index';
-import userInfoRouter from './routes/user/userInfo'; // 用户信息相关
+import userRouter from './routes/user'; // 用户相关
+import fileRouter from './routes/file'; // 文件相关
 import employeeRouter from './routes/employee';
 import './config/passport';
+
+const { sliceUploadFile } = fileRouter;
+const { userInfo } = userRouter;
 
 let app = express();
 
@@ -51,8 +55,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize()); // 初始化passport
 
 app.use('/', indexRouter);
-app.use('/api/user', userInfoRouter);
+app.use('/api/user', userInfo);
 app.use('/api/employee', employeeRouter);
+app.use('/api/file', sliceUploadFile);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -34,7 +34,7 @@ export function Login(props: Props) {
         const reqData: SendLoginVCRequest = {
           email: getFieldValue('email'),
         }
-        post(SENDLOGINVC_URL, reqData)
+        post(SENDLOGINVC_URL, reqData).requestObj
         .then(() => {
           message.success('发送验证码成功');
           setTimer(setInterval(() => {

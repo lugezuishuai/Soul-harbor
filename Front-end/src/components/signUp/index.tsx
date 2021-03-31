@@ -54,7 +54,7 @@ function SignUp(props: Props) {
     };
     setLoading(true);
     const LOGINURL = emailLogin ? EMAILLOGIN_URL : USERNAMELOGIN_URL;
-    post(LOGINURL, reqData).then((res: LoginResponse) => {
+    post(LOGINURL, reqData).requestObj.then((res: LoginResponse) => {
       message.success('登录成功');
       setLoading(false);
       hide();
@@ -95,7 +95,7 @@ function SignUp(props: Props) {
       createTime: dayjs(nowDate).format('YYYY-MM-DD'),
     };
     setLoading(true);
-    post(REGISTER_URL, reqData).then(() => {
+    post(REGISTER_URL, reqData).requestObj.then(() => {
       message.success('注册成功');
       setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 切不要清空表单
     }).catch(e => {

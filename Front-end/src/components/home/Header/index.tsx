@@ -73,7 +73,7 @@ function Header(props: Props) {
   }
 
   useEffect(() => {
-    get(INIT).then((res: InitResponse) => {
+    get(INIT).requestObj.then((res: InitResponse) => {
       dispatch({
         type: 'GET_USERINFO',
         payload: {

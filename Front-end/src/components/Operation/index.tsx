@@ -31,7 +31,7 @@ export default function Operation(props: Props): any {
   // 「退出登录」
   const handleLogout = () => {
     Cookies.remove('token', { path: '/' }); // client删除token
-    get(LOGOUT).catch(e => {
+    get(LOGOUT).requestObj.catch(e => {
       dispatch({
         type: 'GET_USERINFO',
         payload: {},
