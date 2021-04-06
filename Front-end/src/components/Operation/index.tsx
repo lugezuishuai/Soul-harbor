@@ -5,7 +5,6 @@ import { screen } from '@/constants/screen';
 import { get } from '@/utils/request';
 import { LOGOUT } from '@/constants/urls';
 import Cookies from 'js-cookie';
-import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { Action } from '@/redux/actions';
 import './index.less';
 
@@ -40,7 +39,6 @@ export default function Operation(props: Props): any {
         type: 'CHANGE_LOGIN_STATE',
         payload: false,
       });
-      handleErrorMsg(e);
     });
   };
 

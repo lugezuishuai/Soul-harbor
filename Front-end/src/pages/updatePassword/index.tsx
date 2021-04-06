@@ -6,7 +6,6 @@ import updateMobile from '@/assets/icon/update_mobile.svg';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { inputProps } from '@/constants/inputProps';
 import { screen } from '@/constants/screen';
-import { get, post } from '@/utils/request';
 import { CHECKTOKENVALID, UPDATEPASSWORD } from '@/constants/urls';
 import { CheckTokenValidResponse, CheckTokenValidRequest } from '@/interface/user/checkTokenValid';
 import { UpdatePasswordReq } from '@/interface/user/updatePassword';
@@ -16,6 +15,7 @@ import backHome from '@/assets/icon/back_home.svg';
 import backHomeMobile from '@/assets/icon/back_home_mobile.svg';
 import md5 from 'md5';
 import './index.less';
+import { apiGet, apiPost } from '@/utils/request';
 
 interface Props {
   form: WrappedFormUtils<any>;
@@ -46,7 +46,7 @@ function ForgetPw(props: Props) {
           password: md5(md5(username + md5(values.newPasswordAgain))),
         };
         setBtnLoading(true);
-        post(UPDATEPASSWORD, reqData).then(() => {
+        apiPost(UPDATEPASSWORD, reqData).then(() => {
           // 跳转回首页
           message.success('修改成功');
           history.push({ pathname: '/' });
@@ -65,12 +65,11 @@ function ForgetPw(props: Props) {
     const reqData: CheckTokenValidRequest = {
       resetPasswordToken: token,
     };
-    get(CHECKTOKENVALID, reqData).then((res: CheckTokenValidResponse) => {
+    apiGet(CHECKTOKENVALID, reqData).then((res: CheckTokenValidResponse) => {
       res.data.username && setUsername(res.data.username);
     })
-    .catch(e => {
+    .catch(() => {
       setIsLinkValid(false);
-      handleErrorMsg(e);
     })
     .finally(() => setLoading(false));
   }, []);

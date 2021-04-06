@@ -3,7 +3,7 @@ import { ConfigProvider } from 'antd';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
 import Employee from '@/components/employee';
-import Settings from '@/components/setting';
+import UploadFile from '@/components/setting';
 import Content from '@/components/home/Content';
 import UserInfo from '@/components/userInfo';
 import Header from './Header';
@@ -31,7 +31,7 @@ export default function Home() {
                     <Switch>
                       <Route path="/home" exact component={Content} />
                       <Route path="/chat" exact component={Employee} />
-                      <Route path="/news" exact component={Settings} />
+                      <Route path="/news" exact component={UploadFile} />
                       <Route path="/blog" exact component={Employee} />
                       <Route path="/user/:id" exact component={UserInfo} />
                       <Redirect to="/home" />

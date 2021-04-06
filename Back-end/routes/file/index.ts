@@ -1,5 +1,5 @@
-import sliceUploadFile from './sliceFile';
+import sliceFileUpload from './FileUpload';
 
 export default {
-  sliceUploadFile,
+  sliceFileUpload,
 }

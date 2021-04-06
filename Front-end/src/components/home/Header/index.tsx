@@ -5,9 +5,8 @@ import DropdownMenu from '@/assets/icon/menu.svg';
 import Heart from '@/assets/icon/heart.svg';
 import { WrapSignUp } from '@/components/signUp';
 import Operation from '@/components/Operation';
-import { get } from '@/utils/request';
+import { apiGet } from '@/utils/request';
 import { UserInfo, InitResponse } from '@/interface/user/init';
-import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { INIT } from '@/constants/urls';
 import { Link } from 'react-router-dom';
 import { State } from '@/redux/reducers/state';
@@ -73,7 +72,7 @@ function Header(props: Props) {
   }
 
   useEffect(() => {
-    get(INIT).requestObj.then((res: InitResponse) => {
+    apiGet(INIT).then((res: InitResponse) => {
       dispatch({
         type: 'GET_USERINFO',
         payload: {
@@ -90,7 +89,6 @@ function Header(props: Props) {
         type: 'CHANGE_LOGIN_STATE',
         payload: false,
       });
-      handleErrorMsg(e);
     }).finally(() => {
       setLoading(false);
     })

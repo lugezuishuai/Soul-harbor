@@ -15,7 +15,7 @@ import fileRouter from './routes/file'; // 文件相关
 import employeeRouter from './routes/employee';
 import './config/passport';
 
-const { sliceUploadFile } = fileRouter;
+const { sliceFileUpload } = fileRouter;
 const { userInfo } = userRouter;
 
 let app = express();
@@ -57,7 +57,7 @@ app.use(passport.initialize()); // 初始化passport
 app.use('/', indexRouter);
 app.use('/api/user', userInfo);
 app.use('/api/employee', employeeRouter);
-app.use('/api/file', sliceUploadFile);
+app.use('/api/file', sliceFileUpload);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

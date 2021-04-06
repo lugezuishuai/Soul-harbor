@@ -1,122 +1,134 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Upload, Progress, Button, Table } from 'antd';
-import { post } from '@/utils/request';
-import SparkMD5 from 'spark-md5'
+import React, { Component } from 'react';
+import { Button, Progress, message, Spin } from 'antd';
+import { axiosList } from './utils/common';
+import { getFileMd5, createFileChunk, FileBlob } from './utils/fileProperty';
+import { checkUploadedChunks, uploadChunks } from './utils/fileRequest';
+import './index.less';
 
-type Status = 'pause' | 'uploading' | 'wait' | 'finish';
+interface FileUploadProps {}
 
-interface Container {
-  file: File | null;
-  hash: string;
-  worker: any | null;
+interface FileUploadState {
+  scanPercent: number;
+  uploadPercent: number;
+  startScan: boolean;
 }
 
-interface DataSource {
-  chunkHash: string;
-  size: number;
-  progress: number;
+export interface Chunk {
+  chunk: Blob;
+  fileHash: string;
+  md5AndFileNo: string;
+  percentage: number;
 }
 
-const SIZE = 10 * 1024 * 1024; // 切片大小
+export default class FileUpload extends Component<FileUploadProps, FileUploadState> {
+  constructor(props: FileUploadProps) {
+    super(props);
+    this.state = {
+      scanPercent: 0,
+      uploadPercent: 0,
+      startScan: false,
+    };
+  }
+  chunkListInfo: Chunk[] = [];
+  fileName = '';
+  fileMd5Value = '';
+  fileChunkList: FileBlob[] = [];
+  getFileMd5 = getFileMd5;
+  uploadChunks = uploadChunks;
 
-const transformByte = (val: number) => Number(val / 1024).toFixed(0);
-
-export default function Setting() {
-  const prefix = (str?: string) => str ? `test-upload-${str}` : 'test-upload';
-  const [disabled, setDisabled] = useState(false); // 「上传」按钮的disabled
-  const [status, setStatus] = useState<Status>('wait'); // 当前文件上传的状态
-  const [container, setContainer] = useState<Container>({
-    file: null,
-    hash: '',
-    worker: null,
-  });
-  const [data, setData] = useState<any[]>([]);
-  const [requestList, setRequestList] = useState<any[]>([]);
-  const [hashPercent, setHashPercent] = useState(0); // 获取文件hash的百分比
-  const [fakeUploadPercent, setFakeUploadPercent] = useState(0); // 文件上传总进度的百分比
-  const [dataSource, setDataSource] = useState<DataSource[]>([]); // dataSource
-
-  // 计算真实的文件上传进度
-  const uploadPercentage = useCallback(() => {
-    if (!container.file || !data.length) {
-      return 0;
+  // 判断文件是否上传完毕
+  isFileUploadDone = (fileExist: boolean) => {
+    if (fileExist) {
+      this.setState({ uploadPercent: 100 }); // 文件秒传
+      return true;
+    } else {
+      this.chunkListInfo = this.fileChunkList.map(({ file }, index) => ({
+        fileHash: this.fileMd5Value,
+        md5AndFileNo: `${this.fileMd5Value}-${index}`,
+        chunk: file,
+        percentage: 0,
+      }));
+      return false;
     }
-    const loaded = data.map(item => item.size * item.percentage).reduce((acc, cur) => acc + cur);
-    return parseInt((loaded / container.file.size).toFixed(2));
-  }, [container, data]);
-
-  // 文件变动时的回调
-  const handleFileChange = () => {
-    // do something
   };
 
-  // 处理文件上传的函数
-  const handleUpload = () => {
-    // do something
-  }
-
-  // 恢复上传的函数
-  const handleResume = () => {
-    // do something
-  }
-
-  // 暂停上传的函数
-  const handlePause = () => {
-    // do something
-  }
-
-  useEffect(() => {
-    if (status === 'uploading' && fakeUploadPercent < uploadPercentage()) {
-      // 如果当前的文件正在上传且当前的进度小于上传的进度
-      setFakeUploadPercent(uploadPercentage());
+  // 开始文件上传
+  startUpload = async() => {
+    const uploadedFileInfo = await checkUploadedChunks(this.fileName, this.fileMd5Value); // 获取已经上传的文件信息
+    if (!this.isFileUploadDone(uploadedFileInfo.fileExist) && uploadedFileInfo.chunkList) {
+      // 文件还没有上传完
+      this.uploadChunks(this.chunkListInfo, uploadedFileInfo.chunkList, this.fileName);
     }
-  }, [status, fakeUploadPercent]);
+  };
 
-  const columns = [
-    {
-      title: '切片hash',
-      dataIndex: 'chunkHash',
-      key: 'chunkHash',
-    },
-    {
-      title: '大小(KB)',
-      dataIndex: 'size',
-      key: 'size',
-      render: (value: number) => transformByte(value),
-    },
-    {
-      title: '进度',
-      dataIndex: 'progress',
-      key: 'progress',
-      render: (value: number) => <Progress percent={value} />
-    },
-  ]
+  // input change变化时的回调
+  handleInputChange = async(event: React.ChangeEvent<HTMLInputElement>) => {
+    const target = event.target;
+    const file = target.files && target.files[0];
+    if (file) {
+      this.setState({ startScan: true }); // 显示扫描开始
+      this.fileName = file.name; // 文件名
+      this.fileChunkList = createFileChunk(file); // 将文件剪裁成若干份
+      this.fileMd5Value = await this.getFileMd5(this.fileChunkList); // 获取上传文件的MD5值
+      this.startUpload();
+    }
+  };
 
-  return (
-    <div className={prefix()}>
-      <div className={prefix('operation')}>
-        <input type="file" disabled={status !== 'wait'} onChange={handleFileChange} className={prefix('upload')} />
-        <Button
-          type="primary"
-          className={prefix('btn')}
-          disabled={!container.file || status !== 'wait'}
-          onClick={handleUpload}>
-          上传
-        </Button>
-        <Button className={prefix('btn')} disabled={status !== 'pause'} onClick={handleResume}>
-          恢复
-        </Button>
-        <Button className={prefix('btn')} disabled={status !== 'uploading' || !container.hash} onClick={handlePause}>
-          暂停
-        </Button>
+  // 暂停文件上传
+  handlePause = () => {
+    if (axiosList.length !== 0) {
+      // 如果还有切片没有上传完毕
+      axiosList.forEach(item => item.cancel('abort'));
+      axiosList.length = 0;
+      message.error('上传暂停');
+    }
+  };
+
+  // 重新上传文件
+  handleReuse = () => {
+    this.startUpload();
+  };
+
+  render() {
+    const { scanPercent, uploadPercent, startScan } = this.state;
+    const scanFileDone = scanPercent === 100; // 文件扫描完成
+    const uploadFileDone = uploadPercent === 100; // 文件上传完成
+
+    return (
+      <div className="file-upload">
+        <div>
+          <div className="file-upload__input">
+            <input
+              type="file"
+              name="file"
+              id="upload_file"
+              onChange={this.handleInputChange}
+            />
+          </div>
+          <div className="file-upload__operation">
+            <Button type="primary" className="file-upload__btn" onClick={this.handlePause}>暂停上传</Button>
+            <Button type="primary" className="file-upload__btn" onClick={this.handleReuse}>重新上传</Button>
+          </div>
+          {startScan && 
+            <Spin spinning={!scanFileDone}>
+              <div className={scanFileDone ? 'file-upload-text__done' : 'file-upload-text__ing'}>{scanFileDone ? '文件扫描完成' : '文件扫描中...'}</div>  
+            </Spin>
+          }
+          {scanFileDone &&
+            <Spin spinning={!uploadFileDone}>
+              <div className={uploadFileDone ? 'file-upload-text__done' : 'file-upload-text__ing'}>{uploadFileDone ? '文件上传成功' : '文件上传中...'}</div>
+            </Spin>
+          }
+          <div className="file-upload__progress">
+            <div className="file-upload__progress__text">文件扫描进度</div>
+            <Progress type="circle" percent={scanPercent} className="file-upload__progress__circle" />
+          </div>
+          <div className="file-upload__progress">
+            <div className="file-upload__progress__text">文件上传进度</div>
+            <Progress type="circle" percent={uploadPercent} className="file-upload__progress__circle" />
+          </div>
+        </div>
       </div>
-      <div className={prefix('percent')}>
-        <div className={prefix('text')}>计算文件hash</div>
-        <Progress percent={hashPercent} />
-        <div className={prefix('text')}>总进度</div>
-        <Progress percent={fakeUploadPercent} />
-      </div>
-      <Table columns={columns} dataSource={dataSource} />
-    </div>
-  )
+    )
+  }
 }

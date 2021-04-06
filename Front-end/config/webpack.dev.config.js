@@ -8,7 +8,7 @@ module.exports = {
         new webpack.HotModuleReplacementPlugin()
     ],
     // mode: 'development',
-    devtool: 'cheap-module-eval-source-map',
+    devtool: 'source-map',
     devServer: {
         port: 5000,
         open: true,

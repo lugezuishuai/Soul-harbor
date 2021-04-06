@@ -134,7 +134,7 @@ router.post('/verify', async (req, res) => {
       msg: 'should upload',
     });
   } else {
-    let uploadedList;
+    let uploadedList: string[] = []; // 已经上传的切片hash
     try {
       uploadedList = await createUploadedList(fileHash); // 已经上传的chunkList
     } catch (e) {

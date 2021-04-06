@@ -11,12 +11,12 @@ import md5 from 'md5';
 import dayjs from 'dayjs';
 import { REGISTER_URL, USERNAMELOGIN_URL, EMAILLOGIN_URL } from '@/constants/urls';
 import { handleErrorMsg } from '@/utils/handleErrorMsg'
-import { post } from '@/utils/request';
 import { RegisterRequest } from '@/interface/user/register';
 import { LoginResponse, WrapLoginRequest } from '@/interface/user/login';
 import Cookies from 'js-cookie';
 import { Action } from '@/redux/actions';
 import './index.less';
+import { apiPost } from '@/utils/request';
 
 export type MenuItem = 'login' | 'register' | 'forgetPw';
 interface Props extends FormComponentProps {
@@ -54,7 +54,7 @@ function SignUp(props: Props) {
     };
     setLoading(true);
     const LOGINURL = emailLogin ? EMAILLOGIN_URL : USERNAMELOGIN_URL;
-    post(LOGINURL, reqData).requestObj.then((res: LoginResponse) => {
+    apiPost(LOGINURL, reqData).then((res: LoginResponse) => {
       message.success('登录成功');
       setLoading(false);
       hide();
@@ -95,7 +95,7 @@ function SignUp(props: Props) {
       createTime: dayjs(nowDate).format('YYYY-MM-DD'),
     };
     setLoading(true);
-    post(REGISTER_URL, reqData).requestObj.then(() => {
+    apiPost(REGISTER_URL, reqData).then(() => {
       message.success('注册成功');
       setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 切不要清空表单
     }).catch(e => {
