@@ -4,7 +4,7 @@ import { inputProps } from '@/constants/inputProps';
 import { prefix } from './index';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { SENDLOGINVC_URL } from '@/constants/urls';
-import { post } from '@/utils/request';
+import { apiPost } from '@/utils/request';
 import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { screen } from '@/constants/screen';
 import './index.less';
@@ -34,7 +34,7 @@ export function Login(props: Props) {
         const reqData: SendLoginVCRequest = {
           email: getFieldValue('email'),
         }
-        post(SENDLOGINVC_URL, reqData).requestObj
+        apiPost(SENDLOGINVC_URL, reqData)
         .then(() => {
           message.success('发送验证码成功');
           setTimer(setInterval(() => {

@@ -24,9 +24,9 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
   constructor(props: FileUploadProps) {
     super(props);
     this.state = {
-      scanPercent: 0,
-      uploadPercent: 0,
-      startScan: false,
+      scanPercent: 0, // 文件扫描（获取hash值）的进度
+      uploadPercent: 0, // 文件上传的进度
+      startScan: false, // 文件开始扫描的标志
     };
   }
   chunkListInfo: Chunk[] = [];
@@ -55,9 +55,9 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
   // 开始文件上传
   startUpload = async() => {
     const uploadedFileInfo = await checkUploadedChunks(this.fileName, this.fileMd5Value); // 获取已经上传的文件信息
-    if (!this.isFileUploadDone(uploadedFileInfo.fileExist) && uploadedFileInfo.chunkList) {
+    if (!this.isFileUploadDone(uploadedFileInfo.fileExist) && uploadedFileInfo.uploadedList) {
       // 文件还没有上传完
-      this.uploadChunks(this.chunkListInfo, uploadedFileInfo.chunkList, this.fileName);
+      this.uploadChunks(this.chunkListInfo, uploadedFileInfo.uploadedList, this.fileName);
     }
   };
 

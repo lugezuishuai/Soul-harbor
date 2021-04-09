@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Avatar, Icon, Menu, Dropdown } from 'antd';
 import { Link } from 'react-router-dom';
 import { screen } from '@/constants/screen';
-import { get } from '@/utils/request';
+import { apiGet } from '@/utils/request';
 import { LOGOUT } from '@/constants/urls';
 import Cookies from 'js-cookie';
 import { Action } from '@/redux/actions';
@@ -30,7 +30,7 @@ export default function Operation(props: Props): any {
   // 「退出登录」
   const handleLogout = () => {
     Cookies.remove('token', { path: '/' }); // client删除token
-    get(LOGOUT).requestObj.catch(e => {
+    apiGet(LOGOUT).catch(() => {
       dispatch({
         type: 'GET_USERINFO',
         payload: {},

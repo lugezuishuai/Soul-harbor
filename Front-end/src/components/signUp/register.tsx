@@ -4,7 +4,7 @@ import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { inputProps } from '@/constants/inputProps';
 import { prefix } from './index';
 import { SENDREGISTERVC_URL } from '@/constants/urls';
-import { post } from '@/utils/request';
+import { apiPost } from '@/utils/request';
 import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { screen } from '@/constants/screen';
 import './index.less';
@@ -28,7 +28,7 @@ export function Register(props: Props) {
       if (!errors && values) {
         setLoading(true);
         setDisabled(disabled => !disabled);
-        post(SENDREGISTERVC_URL, { email: getFieldValue('email') }).requestObj
+        apiPost(SENDREGISTERVC_URL, { email: getFieldValue('email') })
         .then(() => {
           message.success('发送验证码成功');
           setTimer(setInterval(() => {

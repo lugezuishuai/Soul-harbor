@@ -4,7 +4,7 @@ import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { inputProps } from '@/constants/inputProps';
 import { prefix } from './index';
 import { screen } from '@/constants/screen';
-import { post } from '@/utils/request';
+import { apiPost } from '@/utils/request';
 import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { SENDFORGETPASSWORD_LINK } from '@/constants/urls';
 import warn from '@/assets/icon/warn.svg';
@@ -34,7 +34,7 @@ export function ForgetPw(props: Props) {
         const reqData: ForgetPasswordRequest = {
           email: getFieldValue('email'),
         }
-        post(SENDFORGETPASSWORD_LINK, reqData).requestObj
+        apiPost(SENDFORGETPASSWORD_LINK, reqData)
         .then(() => {
           message.success('发送验证链接成功');
           setTimer(setInterval(() => {

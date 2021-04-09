@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import { get, post } from '../../utils/request';
+import { apiGet, apiPost } from '../../utils/request';
 import { department, level } from '../../constants/options';
 
 import {
@@ -31,7 +31,7 @@ export type Action = {
 const actions = {
   getEmployee: function(param: EmployeeRequest, callback: () => void) {
     return (dispatch: Dispatch) => {
-      get(GET_EMPLOYEE_URL, param).requestObj.then(res => {
+      apiGet(GET_EMPLOYEE_URL, param).then(res => {
         dispatch({
           type: GET_EMPLOYEE,
           payload: res.data
@@ -42,7 +42,7 @@ const actions = {
   },
   createEmployee: function(param: CreateRequest, callback: () => void) {
     return (dispatch: Dispatch) => {
-      post(CREATE_EMPLOYEE_URL, param).requestObj.then(res => {
+      apiPost(CREATE_EMPLOYEE_URL, param).then(res => {
         dispatch({
           type: CREATE_EMPLOYEE,
           payload: {
@@ -61,7 +61,7 @@ const actions = {
   },
   deleteEmployee: function(param: DeleteRequest) {
     return (dispatch: Dispatch) => {
-      post(DELETE_EMPLOYEE_URL, param).requestObj.then(() => {
+      apiPost(DELETE_EMPLOYEE_URL, param).then(() => {
         dispatch({
           type: DELETE_EMPLOYEE,
           payload: param.id
@@ -71,7 +71,7 @@ const actions = {
   },
   updateEmployee: function(param: UpdateRequest, callback: () => void) {
     return (dispatch: Dispatch) => {
-      post(UPDATE_EMPLOYEE_URL, param).requestObj.then(() => {
+      apiPost(UPDATE_EMPLOYEE_URL, param).then(() => {
         dispatch({
           type: UPDATE_EMPLOYEE,
           payload: param

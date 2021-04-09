@@ -5,7 +5,7 @@ export interface VerifyFileRequest {
 }
 
 export interface VerifyFileData {
-  shouldUpload?: boolean;
+  fileExist?: boolean;
   uploadedList?: string[];
 }
 

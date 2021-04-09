@@ -2,7 +2,7 @@ import Axios, { CancelTokenSource } from 'axios';
 import { UPLOADCHUNK, MERGECHUNK, CHECKCHUNK } from '@/constants/urls';
 import { Chunk } from '..';
 import { Component } from 'react';
-import { axiosList } from './common';
+import { axiosList, CHUNK_SIZE } from './common';
 import { apiGet, apiPost } from '@/utils/request';
 import { message } from 'antd';
 
@@ -10,15 +10,15 @@ const CancelToken = Axios.CancelToken;
 
 interface FileStatus {
   fileExist: boolean; // 文件是否存在
-  chunkList?: string[]; // 后端已经接收到的chunk hash值
+  uploadedList?: string[]; // 后端已经接收到的chunk hash值
 }
 
 // 验证已经上传了的chunks
 export function checkUploadedChunks(fileName: string, fileMd5Val: string): Promise<FileStatus> {
   return new Promise((resolve, reject) => {
     apiGet(CHECKCHUNK, {
-      fileName,
-      fileMd5Val,
+      fileName, // 文件名
+      fileHash: fileMd5Val, // 文件hash
     })
     // @ts-ignore
     .then(res => resolve(res.data))
@@ -42,21 +42,23 @@ export function mergeRequest(targetFile: string, fileName: string) {
   apiGet(MERGECHUNK, {
     fileHash: targetFile,
     fileName,
+    size: CHUNK_SIZE,
   })
   .then(() => message.success('merge success'))
 }
 
+// 发送上传切片请求
 export function sendRequest(
   requestList: FormData[],
   setUploadProgress: (percent: number) => void,
-  uploadMaxCount = 4 // 限制最大并行上传数量
+  uploadMaxCount = 4 // 限制最大并行上传切片数量
 ) {
   return new Promise(resolve => {
-    const uploadedTotal = requestList.length;
-    let sendCount = 0;
-    let uploadedCount = 0;
+    const needUploadTotal = requestList.length; // 还需要上传的切片总数
+    let sendCount = 0; // 索引
+    let uploadedCount = 0; // 已经完成上传的数量
     const sendPacks = () => {
-      while (sendCount < uploadedTotal && uploadMaxCount > 0) {
+      while (sendCount < needUploadTotal && uploadMaxCount > 0) {
         const formData = requestList[sendCount];
         uploadMaxCount--;
         sendCount++;
@@ -71,9 +73,9 @@ export function sendRequest(
           uploadMaxCount++;
           uploadedCount++;
 
-          setUploadProgress(Math.round((uploadedCount / uploadedTotal) * 100));
+          setUploadProgress(Math.round((uploadedCount / needUploadTotal) * 100));
 
-          if (uploadedCount === uploadedTotal) {
+          if (uploadedCount === needUploadTotal) {
             resolve(1);
           } else {
             sendPacks();
@@ -89,8 +91,8 @@ export function sendRequest(
 
 export async function uploadChunks(
   this: Component,
-  chunkListInfo: Chunk[],
-  uploadedList: string[],
+  chunkListInfo: Chunk[], // 所有的文件切片信息
+  uploadedList: string[], // 已经上传的文件hash数组
   fileName: string,
 ) {
   const requestList = chunkListInfo
@@ -102,9 +104,10 @@ export async function uploadChunks(
     formData.append('fileName', fileName);
     formData.append('fileHash', fileHash);
     return formData;
-  });
+  }); // 此次还需要上传的formData数组
 
   if (requestList.length === 0) {
+    // 已经上传完所有的切片，直接合并文件
     mergeRequest(chunkListInfo[0].fileHash, fileName);
   } else {
     sendRequest(requestList, (percent: number) => {

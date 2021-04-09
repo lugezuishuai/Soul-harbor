@@ -44,7 +44,7 @@ axios.interceptors.response.use(
 );
 
 //get请求
-export function apiGet(url: string, data?: any, headers = {}, config: GetConfigProps = {}) {
+export function apiGet(url: string, data?: any, headers = {}, config: GetConfigProps = {}): Promise<any> {
   const { source } = config;
   return axios.get(url, {
     headers: {
@@ -57,7 +57,7 @@ export function apiGet(url: string, data?: any, headers = {}, config: GetConfigP
 }
 
 //post请求
-export function apiPost(url: string, data: any, headers = {}, config: PostConfigProps = {}) {
+export function apiPost(url: string, data: any, headers = {}, config: PostConfigProps = {}): Promise<any> {
   const { onUploadProgress = noop, onDownloadProgress = noop, source } = config;
   return axios({
     method: 'post',
