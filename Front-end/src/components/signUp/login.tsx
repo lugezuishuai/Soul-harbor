@@ -5,10 +5,9 @@ import { prefix } from './index';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { SENDLOGINVC_URL } from '@/constants/urls';
 import { apiPost } from '@/utils/request';
-import { handleErrorMsg } from '@/utils/handleErrorMsg';
 import { screen } from '@/constants/screen';
-import './index.less';
 import { SendLoginVCRequest } from '@/interface/user/sendLoginVerifyCode';
+import './index.less';
 
 interface Props {
   form: WrappedFormUtils<any>;
@@ -24,30 +23,31 @@ export function Login(props: Props) {
   const [timer, setTimer] = useState<any>(null); // 计时器
   const [count, setCount] = useState(60); // 秒数
 
-  const renderBtnText = () => disabled && timer ? `${count}秒后重新获取` : '获取验证码';
+  const renderBtnText = () => (disabled && timer ? `${count}秒后重新获取` : '获取验证码');
 
   const handleClickBtn = () => {
     validateFields(['email'], (errors: Record<string, any>, values: string) => {
       if (!errors && values) {
         setLoading(true);
-        setDisabled(disabled => !disabled);
+        setDisabled((disabled) => !disabled);
         const reqData: SendLoginVCRequest = {
           email: getFieldValue('email'),
-        }
+        };
         apiPost(SENDLOGINVC_URL, reqData)
-        .then(() => {
-          message.success('发送验证码成功');
-          setTimer(setInterval(() => {
-            setCount(count => count - 1);
-          }, 1000));
-        })
-        .catch(e => {
-          handleErrorMsg(e);
-          setDisabled(disabled => !disabled);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+          .then(() => {
+            message.success('发送验证码成功');
+            setTimer(
+              setInterval(() => {
+                setCount((count) => count - 1);
+              }, 1000)
+            );
+          })
+          .catch(() => {
+            setDisabled((disabled) => !disabled);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
       }
     });
   };
@@ -66,154 +66,140 @@ export function Login(props: Props) {
           {renderBtnText()}
         </Button>
       </div>
-    )
+    );
   };
 
   const renderBottom = () => (
     <div className={prefix('content-bottom')} onClick={handleChangeLogin}>
       {emailLogin ? '用户名密码登录' : '邮箱验证码登录'}
     </div>
-  )
+  );
 
   useEffect(() => {
     if (count === 0 && timer) {
       clearInterval(timer); // 关掉定时器
       setTimer(null);
-      setDisabled(disabled => !disabled);
+      setDisabled((disabled) => !disabled);
       setCount(60);
     }
   }, [count, timer]);
 
-  return emailLogin ? 
-  <>
-    <Form.Item className={prefix('form-item')}>
-      <div className={prefix('form-item-text')}>邮箱：</div>
-      {getFieldDecorator('email', {
-        rules: [
-          {validator(rule, value, callback) {
-            const reg = /^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$/;
-            if(!value || value.length === 0) {
-              callback('请输入邮箱');
-            } else if(!reg.test(value)) {
-              callback('请输入正确的邮箱地址')
-            } else {
-              callback();
-            }
-          }}
-        ]
-      })(
-        <Input
-          className={prefix('form-item-input')}
-          placeholder="邮箱"
-          autoFocus={screen.isBigScreen}
-          { ...inputProps }
-        />
-      )}
-    </Form.Item>
-    <Form.Item>
-      {screen.isLittleScreen ? 
-        <>
-          {renderFormItemHeader()}
-          {getFieldDecorator('verifyCode', {
-            rules: [
-              {
-                required: true,
-                whitespace: true,
-                message: '请输入验证码'
+  return emailLogin ? (
+    <>
+      <Form.Item className={prefix('form-item')}>
+        <div className={prefix('form-item-text')}>邮箱：</div>
+        {getFieldDecorator('email', {
+          rules: [
+            {
+              validator(rule, value, callback) {
+                const reg = /^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$/;
+                if (!value || value.length === 0) {
+                  callback('请输入邮箱');
+                } else if (!reg.test(value)) {
+                  callback('请输入正确的邮箱地址');
+                } else {
+                  callback();
+                }
               },
-              {
-                max: 6,
-                message: '请输入正确的验证码'
-              }
-            ]
-          })(
-            <Input
-              className={prefix('form-item-input')}
-              placeholder="验证码"
-              { ...inputProps }
-            />
-          )}
-        </>
-        :
-        <>
-          <div className={prefix('form-item-text')}>验证码：</div>
-          <div className={prefix('form-item-verify')}>
+            },
+          ],
+        })(
+          <Input
+            className={prefix('form-item-input')}
+            placeholder="邮箱"
+            autoFocus={screen.isBigScreen}
+            {...inputProps}
+          />
+        )}
+      </Form.Item>
+      <Form.Item>
+        {screen.isLittleScreen ? (
+          <>
+            {renderFormItemHeader()}
             {getFieldDecorator('verifyCode', {
               rules: [
                 {
                   required: true,
                   whitespace: true,
-                  message: '请输入验证码'
+                  message: '请输入验证码',
                 },
                 {
                   max: 6,
-                  message: '请输入正确的验证码'
-                }
-              ]
-            })(
-              <Input
-                className={prefix('form-item-input-verify')}
-                placeholder="验证码"
-                { ...inputProps }
-              />
-            )}
-            <Button 
-              className={prefix('form-item-send')}
-              type="primary"
-              disabled={disabled}
-              loading={loading}
-              onClick={handleClickBtn}
-            >
-              {renderBtnText()}
-            </Button>
-          </div>
-        </>
-      }
-    </Form.Item>
-    {screen.isLittleScreen && renderBottom()}
-  </> :
-  <>
-    <Form.Item className={prefix('form-item')}>
-      <div className={prefix('form-item-text')}>用户名：</div>
-      {getFieldDecorator('username', {
-        rules: [
-          {
-            required: true,
-            whitespace: true,
-            message: '请输入用户名',
-          },
-          {
-            max: 10,
-            message: '请输入正确的用户名'
-          },
-        ]
-      })(
-        <Input
-          className={prefix('form-item-input')}
-          placeholder="用户名"
-          autoFocus={screen.isBigScreen}
-          { ...inputProps }
-        />
-      )}
-    </Form.Item>
-    <Form.Item>
-      <div className={prefix('form-item-text')}>密码：</div>
-      { getFieldDecorator('password', {
-        rules: [
-          {
-            required: true,
-            whitespace: true,
-            message: '请输入密码'
-          }
-        ]
-      })(
-        <Input.Password
-          className={prefix('form-item-input')}
-          placeholder="密码"
-          { ...inputProps }
-        />
-      )}
-    </Form.Item>
-    {screen.isLittleScreen && renderBottom()}
-  </>
+                  message: '请输入正确的验证码',
+                },
+              ],
+            })(<Input className={prefix('form-item-input')} placeholder="验证码" {...inputProps} />)}
+          </>
+        ) : (
+          <>
+            <div className={prefix('form-item-text')}>验证码：</div>
+            <div className={prefix('form-item-verify')}>
+              {getFieldDecorator('verifyCode', {
+                rules: [
+                  {
+                    required: true,
+                    whitespace: true,
+                    message: '请输入验证码',
+                  },
+                  {
+                    max: 6,
+                    message: '请输入正确的验证码',
+                  },
+                ],
+              })(<Input className={prefix('form-item-input-verify')} placeholder="验证码" {...inputProps} />)}
+              <Button
+                className={prefix('form-item-send')}
+                type="primary"
+                disabled={disabled}
+                loading={loading}
+                onClick={handleClickBtn}
+              >
+                {renderBtnText()}
+              </Button>
+            </div>
+          </>
+        )}
+      </Form.Item>
+      {screen.isLittleScreen && renderBottom()}
+    </>
+  ) : (
+    <>
+      <Form.Item className={prefix('form-item')}>
+        <div className={prefix('form-item-text')}>用户名：</div>
+        {getFieldDecorator('username', {
+          rules: [
+            {
+              required: true,
+              whitespace: true,
+              message: '请输入用户名',
+            },
+            {
+              max: 10,
+              message: '请输入正确的用户名',
+            },
+          ],
+        })(
+          <Input
+            className={prefix('form-item-input')}
+            placeholder="用户名"
+            autoFocus={screen.isBigScreen}
+            {...inputProps}
+          />
+        )}
+      </Form.Item>
+      <Form.Item>
+        <div className={prefix('form-item-text')}>密码：</div>
+        {getFieldDecorator('password', {
+          rules: [
+            {
+              required: true,
+              whitespace: true,
+              message: '请输入密码',
+            },
+          ],
+        })(<Input.Password className={prefix('form-item-input')} placeholder="密码" {...inputProps} />)}
+      </Form.Item>
+      {screen.isLittleScreen && renderBottom()}
+    </>
+  );
 }

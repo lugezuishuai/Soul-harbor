@@ -1,7 +1,7 @@
 import React from 'react';
-import { ExceptionPage } from '@/components/exception';
+import { ExceptionPage, ExceptionProps } from '@/components/exception';
 import { ExceptionType } from '@/components/exception/type-config';
 
-export default function NoPermission() {
-  return <ExceptionPage type={ExceptionType.noPermission} />;
+export default function NoPermission(props: ExceptionProps) {
+  return <ExceptionPage type={ExceptionType.noPermission} {...props} />;
 }

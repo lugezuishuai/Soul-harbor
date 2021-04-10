@@ -33,19 +33,17 @@ export function Exception(props: ExceptionProps) {
   return (
     <div className={classnames('exception', className)}>
       <div className="exception__hintMsg">
-        <div className="exception__imgEle" style={{ backgroundImage: `url(${img})` }} />
+        <img className="exception__image" src={img} alt={title} />
         <div className="exception__content">
           <h1>{title}</h1>
           <div className="exception__desc">{desc}</div>
-          <div className="exception__actions">
-            {actions || (
-              <Button className="exception__back">
-                <LinkComponent to={target} {...linkProps}>
-                  {backText}
-                </LinkComponent>
-              </Button>
-            )}
-          </div>
+          {actions || (
+            <Button type="primary" className="exception__back">
+              <LinkComponent to={target} {...linkProps}>
+                {backText}
+              </LinkComponent>
+            </Button>
+          )}
         </div>
       </div>
     </div>

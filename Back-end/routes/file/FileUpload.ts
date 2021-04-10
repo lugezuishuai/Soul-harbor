@@ -4,15 +4,14 @@ import path from 'path';
 import multiparty from 'multiparty';
 
 const router = express.Router();
-const UPLOAD_DIR = path.resolve(__dirname, "../../target");
-const extractExt = (filename: string) =>
-  filename.slice(filename.lastIndexOf("."), filename.length); // 提取后缀名
+const UPLOAD_DIR = path.resolve(__dirname, '../../target');
+const extractExt = (filename: string) => filename.slice(filename.lastIndexOf('.'), filename.length); // 提取后缀名
 
 // 将可写流转化成可读流
 const pipeStream = (path: string, writeStream: fse.WriteStream) => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const readStream = fse.createReadStream(path);
-    readStream.on("end", (err: any) => {
+    readStream.on('end', (err: any) => {
       if (err) {
         throw err;
       }
@@ -30,25 +29,24 @@ const mergeFileChunk = async (filePath: string, fileHash: string, size: number) 
   // 根据切片下标进行排序，否则直接读取目录获得的顺序可能会错乱
   chunkPaths.sort((a: string, b: string) => Number(a.split('-')[1]) - Number(b.split('-')[1]));
   await Promise.all(
-    chunkPaths.map((chunkPath: string, index: number) => pipeStream(
-      path.resolve(chunkDir, chunkPath),
-      // 指定位置创建可写流
-      fse.createWriteStream(filePath, {
-        start: index * size,
-        // @ts-ignore
-        end: (index + 1) * size,
-      })
-    ))
+    chunkPaths.map((chunkPath: string, index: number) =>
+      pipeStream(
+        path.resolve(chunkDir, chunkPath),
+        // 指定位置创建可写流
+        fse.createWriteStream(filePath, {
+          start: index * size,
+          // @ts-ignore
+          end: (index + 1) * size,
+        })
+      )
+    )
   );
   fse.rmdirSync(chunkDir); // 合并后删除保存切片的目录
 };
 
 // 返回已经上传切片名
 const createUploadedList = async (fileHash: string) =>
-  fse.existsSync(path.resolve(UPLOAD_DIR, fileHash))
-    ? await fse.readdir(path.resolve(UPLOAD_DIR, fileHash))
-    : [];
-
+  fse.existsSync(path.resolve(UPLOAD_DIR, fileHash)) ? await fse.readdir(path.resolve(UPLOAD_DIR, fileHash)) : [];
 
 // 合并文件
 router.get('/mergeChunks', async (req, res) => {
@@ -56,20 +54,20 @@ router.get('/mergeChunks', async (req, res) => {
   const ext = extractExt(fileName as string);
   const filePath = path.resolve(UPLOAD_DIR, `${fileHash}${ext}`);
   mergeFileChunk(filePath, fileHash as string, Number(size))
-  .then(() => {
-    res.status(200).json({
-      code: 0,
-      data: {},
-      msg: 'merge file success',
+    .then(() => {
+      res.status(200).json({
+        code: 0,
+        data: {},
+        msg: 'merge file success',
+      });
+    })
+    .catch((e) => {
+      res.status(500).json({
+        code: 1,
+        data: {},
+        msg: e.message.toString(),
+      });
     });
-  })
-  .catch(e => {
-    res.status(500).json({
-      code: 1,
-      data: {},
-      msg: e.message.toString(),
-    });
-  });
 });
 
 // 上传文件
@@ -120,7 +118,7 @@ router.post('/uploadChunks', async (req, res) => {
         msg: e.message.toString(),
       });
     }
-  })
+  });
 });
 
 // 验证是否已经上传切片
@@ -152,7 +150,7 @@ router.get('/verifyChunks', async (req, res) => {
       code: 0,
       data: {
         fileExist: false,
-        uploadedList, 
+        uploadedList,
       },
       msg: 'file no exist',
     });

@@ -8,7 +8,7 @@ const isEnvProduction = process.env.NODE_ENV === 'production';            // 是
 const sourceMap = !isEnvProduction; // 生产模式不开启sourceMap
 const miniCssLoader = isEnvProduction ? { 
   loader: miniCssExtractPlugin.loader, 
-  options: { 
+  options: {
     publicPath: '/',
     modules: { namedExport: true }
   }
@@ -70,7 +70,8 @@ module.exports = {
   },
   output: {
     filename: isEnvProduction ? '[name].[chunkhash:8].js' : '[name].[hash:8].js',
-    publicPath: '/',
+    path: resolve('dist'),
+    publicPath: '/', // 这里后续还要改为线上服务器的地址，在打包后的index.html中，资源统一会加上的路径
   },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
@@ -140,7 +141,7 @@ module.exports = {
             // outputPath:'../',//输出**文件夹
             publicPath: '/',
             name: "images/[name].[hash:8].[ext]",
-            limit: 8192  //把小于8kB的文件打成Base64的格式，写入JS
+            limit: 8192  // 把小于8kB的文件打成Base64的格式，写入JS
           }
         }]
       },
@@ -166,6 +167,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
+      favicon: './public/favicon.ico',
       filename: 'index.html',
       env: process.env.NODE_ENV,
     }),

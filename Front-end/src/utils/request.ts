@@ -1,7 +1,7 @@
 import originAxios, { CancelTokenSource } from 'axios';
 import Cookies from 'js-cookie';
-import { message } from 'antd';
 import { noop } from '@/utils/noop';
+import { handleErrorMsg } from './handleErrorMsg';
 
 export interface PostConfigProps {
   onUploadProgress?: (e: ProgressEvent) => void;
@@ -28,7 +28,7 @@ axios.interceptors.response.use(
       { code: 1, data: {}, msg: "server error" }
       */
       const errorMsg = response.data.msg;
-      message.error(errorMsg);
+      handleErrorMsg(errorMsg || '');
       return Promise.reject(errorMsg);
     }
     return response.data;
@@ -38,7 +38,29 @@ axios.interceptors.response.use(
       // 主动原因取消的请求
       return Promise.reject(`Request canceled: ${error.message}`);
     } else {
-      return error?.response?.data ? Promise.reject(error.response.data) : Promise.reject();
+      const errorStatus = error?.response?.status;
+      const errorData = error?.response?.data;
+      const errorMsg = error?.response?.data?.msg;
+      if (errorStatus && errorStatus !== 401) {
+        handleErrorMsg(errorMsg || '');
+      }
+
+      if (errorStatus) {
+        switch (errorStatus) {
+          case 403:
+            window.location.href = '/exception/403';
+            break;
+          case 404:
+            window.location.href = '/exception/404';
+            break;
+          case 500:
+            window.location.href = '/exception/500';
+            break;
+          default:
+            break;
+        }
+      }
+      return errorData ? Promise.reject(error.response.data) : Promise.reject();
     }
   }
 );
