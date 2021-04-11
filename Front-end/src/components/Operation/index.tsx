@@ -33,7 +33,7 @@ function Operation(props: OperationProps): any {
     Cookies.remove('token', { path: '/' }); // client删除token
     apiGet(LOGOUT).then(() => {
       message.success('退出成功');
-      history.push({ pathname: '/' });
+      history.push({ pathname: '/home' });
       dispatch({
         type: 'GET_USERINFO',
         payload: {},

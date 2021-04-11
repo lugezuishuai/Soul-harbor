@@ -12,22 +12,22 @@ import ResetPw from '@/pages/updatePassword';
 import NotFound from '@/pages/not-found';
 import NoPermission from '@/pages/no-permission';
 import Error from '@/pages/error-page';
-import WithLogin from '@/components/with-login';
+import { WrapWithLogin } from '@/components/with-login';
 // @ts-ignore
 import ScrollToTop from './scrollToTop.js';
 import './index.less';
 
 function WrapUserInfo() {
   return (
-    <WithLogin noAuthPlaceholder={<NoPermission className="wrap-exception" />}>
+    <WrapWithLogin noLoginPlaceholder={<NoPermission className="wrap-exception" />}>
       <UserInfo />
-    </WithLogin>
+    </WrapWithLogin>
   );
 }
 
 export default function Home() {
   return (
-    <ConfigProvider locale={zh_CN}>
+    <ConfigProvider locale={zh_CN} prefixCls="ant">
       <div className="home-global">
         <Router>
           <Switch>

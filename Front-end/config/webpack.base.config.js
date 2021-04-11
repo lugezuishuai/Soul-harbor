@@ -52,7 +52,14 @@ const lessLoader = {
   options: {
     sourceMap,
     lessOptions: {
-      javascriptEnabled: true // javascriptEnabled: true  ------  在less里面可以使用JavaScript表达式
+      javascriptEnabled: true, // javascriptEnabled: true  ------  在less里面可以使用JavaScript表达式
+      modifyVars: {
+        // 以下两个配置使用前提是必须在按需引入那里配置"style": true，否则不起作用，因为这里要是用less变量
+        // @primary-color是设置antd的主题色，默认是蓝色的
+        // "@primary-color": "red",
+        // @ant-prefix是自定义antd组件类名前缀的，需要配合<ConfigProvider prefixCls="ant">使用
+        "@ant-prefix": "ant",
+      },
     }
   }
 }

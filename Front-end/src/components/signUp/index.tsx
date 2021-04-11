@@ -17,12 +17,12 @@ import { Action } from '@/redux/actions';
 import { apiPost } from '@/utils/request';
 import './index.less';
 
-export type MenuItem = 'login' | 'register' | 'forgetPw';
+export type MenuItemType = 'login' | 'register' | 'forgetPw';
 interface Props extends FormComponentProps {
   dispatch(action: Action): void;
   hide(): void;
   visible: boolean;
-  menu: MenuItem | null;
+  menu: MenuItemType | null;
 }
 interface Register {
   username: string;
@@ -37,7 +37,7 @@ export const prefix = (str?: string): string => (str ? `sign-up-${str}` : 'sign-
 function SignUp(props: Props) {
   const { visible, hide, form, menu, dispatch } = props;
   const [loading, setLoading] = useState(false); // 控制登录按钮的loading
-  const [selectMenu, setSelectMenu] = useState<MenuItem | null>(menu);
+  const [selectMenu, setSelectMenu] = useState<MenuItemType | null>(menu);
   const [emailLogin, setEmailLogin] = useState(false); // 登录方式, 默认是用户名登录
   const { validateFields, resetFields } = form;
 
@@ -78,7 +78,7 @@ function SignUp(props: Props) {
       });
   };
 
-  const changeMenu = (value: MenuItem, clear = true) => {
+  const changeMenu = (value: MenuItemType, clear = true) => {
     if (clear) {
       resetFields();
       setSelectMenu(value);

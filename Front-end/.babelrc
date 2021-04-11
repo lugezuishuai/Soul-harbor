@@ -18,7 +18,7 @@
     [
       "import",{
         "libraryName": "antd",
-        "style": true
+        "style": true // 默认使用less，若使用css则改为'css'
       }
     ],
     ["@babel/plugin-syntax-dynamic-import"], // 支持import懒加载

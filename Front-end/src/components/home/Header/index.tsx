@@ -12,13 +12,17 @@ import { Link } from 'react-router-dom';
 import { State } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { screen } from '@/constants/screen';
-import { MenuItem } from '@/components/signUp';
+import { MenuItemType } from '@/components/signUp';
 import { Skeleton } from '@/components/Skeleton';
-import WithLogin from '@/components/with-login';
-import './index.less';
+import { WrapWithLogin } from '@/components/with-login';
 import { SelectParam } from 'antd/lib/menu';
+import { MenuConfig, loginMenu, noLoginMenu } from './menu-config';
+import classnames from 'classnames';
+import './index.less';
 
-interface Props {
+const { Item, Divider } = Menu;
+
+export interface HeaderProps {
   dispatch(action: Action): void;
   selectMenu: string;
   userInfo: UserInfo;
@@ -42,34 +46,47 @@ function UserSkeleton() {
   );
 }
 
-function Header(props: Props) {
+function MenuSkeleton() {
+  return (
+    <Skeleton className={classnames('row-flex', 'menu-skeleton')}>
+      <InlineBlock className="menu-skeleton__item" />
+      <InlineBlock className="menu-skeleton__item" />
+      <InlineBlock className="menu-skeleton__item" />
+      <InlineBlock className="menu-skeleton__item" />
+    </Skeleton>
+  );
+}
+
+function Header(props: HeaderProps) {
   const { selectMenu, dispatch, userInfo, login } = props;
   const { username, avatar, uid } = userInfo;
   const [visible, setVisible] = useState(false);
-  const [signUpMenu, setSignUpMenu] = useState<MenuItem | null>(null);
+  const [signUpMenu, setSignUpMenu] = useState<MenuItemType | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const hideModal = () => setVisible(false);
+  function hideModal() {
+    setVisible(false);
+  }
 
-  const handleClickLogin = () => {
+  function handleClickLogin() {
     setVisible(true);
     setSignUpMenu('login');
-  };
+  }
 
-  const handleClickRegister = () => {
+  function handleClickRegister() {
     setVisible(true);
     setSignUpMenu('register');
-  };
+  }
 
   // 获取初始选中的菜单
-  const setInitialMenu = () => {
+  function setInitialMenu() {
     const pathArr = window.location.href.split('/');
     const activeMenu = pathArr[3];
     dispatch({
       type: 'CHANGE_SELECT_MENU',
       payload: activeMenu,
     });
-  };
+  }
 
   useEffect(() => {
     apiGet(INIT)
@@ -98,44 +115,57 @@ function Header(props: Props) {
     setInitialMenu();
   }, []);
 
-  const handleMenuChange = ({ key }: SelectParam | { key: string }) => {
+  function handleMenuChange({ key }: SelectParam | { key: string }) {
     dispatch({
       type: 'CHANGE_SELECT_MENU',
       payload: key,
     });
-  };
+  }
 
-  const handleBackHome = () => {
+  function handleBackHome() {
     dispatch({
       type: 'CHANGE_SELECT_MENU',
       payload: '',
     });
-  };
+  }
 
-  const menu = (
-    <Menu
-      selectable={true}
-      className="little_screen_menu"
-      selectedKeys={selectMenu ? [selectMenu] : []}
-      onSelect={handleMenuChange}
-    >
-      <Menu.Item key="user" className="little_screen_menu_item">
-        <Link to={`/user/${uid}`}>个人信息</Link>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="chat" className="little_screen_menu_item">
-        <Link to="/chat">聊天</Link>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="blog" className="little_screen_menu_item">
-        <Link to="/blog">博客</Link>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="news" className="little_screen_menu_item">
-        <Link to="/news">资讯</Link>
-      </Menu.Item>
-    </Menu>
-  );
+  function renderHomeMenu(config: MenuConfig[], isMobile = false) {
+    return (
+      <Menu
+        className={isMobile ? 'little_screen_menu' : 'home_menu'}
+        mode={isMobile ? 'vertical' : 'horizontal'}
+        selectedKeys={selectMenu ? [selectMenu] : []}
+        onSelect={handleMenuChange}
+      >
+        {isMobile
+          ? config.map(({ key, to, text }, index, arr) => {
+              return [
+                <Item key={key} className="little_screen_menu_item">
+                  {typeof to === 'function' ? (
+                    <Link to={() => to(uid || '')}>{text}</Link>
+                  ) : (
+                    <Link to={to}>{text}</Link>
+                  )}
+                </Item>,
+                index !== arr.length - 1 ? <Divider /> : null,
+              ];
+            })
+          : config.map(({ key, to, text }) => {
+              return (
+                <Item key={key} className="home_menu_item">
+                  {typeof to === 'function' ? (
+                    <Link to={() => to(uid || '')}>{text}</Link>
+                  ) : (
+                    <Link to={to}>{text}</Link>
+                  )}
+                </Item>
+              );
+            })}
+      </Menu>
+    );
+  }
+
+  const mobileMenu = login ? renderHomeMenu(loginMenu, true) : renderHomeMenu(noLoginMenu, true);
 
   const renderUserState = useCallback(
     (login: boolean | null) => {
@@ -177,39 +207,22 @@ function Header(props: Props) {
   return (
     <div className="home_header">
       {screen.isLittleScreen ? (
-        <Dropdown overlay={menu} trigger={['click']}>
+        <Dropdown overlay={mobileMenu} trigger={['click']}>
           <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
             <Icon component={DropdownMenu as any} className="home_menu_little_icon" />
           </a>
         </Dropdown>
       ) : (
-        <Menu
-          // theme="dark"
-          mode="horizontal"
-          className="home_menu"
-          selectedKeys={selectMenu ? [selectMenu] : []}
-          onSelect={handleMenuChange}
-        >
-          <Menu.Item key="user" className="home_menu_item">
-            <Link to={`/user/${uid}`}>个人信息</Link>
-          </Menu.Item>
-          <Menu.Item key="chat" className="home_menu_item">
-            <Link to="/chat">聊天</Link>
-          </Menu.Item>
-          <Menu.Item key="blog" className="home_menu_item">
-            <Link to="/blog">博客</Link>
-          </Menu.Item>
-          <Menu.Item key="news" className="home_menu_item">
-            <Link to="/news">资讯</Link>
-          </Menu.Item>
-        </Menu>
+        <WrapWithLogin noLoginPlaceholder={renderHomeMenu(noLoginMenu)} loadingComponent={<MenuSkeleton />}>
+          {renderHomeMenu(loginMenu)}
+        </WrapWithLogin>
       )}
       <Link to="/" className="back_to_home" onClick={handleBackHome}>
         <Icon component={Heart as any} className="back_to_home_icon" />
         <span className="back_to_home_text">Soul Harbor</span>
       </Link>
       {loading ? <UserSkeleton /> : renderUserState(login)}
-      {visible && menu && <WrapSignUp dispatch={dispatch} menu={signUpMenu} visible={visible} hide={hideModal} />}
+      {visible && <WrapSignUp dispatch={dispatch} menu={signUpMenu} visible={visible} hide={hideModal} />}
     </div>
   );
 }

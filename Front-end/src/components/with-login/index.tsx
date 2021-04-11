@@ -1,28 +1,32 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
-import { Spin } from 'antd';
 
-interface WithLoginProps {
+export interface WithLoginProps {
   children: ReactNode | ReactNode[];
   skipCheck?: boolean;
-  noAuthPlaceholder?: ReactNode;
+  noLoginPlaceholder?: ReactNode;
+  loadingComponent?: ReactNode;
   login: boolean | null;
 }
 
 function WithLogin(props: WithLoginProps): JSX.Element {
-  const { children, skipCheck = false, noAuthPlaceholder = null, login } = props;
+  const { children, skipCheck = false, noLoginPlaceholder = null, login, loadingComponent } = props;
 
   if (login !== null) {
     if (skipCheck || login) {
       return children as any;
     }
-    return noAuthPlaceholder as any;
+    return noLoginPlaceholder as any;
   }
 
-  return <Spin />;
+  if (loadingComponent) {
+    return loadingComponent as any;
+  }
+
+  return null as any;
 }
 
-export default connect((state: State) => ({
+export const WrapWithLogin = connect((state: State) => ({
   login: state.user.login,
 }))(WithLogin);
