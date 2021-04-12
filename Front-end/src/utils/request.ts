@@ -1,7 +1,8 @@
-import originAxios, { CancelTokenSource } from 'axios';
+import originAxios, { AxiosRequestConfig, Canceler, CancelTokenSource } from 'axios';
 import Cookies from 'js-cookie';
 import { noop } from '@/utils/noop';
 import { handleErrorMsg } from './handleErrorMsg';
+import Qs from 'qs';
 
 export interface PostConfigProps {
   onUploadProgress?: (e: ProgressEvent) => void;
@@ -17,8 +18,60 @@ const axios = originAxios.create({
   timeout: 20000, //设置请求的最大时延是20s
 });
 
+// 存储要发送请求的键值对
+const pendingRequest = new Map<string, Canceler>();
+
+// 根据请求信息生成请求Key
+function generateReqKey(config: AxiosRequestConfig) {
+  const { method, url, params, data } = config;
+  return [method, url, Qs.stringify(params), Qs.stringify(data)].join('&');
+}
+
+// 用于把当前请求信息添加到pendingRequest对象中
+function addPendingRequest(config: AxiosRequestConfig) {
+  const requestKey = generateReqKey(config);
+  config.cancelToken =
+    config.cancelToken ||
+    new originAxios.CancelToken((cancel) => {
+      if (!pendingRequest.has(requestKey)) {
+        pendingRequest.set(requestKey, cancel);
+      }
+    });
+}
+
+// 检查是否存在重复请求，若存在则取消已发送的请求
+function removePendingRequest(config: AxiosRequestConfig) {
+  const requestKey = generateReqKey(config);
+  if (pendingRequest.has(requestKey)) {
+    const cancelToken = pendingRequest.get(requestKey);
+    if (!cancelToken) {
+      return;
+    }
+    cancelToken(requestKey);
+    pendingRequest.delete(requestKey);
+  }
+}
+
+// 请求拦截器
+axios.interceptors.request.use(
+  function (config) {
+    const { headers } = config;
+    headers.Authorization = Cookies.get('token')?.replace('%20', ' '); // 每个请求头带上Authorization
+
+    removePendingRequest(config); // 检查是否存在重复请求，若存在则取消已发送的请求
+    addPendingRequest(config); // 把当前请求信息添加到pendingRequest对象中
+
+    return config;
+  },
+  function (error) {
+    return Promise.reject(error);
+  }
+);
+
 axios.interceptors.response.use(
   function (response) {
+    console.log('response config: ', response.config);
+    removePendingRequest(response.config); // 从pendingRequest对象中移除请求
     if (response.data && response.data.code !== 0) {
       /*
       successful response: 
@@ -34,9 +87,11 @@ axios.interceptors.response.use(
     return response.data;
   },
   function (error) {
+    removePendingRequest(error.config || {}); // 从pendingRequest对象中移除请求
     if (originAxios.isCancel(error)) {
       // 主动原因取消的请求
-      return Promise.reject(`Request canceled: ${error.message}`);
+      console.log(`Request canceled by ${error.message || ''}`);
+      return Promise.reject(error);
     } else {
       const errorStatus = error?.response?.status;
       const errorData = error?.response?.data;
@@ -60,7 +115,7 @@ axios.interceptors.response.use(
             break;
         }
       }
-      return errorData ? Promise.reject(error.response.data) : Promise.reject();
+      return Promise.reject(errorData || error);
     }
   }
 );
@@ -69,10 +124,7 @@ axios.interceptors.response.use(
 export function apiGet(url: string, data?: any, headers = {}, config: GetConfigProps = {}): Promise<any> {
   const { source } = config;
   return axios.get(url, {
-    headers: {
-      Authorization: Cookies.get('token')?.replace('%20', ' '),
-      ...headers,
-    },
+    headers,
     params: data,
     cancelToken: source?.token,
   });
@@ -85,10 +137,7 @@ export function apiPost(url: string, data: any, headers = {}, config: PostConfig
     method: 'post',
     url,
     data,
-    headers: {
-      Authorization: Cookies.get('token')?.replace('%20', ' '),
-      ...headers,
-    },
+    headers,
     onDownloadProgress,
     onUploadProgress,
     cancelToken: source?.token,
