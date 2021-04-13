@@ -13,8 +13,7 @@ import NotFound from '@/pages/not-found';
 import NoPermission from '@/pages/no-permission';
 import Error from '@/pages/error-page';
 import { WrapWithLogin } from '@/components/with-login';
-// @ts-ignore
-import ScrollToTop from './scrollToTop.js';
+import { WrapScrollToTop } from './scroll-to-top';
 import './index.less';
 
 function WrapUserInfo() {
@@ -42,7 +41,7 @@ export default function Home() {
               </div>
               <div className="home-global__container">
                 <div className="home-global__content">
-                  <ScrollToTop>
+                  <WrapScrollToTop>
                     <Switch>
                       <Route path="/home" exact component={Content} />
                       <Route path="/chat" exact component={Employee} />
@@ -51,7 +50,7 @@ export default function Home() {
                       <Route path="/user/:id" exact component={WrapUserInfo} />
                       <Redirect to="/home" />
                     </Switch>
-                  </ScrollToTop>
+                  </WrapScrollToTop>
                 </div>
                 <Footer />
               </div>
