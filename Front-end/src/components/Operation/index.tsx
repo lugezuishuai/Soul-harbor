@@ -4,10 +4,10 @@ import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 import { screen } from '@/constants/screen';
 import { apiGet } from '@/utils/request';
 import { LOGOUT } from '@/constants/urls';
-import Cookies from 'js-cookie';
 import { Action } from '@/redux/actions';
-import './index.less';
 import { SelectParam } from 'antd/lib/menu';
+import defaultAvatar from '@/assets/image/default-avatar.png';
+import './index.less';
 
 interface OperationProps extends RouteComponentProps {
   dispatch(action: Action): void;
@@ -16,8 +16,6 @@ interface OperationProps extends RouteComponentProps {
   avatar?: string | null;
   uid?: string | number;
 }
-
-const defaultAvatar = 'https://s1-fs.pstatp.com/static-resource-staging/v1/78c99186-2f3c-40aa-81b8-18591041db2g';
 
 function Operation(props: OperationProps): any {
   const { handleMenuChange, username, avatar, dispatch, uid, history } = props;
@@ -30,7 +28,6 @@ function Operation(props: OperationProps): any {
 
   // 「退出登录」
   const handleLogout = () => {
-    Cookies.remove('token', { path: '/' }); // client删除token
     apiGet(LOGOUT).then(() => {
       message.success('退出成功');
       history.push({ pathname: '/home' });
@@ -71,7 +68,6 @@ function Operation(props: OperationProps): any {
       <div className="user_operation_avatar">
         <Avatar
           className={screen.isLittleScreen ? 'user_operation_avatar_img__small' : 'user_operation_avatar_img'}
-          icon="user"
           src={avatar || defaultAvatar}
         />
         <Dropdown overlay={menu} trigger={screen.isLittleScreen ? ['click'] : ['hover']}>

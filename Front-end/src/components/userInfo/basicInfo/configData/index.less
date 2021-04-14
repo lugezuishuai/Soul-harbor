@@ -1,49 +1,85 @@
 @import '~antd/lib/style/themes/default.less';
 :global {
-  .config_data_item {
-    &:last-child {
-      margin-bottom: 0;
+  .config-data {
+    background-color: #fff;
+    padding: 16px;
+    border-radius: 6px;
+    &__item {
+      margin-bottom: 20px;
+      &:last-child {
+        margin-bottom: 0;
+      }
     }
-    margin-bottom: 20px;
-    .config_data_label {
+    &__label {
       margin-bottom: 8px;
-      display: block;
-      height: 22px;
       line-height: 22px;
       font-size: 16px;
       font-weight: 500;
     }
-    .config_data_text {
+    &__text {
       display: block;
       height: 22px;
       line-height: 22px;
-      color: #3370FF;
+      color: #3370ff;
       font-size: 16px;
     }
-    .item_input_frame {
+    &__input {
       display: flex;
       height: 32px;
       width: 420px;
       justify-content: space-between;
       align-items: center;
-      .ant-input {
-        font-size: 16px;
+      @media screen and (max-width: 480px) {
+        width: 100%;
+        height: 42px;
       }
+    }
+    &__textarea {
+      width: 400px;
+      height: 32px;
+      margin-bottom: 0 !important;
+      @media screen and (max-width: 480px) {
+        width: 100%;
+        height: 42px;
+      }
+    }
+    &__avatar {
+      width: 48px;
+      height: 48px;
+      &__small {
+        width: 32px;
+        height: 32px;
+      }
+    }
+    &__required {
+      color: #f54a45;
+      margin-left: 12px;
+      font-size: 20px;
+    }
+    &__datePicker {
+      width: 200px;
+      height: 32px;
+      @media screen and (max-width: 480px) {
+        height: 42px;
+      }
+    }
+    .ant-input {
+      font-size: 16px;
     }
     .ant-form-item-control {
       line-height: 1;
     }
-    .config_data_textarea {
-      width: 400px;
-      height: 32px;
-      margin-bottom: 0 !important;
+    .ant-form-item {
+      line-height: 1;
+      // margin-bottom: 0;
     }
-    .config_data_avatar {
-      transition: 0.5s;
-      border: 1px solid #b3b8bd;
-      &:hover {
-        cursor: pointer;
-        border: 1px solid rgb(255, 174, 191);
+    .ant-form-item-control {
+      line-height: 1;
+    }
+    .ant-input {
+      height: 32px;
+      @media screen and (max-width: 480px) {
+        height: 42px;
       }
     }
   }

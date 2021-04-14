@@ -18,10 +18,10 @@ function UserInfo(props: Props) {
   const { userInfo, userIdShow, userNameShow, dispatch } = props;
   const { username, uid, ...basicInfo } = userInfo;
 
-  const [edit, setEdit] = useState(false);                             // 基本信息编辑态
-  const [showUserName, SetShowUserName] = useState(userNameShow);      // 是否显示用户名
-  const [showUserId, setShowUserId] = useState(userIdShow);            // 是否显示用户ID
-  
+  const [edit, setEdit] = useState(false); // 基本信息编辑态
+  const [showUserName, SetShowUserName] = useState(userNameShow); // 是否显示用户名
+  const [showUserId, setShowUserId] = useState(userIdShow); // 是否显示用户ID
+
   useEffect(() => {
     dispatch({
       type: 'CHANGE_SHOW_USERNAME',
@@ -30,28 +30,35 @@ function UserInfo(props: Props) {
     dispatch({
       type: 'CHANGE_SHOW_USERID',
       payload: showUserId,
-    })
-  }, [showUserId, showUserName])
+    });
+  }, [showUserId, showUserName]);
 
   // BasicInfo 配置
   const handleEdit = (edit: boolean) => {
     setEdit(edit);
-  }
+  };
 
   // AccountInfo 配置
   const handleShowUserName = () => SetShowUserName(!showUserName);
   const handleShowUserId = () => setShowUserId(!showUserId);
 
   return (
-    <div className="user_info">
-      <AccountInfo userName={username} userId={uid} showUserName={showUserName} showUserId={showUserId} handleShowUserName={handleShowUserName} handleShowUserId={handleShowUserId}/>
-      <BasicInfo basicInfo={basicInfo} edit={edit} handleEdit={handleEdit}/>
+    <div className="user-info">
+      <AccountInfo
+        userName={username}
+        userId={uid}
+        showUserName={showUserName}
+        showUserId={showUserId}
+        handleShowUserName={handleShowUserName}
+        handleShowUserId={handleShowUserId}
+      />
+      <BasicInfo basicInfo={basicInfo} edit={edit} handleEdit={handleEdit} />
     </div>
-  )
+  );
 }
 
 export default connect((state: State) => ({
   userInfo: state.user.userInfo,
   userNameShow: state.user.userNameShow,
-  userIdShow: state.user.userIdShow
+  userIdShow: state.user.userIdShow,
 }))(UserInfo);

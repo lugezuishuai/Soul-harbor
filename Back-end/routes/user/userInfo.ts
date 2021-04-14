@@ -631,7 +631,16 @@ router.get('/init', function (req, res) {
 // 退出登录
 router.get('/logout', function (req, res) {
   req.logout();
-  res.redirect('/api/user/init');
+  res.cookie('token', '', {
+    path: '/',
+    maxAge: -1,
+  });
+
+  res.json({
+    code: 0,
+    data: {},
+    msg: 'success logout',
+  });
 });
 
 export default router;
