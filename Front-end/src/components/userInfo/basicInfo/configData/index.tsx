@@ -1,18 +1,22 @@
 import React from 'react';
 import { Form, Avatar, Input, DatePicker } from 'antd';
 import { UserBasicInfo } from '../index';
-import { inputProps } from '@/constants/inputProps';
 import { FormComponentProps } from 'antd/lib/form';
 import dayjs from 'dayjs';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import { screen } from '@/constants/screen';
-const { TextArea } = Input;
 import './index.less';
+const { TextArea } = Input;
 
 interface Props extends FormComponentProps {
   basicInfo: UserBasicInfo;
   edit: boolean;
 }
+
+const inputProps = {
+  autoComplete: 'on',
+  allowClear: true,
+};
 
 function ConfigData(props: Props) {
   const { basicInfo, form, edit } = props;

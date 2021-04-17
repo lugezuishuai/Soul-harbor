@@ -3,7 +3,6 @@ import { message, Button, Form, Tooltip, Icon } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Rewrite from '@/assets/icon/rewrite.svg';
 import ConfigData from './configData';
-import '../index.less';
 import './index.less';
 
 export interface UserBasicInfo {
@@ -13,32 +12,33 @@ export interface UserBasicInfo {
   birth?: string | null;
 }
 
-interface Props extends FormComponentProps {
+interface BasicInfoProps extends FormComponentProps {
   basicInfo: UserBasicInfo;
-  edit: boolean;
-  handleEdit(edit: boolean): void;
 }
 
-function BasicInfo(props: Props) {
-  const { basicInfo, edit, form, handleEdit } = props;
+function BasicInfo(props: BasicInfoProps) {
+  const { basicInfo, form } = props;
   const { validateFields } = form;
+  const [edit, setEdit] = useState(false); // 基本信息编辑态
   const [loading, setLoading] = useState(false); // 保存按钮的开关状态
 
-  const handleCancel = () => {
-    handleEdit(false);
-  };
+  function handleCancel() {
+    setEdit(false);
+  }
 
   const handleSubmit = (e: any) => {
     e.preventDefault(); // 阻止表单默认行为
     validateFields((errors: Record<string, any>, values: UserBasicInfo) => {
       if (!errors) {
         message.success('提交成功');
-        handleEdit(false);
+        setEdit(false);
       }
     });
   };
 
-  const handleClickEdit = () => handleEdit(true);
+  function handleClickEdit () {
+    setEdit(true);
+  }
 
   return (
     <div className="basic-info">
@@ -71,7 +71,7 @@ function BasicInfo(props: Props) {
   );
 }
 
-const WrapBasicInfo = Form.create<Props>({
+const WrapBasicInfo = Form.create<BasicInfoProps>({
   name: 'basic-info',
 })(BasicInfo);
 

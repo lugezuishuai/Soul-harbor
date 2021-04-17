@@ -4,7 +4,6 @@ import { Link, withRouter } from 'react-router-dom';
 import update from '@/assets/icon/update.svg';
 import updateMobile from '@/assets/icon/update_mobile.svg';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
-import { inputProps } from '@/constants/inputProps';
 import { screen } from '@/constants/screen';
 import { CHECKTOKENVALID, UPDATEPASSWORD } from '@/constants/urls';
 import { CheckTokenValidResponse, CheckTokenValidRequest } from '@/interface/user/checkTokenValid';
@@ -13,8 +12,8 @@ import invalidLink from '@/assets/image/invalid_link.png';
 import backHome from '@/assets/icon/back_home.svg';
 import backHomeMobile from '@/assets/icon/back_home_mobile.svg';
 import md5 from 'md5';
-import './index.less';
 import { apiGet, apiPost } from '@/utils/request';
+import './index.less';
 
 interface Props {
   form: WrappedFormUtils<any>;
@@ -25,6 +24,11 @@ interface FormData {
   newPassword: string;
   newPasswordAgain: string;
 }
+
+const inputProps = {
+  autoComplete: 'on',
+  allowClear: true,
+};
 
 function ForgetPw(props: Props) {
   const { form, history } = props;
@@ -51,6 +55,7 @@ function ForgetPw(props: Props) {
             message.success('修改成功');
             history.push({ pathname: '/' });
           })
+          .catch((e) => console.error(e))
           .finally(() => setBtnLoading(false));
       }
     });

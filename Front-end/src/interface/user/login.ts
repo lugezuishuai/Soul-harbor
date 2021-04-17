@@ -1,15 +1,10 @@
 // login
 export interface LoginRequest {
-  username: string;
-  password: string;
+  username?: string;
+  password?: string;
+  email?: string;
+  verifyCode?: string;
 }
-
-export interface EmailLoginRequest {
-  email: string;
-  verifyCode: string;
-}
-
-export type WrapLoginRequest = LoginRequest | EmailLoginRequest;
 
 export interface UserInfo {
   username: string;

@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Form, Tooltip, Icon, message } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Show from '@/assets/icon/show.svg';
 import Hide from '@/assets/icon/hide.svg';
 import { debounce } from 'lodash';
 import copy from 'copy-to-clipboard';
-import '../index.less';
+import { screen } from '@/constants/screen';
+import { TooltipPlacement } from 'antd/lib/tooltip';
 import './index.less';
 
-interface Props extends FormComponentProps {
+interface AccountInfoProps extends FormComponentProps {
   userName: string;
   userId: string;
   showUserName: boolean;
@@ -17,7 +18,7 @@ interface Props extends FormComponentProps {
   handleShowUserId(): void;
 }
 
-function AccountInfo(props: Props) {
+function AccountInfo(props: AccountInfoProps) {
   const { userName, userId, showUserName, showUserId, handleShowUserId, handleShowUserName } = props;
   const userNameLen = userName.length; // 用户名的长度
   const userIdLen = userId.length; // 用户ID的长度
@@ -32,46 +33,56 @@ function AccountInfo(props: Props) {
     });
   }, 200);
 
+  function renderCopyItem(child: ReactNode, title: string | ReactNode, placement: TooltipPlacement = 'top') {
+    return screen.isLittleScreen ? (
+      child
+    ) : (
+      <Tooltip title={title} placement={placement}>
+        {child}
+      </Tooltip>
+    );
+  }
+
+  function renderShowOrHideIcon(type: 'show' | 'hide', nameOrId: 'username' | 'userId') {
+    return (
+      <Icon
+        component={type === 'hide' ? (Hide as any) : (Show as any)}
+        onClick={nameOrId === 'username' ? handleShowUserName : handleShowUserId}
+        className="account-info__icon"
+      />
+    );
+  }
+
   return (
     <div className="account-info">
       <div className="account-info__title">账号信息</div>
       <Form className="account-info__form">
         <Form.Item className="account-info__form__item">
-          <div className="account-info__label">账号</div>
+          <div className="account-info__label">用户名</div>
           <div className="account-info__show">
-            <Tooltip title="复制" placement="bottom">
+            {renderCopyItem(
               <div className="account-info__text" onClick={() => userName && onCopy(userName)}>
                 {showUserName ? userName : new Array(userNameLen).fill('*')}
-              </div>
-            </Tooltip>
-            {showUserName ? (
-              <Tooltip title="隐藏">
-                <Icon component={Hide as any} onClick={handleShowUserName} className="account-info__icon" />
-              </Tooltip>
-            ) : (
-              <Tooltip title="显示">
-                <Icon component={Show as any} onClick={handleShowUserName} className="account-info__icon" />
-              </Tooltip>
+              </div>,
+              '复制'
             )}
+            {showUserName
+              ? renderCopyItem(renderShowOrHideIcon('hide', 'username'), '隐藏')
+              : renderCopyItem(renderShowOrHideIcon('show', 'username'), '显示')}
           </div>
         </Form.Item>
         <Form.Item className="account-info__form__item">
           <div className="account-info__label">用户ID</div>
           <div className="account-info__show">
-            <Tooltip title="复制" placement="bottom">
+            {renderCopyItem(
               <span className="account-info__text" onClick={() => userId && onCopy(userId)}>
                 {showUserId ? userId : new Array(userIdLen).fill('*')}
-              </span>
-            </Tooltip>
-            {showUserId ? (
-              <Tooltip title="隐藏">
-                <Icon component={Hide as any} onClick={handleShowUserId} className="account-info__icon" />
-              </Tooltip>
-            ) : (
-              <Tooltip title="显示">
-                <Icon component={Show as any} onClick={handleShowUserId} className="account-info__icon" />
-              </Tooltip>
+              </span>,
+              '复制'
             )}
+            {showUserId
+              ? renderCopyItem(renderShowOrHideIcon('hide', 'userId'), '隐藏')
+              : renderCopyItem(renderShowOrHideIcon('show', 'userId'), '显示')}
           </div>
         </Form.Item>
       </Form>
@@ -79,8 +90,6 @@ function AccountInfo(props: Props) {
   );
 }
 
-const WrapAccountInfo = Form.create<Props>({
+export const WrapAccountInfo = Form.create<AccountInfoProps>({
   name: 'account-info',
 })(AccountInfo);
-
-export default WrapAccountInfo;

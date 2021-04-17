@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 import DropdownMenu from '@/assets/icon/menu.svg';
 import Heart from '@/assets/icon/heart.svg';
 import { WrapSignUp } from '@/components/signUp';
-import Operation from '@/components/Operation';
+import { WrapOperation } from '@/components/Operation';
 import { apiGet } from '@/utils/request';
-import { UserInfo, InitResponse } from '@/interface/user/init';
+import { UserInfo } from '@/interface/user/init';
 import { INIT } from '@/constants/urls';
 import { Link } from 'react-router-dom';
 import { State } from '@/redux/reducers/state';
@@ -25,7 +25,7 @@ const { Item, Divider } = Menu;
 export interface HeaderProps {
   dispatch(action: Action): void;
   selectMenu: string;
-  userInfo: UserInfo;
+  userInfo: UserInfo | null;
   login: boolean | null;
 }
 
@@ -59,7 +59,7 @@ function MenuSkeleton() {
 
 function Header(props: HeaderProps) {
   const { selectMenu, dispatch, userInfo, login } = props;
-  const { username, avatar, uid } = userInfo;
+  console.log('selectMenu', selectMenu);
   const [visible, setVisible] = useState(false);
   const [signUpMenu, setSignUpMenu] = useState<MenuItemType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,41 +79,44 @@ function Header(props: HeaderProps) {
   }
 
   // 获取初始选中的菜单
-  function setInitialMenu() {
+  const setInitialMenu = useCallback(() => {
     const pathArr = window.location.href.split('/');
     const activeMenu = pathArr[3];
     dispatch({
       type: 'CHANGE_SELECT_MENU',
       payload: activeMenu,
     });
-  }
+  }, [dispatch]);
+
+  // 检查用户是否已经登录
+  const checkLogin = useCallback(async () => {
+    try {
+      const res = await apiGet(INIT);
+      dispatch({
+        type: 'GET_USERINFO',
+        payload: {
+          ...res.data.userInfo,
+          uid: res.data.userInfo.uid && res.data.userInfo.uid.slice(0, 8),
+        },
+      });
+      dispatch({
+        type: 'CHANGE_LOGIN_STATE',
+        payload: true,
+      });
+    } catch (e) {
+      dispatch({
+        type: 'CHANGE_LOGIN_STATE',
+        payload: false,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [dispatch]);
 
   useEffect(() => {
-    apiGet(INIT)
-      .then((res: InitResponse) => {
-        dispatch({
-          type: 'GET_USERINFO',
-          payload: {
-            ...res.data.userInfo,
-            uid: res.data.userInfo.uid && res.data.userInfo.uid.slice(0, 8),
-          },
-        });
-        dispatch({
-          type: 'CHANGE_LOGIN_STATE',
-          payload: true,
-        });
-      })
-      .catch(() => {
-        dispatch({
-          type: 'CHANGE_LOGIN_STATE',
-          payload: false,
-        });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    checkLogin();
     setInitialMenu();
-  }, []);
+  }, [checkLogin, setInitialMenu]);
 
   function handleMenuChange({ key }: SelectParam | { key: string }) {
     dispatch({
@@ -125,7 +128,7 @@ function Header(props: HeaderProps) {
   function handleBackHome() {
     dispatch({
       type: 'CHANGE_SELECT_MENU',
-      payload: '',
+      payload: 'home',
     });
   }
 
@@ -135,14 +138,14 @@ function Header(props: HeaderProps) {
         className={isMobile ? 'little_screen_menu' : 'home_menu'}
         mode={isMobile ? 'vertical' : 'horizontal'}
         selectedKeys={selectMenu ? [selectMenu] : []}
-        onSelect={handleMenuChange}
+        onClick={handleMenuChange}
       >
         {isMobile
           ? config.map(({ key, to, text }, index, arr) => {
               return [
                 <Item key={key} className="little_screen_menu_item">
                   {typeof to === 'function' ? (
-                    <Link to={() => to(uid || '')}>{text}</Link>
+                    <Link to={() => to(userInfo?.uid || '')}>{text}</Link>
                   ) : (
                     <Link to={to}>{text}</Link>
                   )}
@@ -154,7 +157,7 @@ function Header(props: HeaderProps) {
               return (
                 <Item key={key} className="home_menu_item">
                   {typeof to === 'function' ? (
-                    <Link to={() => to(uid || '')}>{text}</Link>
+                    <Link to={() => to(userInfo?.uid || '')}>{text}</Link>
                   ) : (
                     <Link to={to}>{text}</Link>
                   )}
@@ -169,10 +172,11 @@ function Header(props: HeaderProps) {
 
   const renderUserState = useCallback(
     (login: boolean | null) => {
-      if (login) {
+      if (login && userInfo) {
+        const { username, avatar, uid } = userInfo;
         return (
-          <Operation
-            // @ts-ignore
+          <WrapOperation
+            //@ts-ignore
             handleMenuChange={handleMenuChange}
             username={username}
             avatar={avatar}

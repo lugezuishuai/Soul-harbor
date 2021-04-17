@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, message, Button } from 'antd';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
-import { inputProps } from '@/constants/inputProps';
+import { inputProps } from './index';
 import { prefix } from './index';
 import { SENDREGISTERVC_URL } from '@/constants/urls';
 import { apiPost } from '@/utils/request';
@@ -116,7 +116,7 @@ export function Register(props: Props) {
               },
             },
           ],
-        })(<Input.Password className={prefix('form-item-input')} placeholder="密码" {...inputProps} />)}
+        })(<Input.Password className={prefix('form-item-input')} placeholder="密码" />)}
       </Form.Item>
       <Form.Item className={prefix('form-item')}>
         <div className={prefix('form-item-text')}>确认密码：</div>
@@ -132,7 +132,7 @@ export function Register(props: Props) {
               },
             },
           ],
-        })(<Input.Password className={prefix('form-item-input')} placeholder="确认密码" {...inputProps} />)}
+        })(<Input.Password className={prefix('form-item-input')} placeholder="确认密码" />)}
       </Form.Item>
       <Form.Item className={prefix('form-item')}>
         <div className={prefix('form-item-text')}>邮箱：</div>

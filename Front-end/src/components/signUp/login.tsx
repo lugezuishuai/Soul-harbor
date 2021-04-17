@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
-import { inputProps } from '@/constants/inputProps';
+import { inputProps } from './index';
 import { prefix } from './index';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { SENDLOGINVC_URL } from '@/constants/urls';
@@ -197,7 +197,7 @@ export function Login(props: Props) {
               message: '请输入密码',
             },
           ],
-        })(<Input.Password className={prefix('form-item-input')} placeholder="密码" {...inputProps} />)}
+        })(<Input.Password className={prefix('form-item-input')} placeholder="密码" />)}
       </Form.Item>
       {screen.isLittleScreen && renderBottom()}
     </>

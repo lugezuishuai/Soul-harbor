@@ -11,25 +11,26 @@ import md5 from 'md5';
 import dayjs from 'dayjs';
 import { REGISTER_URL, USERNAMELOGIN_URL, EMAILLOGIN_URL } from '@/constants/urls';
 import { RegisterRequest } from '@/interface/user/register';
-import { LoginResponse, WrapLoginRequest } from '@/interface/user/login';
+import { LoginResponse, LoginRequest } from '@/interface/user/login';
 import Cookies from 'js-cookie';
 import { Action } from '@/redux/actions';
 import { apiPost } from '@/utils/request';
 import './index.less';
 
 export type MenuItemType = 'login' | 'register' | 'forgetPw';
+
+export const inputProps = {
+  autoComplete: 'on',
+  allowClear: true,
+};
 interface Props extends FormComponentProps {
   dispatch(action: Action): void;
   hide(): void;
   visible: boolean;
   menu: MenuItemType | null;
 }
-interface Register {
-  username: string;
-  password: string;
+interface Register extends RegisterRequest {
   passwordAgain: string;
-  email: string;
-  verifyCode: string;
 }
 
 export const prefix = (str?: string): string => (str ? `sign-up-${str}` : 'sign-up');
@@ -41,39 +42,38 @@ function SignUp(props: Props) {
   const [emailLogin, setEmailLogin] = useState(false); // 登录方式, 默认是用户名登录
   const { validateFields, resetFields } = form;
 
-  const handleLogin = (values: WrapLoginRequest) => {
+  const handleLogin = (values: LoginRequest) => {
     const reqData = emailLogin
       ? {
           ...values,
-          // @ts-ignore
-          verifyCode: md5(md5(values.email + md5(values.verifyCode.toLowerCase()))),
+          verifyCode: values.verifyCode ? md5(md5(values.email + md5(values.verifyCode.toLowerCase()))) : '',
         }
       : {
           ...values,
-          // @ts-ignore
-          password: md5(md5(values.username + md5(values.password))),
+          password: values.password ? md5(md5(values.username + md5(values.password))) : '',
         };
     setLoading(true);
     const LOGINURL = emailLogin ? EMAILLOGIN_URL : USERNAMELOGIN_URL;
     apiPost(LOGINURL, reqData)
       .then((res: LoginResponse) => {
         message.success('登录成功');
-        setLoading(false);
-        hide();
         res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });
         dispatch({
           type: 'GET_USERINFO',
           payload: {
             ...res.data.userInfo,
-            uid: res.data.userInfo && res.data.userInfo.uid.slice(0, 8),
+            uid: res.data.userInfo?.uid.slice(0, 8) || '',
           },
         });
         dispatch({
           type: 'CHANGE_LOGIN_STATE',
           payload: true,
         });
+        setLoading(false);
+        hide();
       })
-      .finally(() => {
+      .catch((e) => {
+        console.error(e);
         setLoading(false);
       });
   };
@@ -100,22 +100,22 @@ function SignUp(props: Props) {
     apiPost(REGISTER_URL, reqData)
       .then(() => {
         message.success('注册成功');
-        setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 切不要清空表单
+        setLoading(false);
+        setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 且不要清空表单
       })
-      .finally(() => {
+      .catch((e) => {
+        console.error(e);
         setLoading(false);
       });
   };
 
   const handleOk = (e: any) => {
     e.preventDefault();
-    validateFields((errors: Record<string, any>, values: WrapLoginRequest | Register) => {
+    validateFields((errors: Record<string, any>, values) => {
       if (!errors && values) {
         if (selectMenu === 'login') {
-          // @ts-ignore
           handleLogin(values);
         } else if (selectMenu === 'register') {
-          // @ts-ignore
           handleRegister(values);
         }
       }

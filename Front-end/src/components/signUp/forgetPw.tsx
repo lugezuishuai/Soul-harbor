@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Form, Icon, Input, message } from 'antd';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
-import { inputProps } from '@/constants/inputProps';
+import { inputProps } from './index';
 import { prefix } from './index';
 import { screen } from '@/constants/screen';
 import { apiPost } from '@/utils/request';

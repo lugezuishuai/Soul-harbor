@@ -14,32 +14,39 @@ interface OperationProps extends RouteComponentProps {
   handleMenuChange(obj: SelectParam | { key: string }): void;
   username?: string;
   avatar?: string | null;
-  uid?: string | number;
+  uid?: string;
 }
 
 function Operation(props: OperationProps): any {
   const { handleMenuChange, username, avatar, dispatch, uid, history } = props;
-  const handleClickItem = () => {
+  function handleClickItem() {
     const obj = {
       key: 'user',
     };
     handleMenuChange(obj);
-  };
+  }
 
   // 「退出登录」
-  const handleLogout = () => {
-    apiGet(LOGOUT).then(() => {
+  const handleLogout = async () => {
+    try {
+      await apiGet(LOGOUT);
       message.success('退出成功');
       history.push({ pathname: '/home' });
       dispatch({
         type: 'GET_USERINFO',
-        payload: {},
+        payload: null,
       });
       dispatch({
         type: 'CHANGE_LOGIN_STATE',
         payload: false,
       });
-    });
+      dispatch({
+        type: 'CHANGE_SELECT_MENU',
+        payload: 'home',
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const menu = (
@@ -50,11 +57,11 @@ function Operation(props: OperationProps): any {
         </Link>
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="1" className="user_operation_menu_item">
+      <Menu.Item key="change-password" className="user_operation_menu_item">
         <div className="user_operation_menu_item_text">修改密码</div>
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="2" className="user_operation_menu_item">
+      <Menu.Item key="logout" className="user_operation_menu_item">
         <div className="user_operation_menu_item_text" onClick={handleLogout}>
           退出登录
         </div>
@@ -85,4 +92,4 @@ function Operation(props: OperationProps): any {
   );
 }
 
-export default withRouter(Operation as any);
+export const WrapOperation = withRouter(Operation as any);

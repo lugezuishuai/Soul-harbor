@@ -4,22 +4,20 @@ import { State } from '@/redux/reducers/state';
 import { UserInfo } from '@/interface/user/login';
 import { Action } from '@/redux/actions/index';
 import BasicInfo from './basicInfo';
-import AccountInfo from './accountInfo';
+import { WrapAccountInfo } from './accountInfo';
 import './index.less';
 
-interface Props {
-  userInfo: UserInfo;
+interface UserInfoProps {
+  userInfo: UserInfo | null;
   userNameShow: boolean;
   userIdShow: boolean;
   dispatch(action: Action): void;
 }
 
-function UserInfo(props: Props) {
+function UserInfo(props: UserInfoProps) {
   const { userInfo, userIdShow, userNameShow, dispatch } = props;
-  const { username, uid, ...basicInfo } = userInfo;
 
-  const [edit, setEdit] = useState(false); // 基本信息编辑态
-  const [showUserName, SetShowUserName] = useState(userNameShow); // 是否显示用户名
+  const [showUserName, setShowUserName] = useState(userNameShow); // 是否显示用户名
   const [showUserId, setShowUserId] = useState(userIdShow); // 是否显示用户ID
 
   useEffect(() => {
@@ -33,32 +31,36 @@ function UserInfo(props: Props) {
     });
   }, [showUserId, showUserName]);
 
-  // BasicInfo 配置
-  const handleEdit = (edit: boolean) => {
-    setEdit(edit);
-  };
-
   // AccountInfo 配置
-  const handleShowUserName = () => SetShowUserName(!showUserName);
+  const handleShowUserName = () => setShowUserName(!showUserName);
   const handleShowUserId = () => setShowUserId(!showUserId);
 
-  return (
-    <div className="user-info">
-      <AccountInfo
-        userName={username}
-        userId={uid}
-        showUserName={showUserName}
-        showUserId={showUserId}
-        handleShowUserName={handleShowUserName}
-        handleShowUserId={handleShowUserId}
-      />
-      <BasicInfo basicInfo={basicInfo} edit={edit} handleEdit={handleEdit} />
-    </div>
-  );
+  function renderUserInfo() {
+    if (!userInfo) {
+      return null;
+    }
+    const { username, uid, ...basicInfo } = userInfo;
+
+    return (
+      <>
+        <WrapAccountInfo
+          userName={username}
+          userId={uid}
+          showUserName={showUserName}
+          showUserId={showUserId}
+          handleShowUserName={handleShowUserName}
+          handleShowUserId={handleShowUserId}
+        />
+        <BasicInfo basicInfo={basicInfo} />
+      </>
+    );
+  }
+
+  return <div className="user-info">{renderUserInfo()}</div>;
 }
 
-export default connect((state: State) => ({
-  userInfo: state.user.userInfo,
-  userNameShow: state.user.userNameShow,
-  userIdShow: state.user.userIdShow,
+export default connect(({ user: { userInfo, userIdShow, userNameShow } }: State) => ({
+  userInfo,
+  userNameShow,
+  userIdShow,
 }))(UserInfo);
