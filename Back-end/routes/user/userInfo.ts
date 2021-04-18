@@ -22,13 +22,13 @@ const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
 const BCRYPT_SALT_ROUNDS = 12;
 
-// 头像上传相关
+// 头像上传
 const AVATAR_PATH = path.resolve(__dirname, '../../avatar');
 const acceptType = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/bmp'];
 const avatarUpload = multer({
   dest: AVATAR_PATH,
   limits: {
-    fileSize: 2000 * 1000, // 限制文件大小（2M)
+    fileSize: 2048 * 1000, // 限制文件大小（2M)
     files: 1, // 限制文件数量
   },
   fileFilter: function (req, file, cb) {
