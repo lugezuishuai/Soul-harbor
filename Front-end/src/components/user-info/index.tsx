@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
 import { UserInfo } from '@/interface/user/login';
 import { Action } from '@/redux/actions/index';
-import BasicInfo from './basicInfo';
-import { WrapAccountInfo } from './accountInfo';
+import BasicInfo from './basic-info';
+import { WrapAccountInfo } from './account-info';
 import './index.less';
 
 interface UserInfoProps {

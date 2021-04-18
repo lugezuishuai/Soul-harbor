@@ -4,10 +4,10 @@ import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-d
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
 import Employee from '@/components/employee';
 import UploadFile from '@/components/setting';
-import Content from '@/components/home/Content';
-import UserInfo from '@/components/userInfo';
-import Header from './Header';
-import Footer from './Footer';
+import Content from '@/components/home/content';
+import UserInfo from '@/components/user-info';
+import Header from './header';
+import Footer from './footer';
 import ResetPw from '@/pages/updatePassword';
 import NotFound from '@/pages/not-found';
 import NoPermission from '@/pages/no-permission';

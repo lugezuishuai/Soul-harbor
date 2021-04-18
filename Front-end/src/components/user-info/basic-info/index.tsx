@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { message, Button, Form, Tooltip, Icon } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Rewrite from '@/assets/icon/rewrite.svg';
-import ConfigData from './configData';
+import ConfigData from './config-data';
 import './index.less';
 
 export interface UserBasicInfo {
