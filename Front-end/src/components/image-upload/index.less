@@ -1,0 +1,43 @@
+@import '../styles/theme.less';
+
+.image-upload {
+  position: relative;
+  &-icon {
+    position: relative;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+
+    &:hover:after {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      content: ' ';
+      border-radius: 10px;
+      z-index: 1;
+      background: rgba(0, 0, 0, 0.5) url('./icon/camera.svg') no-repeat center;
+    }
+
+    &-disabled {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #dee0e3;
+      cursor: default;
+    }
+  }
+  .@{ant-prefix}-upload-select {
+    display: block;
+  }
+}
+
+.rect-wrapper-icon {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-size: contain;
+  display: inline-block;
+}

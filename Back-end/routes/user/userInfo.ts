@@ -12,12 +12,76 @@ import bcrypt from 'bcryptjs';
 import { breakPromise } from '../../utils/breakPromise';
 import { SuccessCodeType } from './code-type';
 import crypto from 'crypto';
+import multer from 'multer';
+import path from 'path';
+import fse from 'fs-extra';
 
 const { alreadyExit, noMatch, expiredOrUnValid, badAccount } = SuccessCodeType;
 
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
 const BCRYPT_SALT_ROUNDS = 12;
+
+// 头像上传相关
+const AVATAR_PATH = path.resolve(__dirname, '../../avatar');
+const acceptType = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/bmp'];
+const avatarUpload = multer({
+  dest: AVATAR_PATH,
+  limits: {
+    fileSize: 2000 * 1000, // 限制文件大小（2M)
+    files: 1, // 限制文件数量
+  },
+  fileFilter: function (req, file, cb) {
+    // 限制文件上传类型，仅可上传png格式图片
+    if (acceptType.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Please check avatar type'));
+    }
+  },
+});
+
+// 提取后缀名
+const extractExt = (filename: string) => filename.slice(filename.lastIndexOf('.') + 1, filename.length);
+
+// 上传头像
+router.post('/avatar-upload', (req, res) => {
+  avatarUpload.single('avatar')(req, res, (err: any) => {
+    if (err) {
+      return res.status(500).json({
+        code: 1,
+        data: {},
+        msg: err.message.toString(),
+      });
+    }
+    try {
+      const file = req.file;
+      const { userId } = req.body;
+      const { mimetype, originalname } = file;
+      const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
+
+      const newAvatarPath = path.resolve(AVATAR_PATH, `${userId}.${fileType}`);
+      fse.renameSync(file.path, newAvatarPath); // 重写头像的路径
+
+      const avatarUrl = `${'http://localhost:4001' + newAvatarPath}`;
+
+      return res.status(200).json({
+        code: 0,
+        data: {
+          src: avatarUrl,
+        },
+        msg: 'upload success',
+      });
+    } catch (e) {
+      console.error('Error: ', e);
+      return res.status(500).json({
+        code: 1,
+        data: {},
+        msg: 'upload failed',
+      });
+    }
+  });
+});
 
 // 注册用户
 router.post('/register', urlencodedParser, async (req, res) => {

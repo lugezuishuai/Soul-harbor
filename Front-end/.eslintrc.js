@@ -33,5 +33,6 @@ module.exports = {
     'react/prop-types': 'off',
     'react/display-name': 'off',
     'no-useless-escape': 'off',
+    'no-async-promise-executor': 'off',
   }
 };
