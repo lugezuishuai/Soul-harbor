@@ -3,7 +3,7 @@ import { RcFile } from 'antd/lib/upload';
 import React, { PropsWithChildren, ReactNode, useState } from 'react';
 import { noop } from '@/utils/noop';
 import classnames from 'classnames';
-import defaultIcon from './icon/upload-fill.png';
+import defaultIcon from '@/assets/image/upload-fill.png';
 import { cropperImageFile } from './cropper-image-file';
 
 import './index.less';

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle, useCallback } from 'react';
-import ZoomIn from '../icon/zoom-in.r.svg';
-import ZoomOut from '../icon/zoom-out.r.svg';
+import ZoomIn from '@/assets/icon/zoom-in.svg';
+import ZoomOut from '@/assets/icon/zoom-out.svg';
 import { getImageInfo } from '@/utils/getImageInfo';
 import { Icon } from 'antd';
 import classnames from 'classnames';

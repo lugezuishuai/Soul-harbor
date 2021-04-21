@@ -1,7 +1,8 @@
 import React from 'react';
 import { ImageCropper } from '../image-cropper';
 import { openWidget } from '@/components/open-widget';
-import Close from '../icon/close.r.svg';
+import Close from '@/assets/icon/close.svg';
+import { Icon } from 'antd';
 import './index.less';
 
 export interface convertFileDefaultOptions {
@@ -23,9 +24,10 @@ export function CropperImgFileTitle(props: CropperImgFileTitleProps) {
   return (
     <div className="image-cropper-modal-header">
       <div className="image-cropper-modal-header-text">{title || '编辑应用图标'}</div>
-      <div onClick={onCancel} className="image-cropper-modal-header-close">
+      {/* <div onClick={onCancel} className="image-cropper-modal-header-close">
         <Close />
-      </div>
+      </div> */}
+      <Icon className="image-cropper-modal-header-close" component={Close as any} onClick={onCancel} />
     </div>
   );
 }

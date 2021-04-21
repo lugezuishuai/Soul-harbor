@@ -6,6 +6,7 @@ import logger from 'morgan';
 import cors from 'cors';
 import expressJWT from 'express-jwt';
 import passport from 'passport';
+import csrf from 'csurf';
 
 import { jwtSecret } from './config/token/token';
 import { notTokenPath } from './config/token/path';
@@ -25,21 +26,23 @@ app.use(cors()); // 配置全部跨域
 
 // 配置响应头
 app.all('*', function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "content-type,Authorization,X-Requested-With");
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'content-type,Authorization,X-Requested-With');
   // res.header("X-Powered-By", ' 3.2.1');
   // res.header("Content-Type", "application/json;charset=utf-8");
   next();
 });
 
 // 验证token是否过期并规定那些路由不需要验证
-app.use(expressJWT({
-  secret: jwtSecret,
-  algorithms:['HS256'],
-}).unless({
-  path: notTokenPath,
-}));
+app.use(
+  expressJWT({
+    secret: jwtSecret,
+    algorithms: ['HS256'],
+  }).unless({
+    path: notTokenPath,
+  })
+);
 
 app.set('trust proxy', true);
 
@@ -51,6 +54,12 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(csrf({ cookie: { httpOnly: true }, ignoreMethods: ['GET', 'HEAD', 'OPTIONS'] })); // CSRF防御
+app.use(function (req, res, next) {
+  res.cookie('XSRF-TOKEN', req.csrfToken());
+  res.locals.csrftoken = req.csrfToken();
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize()); // 初始化passport
 
@@ -60,12 +69,12 @@ app.use('/api/employee', employeeRouter);
 app.use('/api/file', sliceFileUpload);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler(错误处理中间件)
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   if (err.name === 'UnauthorizedError') {
     // 返回401状态码
@@ -77,7 +86,7 @@ app.use(function(err, req, res, next) {
   } else {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-  
+
     // render the error page
     res.status(err.status || 500);
     res.render('error');

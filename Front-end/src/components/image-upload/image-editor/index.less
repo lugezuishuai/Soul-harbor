@@ -1,76 +1,78 @@
-.image-editor {
-  position: relative;
-  user-select: none;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  &-canvas {
+:global {
+  .image-editor {
     position: relative;
-  }
-  &-preview {
-    cursor: move;
-  }
-  &-scale {
-    box-sizing: border-box;
-    width: 128px;
-    height: 34px;
-    margin: 24px auto 40px;
-    border: 1px solid #bbbfc4;
-    border-radius: 4px;
-    font-size: 22px;
-    line-height: 1;
-    display: flex;
-    text-align: center;
-    justify-content: space-around;
-  }
-  &-zoom {
-    flex: 1;
+    user-select: none;
+    margin-top: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    &:hover {
-      background: #f8f9fa;
+    flex-direction: column;
+    &-canvas {
+      position: relative;
     }
-    &:active {
-      background: #eff0f1;
+    &-preview {
+      cursor: move;
     }
-
-    &-in {
-      border-radius: 3px 0 0 3px;
-    }
-    &-zoom-out {
-      border-radius: 0 3px 3px 0;
-    }
-    &-button {
+    &-scale {
+      box-sizing: border-box;
+      width: 128px;
+      height: 34px;
+      margin: 24px auto 40px;
+      border: 1px solid #bbbfc4;
+      border-radius: 4px;
+      font-size: 22px;
+      line-height: 1;
       display: flex;
-      justify-content: center;
+      text-align: center;
+      justify-content: space-around;
+    }
+    &-zoom {
+      flex: 1;
+      display: flex;
       align-items: center;
-      width: 20px;
-      height: 20px;
-      font-size: 20px;
-      color: #2b2f36;
-      pointer-events: unset;
-    }
-    &.image-editor-zoom-disabled {
-      &:hover,
+      justify-content: center;
+      cursor: pointer;
+      &:hover {
+        background: #f8f9fa;
+      }
       &:active {
-        background: #ffffff;
+        background: #eff0f1;
       }
-      cursor: not-allowed;
-      .image-editor-zoom-button {
-        color: #bbbfc4;
+  
+      &-in {
+        border-radius: 3px 0 0 3px;
+      }
+      &-zoom-out {
+        border-radius: 0 3px 3px 0;
+      }
+      &-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 20px;
+        height: 20px;
+        font-size: 20px;
+        color: #2b2f36;
+        pointer-events: unset;
+      }
+      &.image-editor-zoom-disabled {
+        &:hover,
+        &:active {
+          background: #ffffff;
+        }
+        cursor: not-allowed;
+        .image-editor-zoom-button {
+          color: #bbbfc4;
+        }
       }
     }
-  }
-
-  &-division {
-    position: relative;
-    top: -1px;
-    width: 1px;
-    height: 34px;
-    background: #bbbfc4;
+  
+    &-division {
+      position: relative;
+      top: -1px;
+      width: 1px;
+      height: 34px;
+      background: #bbbfc4;
+    }
   }
 }

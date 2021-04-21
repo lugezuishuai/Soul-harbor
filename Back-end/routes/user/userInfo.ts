@@ -63,12 +63,10 @@ router.post('/avatar-upload', (req, res) => {
       const newAvatarPath = path.resolve(AVATAR_PATH, `${userId}.${fileType}`);
       fse.renameSync(file.path, newAvatarPath); // 重写头像的路径
 
-      const avatarUrl = `${'http://localhost:4001' + newAvatarPath}`;
-
       return res.status(200).json({
         code: 0,
         data: {
-          src: avatarUrl,
+          src: newAvatarPath,
         },
         msg: 'upload success',
       });
@@ -689,6 +687,15 @@ router.get('/init', function (req, res) {
       userInfo: _.pick(req.user, ['username', 'uid', 'email', 'signature', 'birth']),
     },
     msg: 'init success',
+  });
+});
+
+// 设置xsrfToken
+router.get('/xsrf', function (req, res) {
+  res.status(200).json({
+    code: 0,
+    data: {},
+    msg: 'xsrfToken init success',
   });
 });
 

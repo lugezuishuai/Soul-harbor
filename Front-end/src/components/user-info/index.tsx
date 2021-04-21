@@ -51,7 +51,7 @@ function UserInfo(props: UserInfoProps) {
           handleShowUserName={handleShowUserName}
           handleShowUserId={handleShowUserId}
         />
-        <BasicInfo basicInfo={basicInfo} />
+        <BasicInfo basicInfo={basicInfo} userId={uid} />
       </>
     );
   }

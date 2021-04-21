@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ConfigProvider } from 'antd';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
@@ -14,6 +14,8 @@ import NoPermission from '@/pages/no-permission';
 import Error from '@/pages/error-page';
 import { WrapWithLogin } from '@/components/with-login';
 import { WrapScrollToTop } from './scroll-to-top';
+import { apiGet } from '@/utils/request';
+import { XSRFINIT } from '@/constants/urls';
 import './index.less';
 
 function WrapUserInfo() {
@@ -25,6 +27,19 @@ function WrapUserInfo() {
 }
 
 export default function Home() {
+  async function initXsrf() {
+    try {
+      await apiGet(XSRFINIT);
+      console.log('xsrfToken init success');
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  useEffect(() => {
+    initXsrf();
+  }, []);
+
   return (
     <ConfigProvider locale={zh_CN} prefixCls="ant">
       <div className="home-global">

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { message, Button, Form, Tooltip, Icon } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Rewrite from '@/assets/icon/rewrite.svg';
-import ConfigData from './config-data';
+import { WrapConfigData } from './config-data';
 import './index.less';
 
 export interface UserBasicInfo {
@@ -14,10 +14,11 @@ export interface UserBasicInfo {
 
 interface BasicInfoProps extends FormComponentProps {
   basicInfo: UserBasicInfo;
+  userId: string;
 }
 
 function BasicInfo(props: BasicInfoProps) {
-  const { basicInfo, form } = props;
+  const { basicInfo, userId, form } = props;
   const { validateFields } = form;
   const [edit, setEdit] = useState(false); // 基本信息编辑态
   const [loading, setLoading] = useState(false); // 保存按钮的开关状态
@@ -36,7 +37,7 @@ function BasicInfo(props: BasicInfoProps) {
     });
   };
 
-  function handleClickEdit () {
+  function handleClickEdit() {
     setEdit(true);
   }
 
@@ -50,7 +51,7 @@ function BasicInfo(props: BasicInfoProps) {
           </Tooltip>
         )}
       </div>
-      <ConfigData basicInfo={basicInfo} edit={edit} />
+      <WrapConfigData basicInfo={basicInfo} edit={edit} userId={userId} />
       {edit && (
         <div className="basic-info__footer">
           <Button className="basic-info__footer__button" onClick={handleCancel}>
