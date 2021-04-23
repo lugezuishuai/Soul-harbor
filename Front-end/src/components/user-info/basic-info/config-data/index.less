@@ -1,4 +1,4 @@
-@import '~antd/lib/style/themes/default.less';
+// @import '~antd/lib/style/themes/default.less';
 :global {
   .config-data {
     background-color: #fff;
@@ -97,6 +97,24 @@
       height: 32px;
       @media screen and (max-width: 480px) {
         height: 42px;
+      }
+    }
+    &__footer {
+      margin-top: 28px;
+      &__button {
+        margin-right: 16px;
+        width: 100px;
+        height: 32px;
+        @media screen and (max-width: 480px) {
+          display: block;
+          width: 100%;
+          height: 48px;
+          border-radius: 48px;
+          margin-bottom: 16px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
       }
     }
     .ant-input {

@@ -9,6 +9,7 @@ export type UserState = {
   login: boolean | null;
   userNameShow: boolean;
   userIdShow: boolean;
+  emailShow: boolean;
 };
 
 export type Header = {
@@ -30,6 +31,7 @@ export const initialUserState: UserState = {
   login: null,
   userNameShow: false, // 显示或隐藏用户名
   userIdShow: false, // 显示或隐藏用户ID
+  emailShow: false, // 显示或隐藏邮箱
 };
 
 export const initialHeaderState: Header = {

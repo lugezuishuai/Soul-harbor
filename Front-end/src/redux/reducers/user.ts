@@ -1,4 +1,10 @@
-import { CHANGE_SHOW_USERID, CHANGE_SHOW_USERNAME, GET_USERINFO, CHANGE_LOGIN_STATE } from '../actions/action_types';
+import {
+  CHANGE_SHOW_USERID,
+  CHANGE_SHOW_USERNAME,
+  CHANGE_SHOW_EMAIL,
+  GET_USERINFO,
+  CHANGE_LOGIN_STATE,
+} from '../actions/action_types';
 import { initialUserState } from './state';
 import { Action } from '../actions/index';
 
@@ -18,6 +24,11 @@ export default function (state = initialUserState, action: Action) {
       return {
         ...state,
         userIdShow: action.payload,
+      };
+    case CHANGE_SHOW_EMAIL:
+      return {
+        ...state,
+        emailShow: action.payload,
       };
     case CHANGE_LOGIN_STATE:
       return {

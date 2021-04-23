@@ -60,10 +60,10 @@ app.use(function (req, res, next) {
   res.locals.csrftoken = req.csrfToken();
   next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize()); // 初始化passport
 
 app.use('/', indexRouter);
+app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/api/user', userInfo);
 app.use('/api/employee', employeeRouter);
 app.use('/api/file', sliceFileUpload);

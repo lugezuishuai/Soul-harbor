@@ -15,6 +15,7 @@ import crypto from 'crypto';
 import multer from 'multer';
 import path from 'path';
 import fse from 'fs-extra';
+import os from 'os';
 
 const { alreadyExit, noMatch, expiredOrUnValid, badAccount } = SuccessCodeType;
 
@@ -22,8 +23,21 @@ const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
 const BCRYPT_SALT_ROUNDS = 12;
 
+//获取本机ip地址
+function getIPAddress(interfaces: NodeJS.Dict<os.NetworkInterfaceInfo[]>) {
+  for (const devName in interfaces) {
+    const iface = interfaces[devName];
+    for (let i = 0; iface && i < iface.length; i++) {
+      const alias = iface[i];
+      if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+        return alias.address;
+      }
+    }
+  }
+}
+
 // 头像上传
-const AVATAR_PATH = path.resolve(__dirname, '../../avatar');
+const AVATAR_PATH = path.resolve(__dirname, '../../public/user/avatar');
 const acceptType = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/bmp'];
 const avatarUpload = multer({
   dest: AVATAR_PATH,
@@ -59,14 +73,18 @@ router.post('/avatar-upload', (req, res) => {
       const { userId } = req.body;
       const { mimetype, originalname } = file;
       const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
+      const hostIP = getIPAddress(os.networkInterfaces()); // 获取主机IP地址
+      const port = process.env.PORT || '4001'; // 获取当前的端口号
 
       const newAvatarPath = path.resolve(AVATAR_PATH, `${userId}.${fileType}`);
       fse.renameSync(file.path, newAvatarPath); // 重写头像的路径
 
+      const avatarSrc = `http://${hostIP}:${port}/static/user/avatar/${userId}.${fileType}`;
+
       return res.status(200).json({
         code: 0,
         data: {
-          src: newAvatarPath,
+          src: avatarSrc,
         },
         msg: 'upload success',
       });

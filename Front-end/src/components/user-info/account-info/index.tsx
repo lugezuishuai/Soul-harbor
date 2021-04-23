@@ -12,16 +12,30 @@ import './index.less';
 interface AccountInfoProps extends FormComponentProps {
   userName: string;
   userId: string;
+  email: string;
   showUserName: boolean;
   showUserId: boolean;
+  showEmail: boolean;
   handleShowUserName(): void;
   handleShowUserId(): void;
+  handleShowEmail(): void;
 }
 
 function AccountInfo(props: AccountInfoProps) {
-  const { userName, userId, showUserName, showUserId, handleShowUserId, handleShowUserName } = props;
+  const {
+    userName,
+    userId,
+    email,
+    showUserName,
+    showUserId,
+    showEmail,
+    handleShowUserId,
+    handleShowUserName,
+    handleShowEmail,
+  } = props;
   const userNameLen = userName.length; // 用户名的长度
   const userIdLen = userId.length; // 用户ID的长度
+  const emailLen = email.length; // 邮箱的长度
 
   const onCopy = debounce((accountInfo: string) => {
     copy(accountInfo);
@@ -43,11 +57,13 @@ function AccountInfo(props: AccountInfoProps) {
     );
   }
 
-  function renderShowOrHideIcon(type: 'show' | 'hide', nameOrId: 'username' | 'userId') {
+  function renderShowOrHideIcon(type: 'show' | 'hide', textType: 'username' | 'userId' | 'email') {
     return (
       <Icon
         component={type === 'hide' ? (Hide as any) : (Show as any)}
-        onClick={nameOrId === 'username' ? handleShowUserName : handleShowUserId}
+        onClick={
+          textType === 'username' ? handleShowUserName : textType === 'userId' ? handleShowUserId : handleShowEmail
+        }
         className="account-info__icon"
       />
     );
@@ -83,6 +99,20 @@ function AccountInfo(props: AccountInfoProps) {
             {showUserId
               ? renderCopyItem(renderShowOrHideIcon('hide', 'userId'), '隐藏')
               : renderCopyItem(renderShowOrHideIcon('show', 'userId'), '显示')}
+          </div>
+        </Form.Item>
+        <Form.Item className="account-info__form__item">
+          <div className="account-info__label">用户邮箱</div>
+          <div className="account-info__show">
+            {renderCopyItem(
+              <div className="account-info__text" onClick={() => email && onCopy(email)}>
+                {showEmail ? email : new Array(emailLen).fill('*')}
+              </div>,
+              '复制'
+            )}
+            {showEmail
+              ? renderCopyItem(renderShowOrHideIcon('hide', 'email'), '隐藏')
+              : renderCopyItem(renderShowOrHideIcon('show', 'email'), '显示')}
           </div>
         </Form.Item>
       </Form>
