@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Avatar, Input, DatePicker, Button } from 'antd';
+import { Form, Avatar, Input, DatePicker, Button, message } from 'antd';
 import { UserBasicInfo } from '../index';
 import { FormComponentProps } from 'antd/lib/form';
 import dayjs, { Dayjs } from 'dayjs';
@@ -9,17 +9,24 @@ import { ImageUpload } from '@/components/image-upload';
 import { verifyAvatarFileAndMessage } from './verifyAvatar';
 import { RcFile } from 'antd/lib/upload';
 import { apiPost } from '@/utils/request';
-import { UPLOADAVATAR } from '@/constants/urls';
+import { BASICINFO, UPLOADAVATAR } from '@/constants/urls';
 import { UploadAvatarRes } from '@/interface/user/uploadAvatar';
+import { BasicInfoRequest, BasicInfoRes } from '@/interface/user/basicInfo';
+import { connect } from 'react-redux';
+import { Action } from '@/redux/actions';
+import { State } from '@/redux/reducers/state';
+import { UserInfo } from '@/interface/user/init';
 import './index.less';
 
 const { TextArea } = Input;
 
 interface ConfigDataProps extends FormComponentProps {
+  onCancel(): void;
+  dispatch(action: Action): void;
   basicInfo: UserBasicInfo;
+  userInfo: UserInfo | null;
   userId: string;
   edit: boolean;
-  onCancel(): void;
 }
 
 interface FormValues {
@@ -29,7 +36,7 @@ interface FormValues {
 }
 
 function ConfigData(props: ConfigDataProps) {
-  const { basicInfo, form, edit, userId, onCancel } = props;
+  const { basicInfo, form, edit, userId, onCancel, dispatch, userInfo } = props;
   const { getFieldDecorator, validateFields, setFields } = form;
   const { signature, avatar, birth } = basicInfo;
   const [loading, setLoading] = useState(false); // 保存按钮的开关状态
@@ -85,14 +92,35 @@ function ConfigData(props: ConfigDataProps) {
 
   function handleSubmit(e: any) {
     e.preventDefault(); // 阻止表单默认行为
-    validateFields((errors: Record<string, any>, values: FormValues) => {
+    validateFields(async (errors: Record<string, any>, values: FormValues) => {
       if (!errors) {
         setLoading(true);
         try {
           const { avatar, signature, birth } = values;
+          const reqData: BasicInfoRequest = {
+            userId,
+            avatar: avatar === defaultAvatar ? '' : avatar,
+            signature: signature || '',
+            birth: dayjs(birth).format('YYYY-MM-DD') || '',
+          };
+
+          const {
+            data: { avatar: realAvatar },
+          }: BasicInfoRes = await apiPost(BASICINFO, reqData);
+          message.success('修改成功');
           onCancel();
+          dispatch({
+            type: 'GET_USERINFO',
+            payload: {
+              ...userInfo,
+              ...reqData,
+              avatar: realAvatar || '',
+            },
+          });
         } catch (e) {
           console.error(e);
+        } finally {
+          setLoading(false);
         }
       }
     });
@@ -155,6 +183,8 @@ function ConfigData(props: ConfigDataProps) {
   );
 }
 
-export const WrapConfigData = Form.create<ConfigDataProps>({
-  name: 'data_config',
-})(ConfigData);
+export const WrapConfigData = connect(({ user: { userInfo } }: State) => ({ userInfo }))(
+  Form.create<ConfigDataProps>({
+    name: 'data_config',
+  })(ConfigData)
+);

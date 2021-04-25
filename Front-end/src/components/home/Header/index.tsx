@@ -59,7 +59,6 @@ function MenuSkeleton() {
 
 function Header(props: HeaderProps) {
   const { selectMenu, dispatch, userInfo, login } = props;
-  console.log('selectMenu', selectMenu);
   const [visible, setVisible] = useState(false);
   const [signUpMenu, setSignUpMenu] = useState<MenuItemType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,15 +67,15 @@ function Header(props: HeaderProps) {
     setVisible(false);
   }
 
-  function handleClickLogin() {
+  const handleClickLogin = useCallback(() => {
     setVisible(true);
     setSignUpMenu('login');
-  }
+  }, []);
 
-  function handleClickRegister() {
+  const handleClickRegister = useCallback(() => {
     setVisible(true);
     setSignUpMenu('register');
-  }
+  }, []);
 
   // 获取初始选中的菜单
   const setInitialMenu = useCallback(() => {
@@ -92,11 +91,12 @@ function Header(props: HeaderProps) {
   const checkLogin = useCallback(async () => {
     try {
       const res = await apiGet(INIT);
+      const userId = res.data.userInfo.uid ? res.data.userInfo.uid.slice(0, 8) : '';
       dispatch({
         type: 'GET_USERINFO',
         payload: {
           ...res.data.userInfo,
-          uid: res.data.userInfo.uid && res.data.userInfo.uid.slice(0, 8),
+          uid: userId,
         },
       });
       dispatch({
@@ -205,7 +205,7 @@ function Header(props: HeaderProps) {
         }
       }
     },
-    [login, screen.isLittleScreen]
+    [login, userInfo, handleClickLogin, handleClickRegister]
   );
 
   return (
@@ -231,8 +231,8 @@ function Header(props: HeaderProps) {
   );
 }
 
-export default connect((state: State) => ({
-  selectMenu: state.header.selectMenu,
-  userInfo: state.user.userInfo,
-  login: state.user.login,
+export default connect(({ header: { selectMenu }, user: { userInfo, login } }: State) => ({
+  selectMenu,
+  userInfo,
+  login,
 }))(Header);

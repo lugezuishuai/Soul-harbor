@@ -7,9 +7,9 @@ export interface LoginRequest {
 }
 
 export interface UserInfo {
-  username: string;
-  uid: string;
-  email: string;
+  username?: string;
+  uid?: string;
+  email?: string;
   birth?: string | null;
   signature?: string | null;
   avatar?: string | null;

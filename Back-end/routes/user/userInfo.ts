@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import md5 from 'md5';
 import passport from 'passport';
 import { setToken } from '../../config/token/token';
-import * as _ from 'lodash';
 import { transporter } from '../../config/nodemailer';
 import dayjs from 'dayjs';
 import bcrypt from 'bcryptjs';
@@ -16,25 +15,17 @@ import multer from 'multer';
 import path from 'path';
 import fse from 'fs-extra';
 import os from 'os';
+import schedule from 'node-schedule';
+import rimraf from 'rimraf';
+import { listFile } from '../../utils/listFile';
+import { getIPAddress } from '../../utils/getIPAddress';
+import { extractExt } from '../../utils/extractExt';
 
 const { alreadyExit, noMatch, expiredOrUnValid, badAccount } = SuccessCodeType;
 
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
 const BCRYPT_SALT_ROUNDS = 12;
-
-//获取本机ip地址
-function getIPAddress(interfaces: NodeJS.Dict<os.NetworkInterfaceInfo[]>) {
-  for (const devName in interfaces) {
-    const iface = interfaces[devName];
-    for (let i = 0; iface && i < iface.length; i++) {
-      const alias = iface[i];
-      if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
-        return alias.address;
-      }
-    }
-  }
-}
 
 // 头像上传
 const AVATAR_PATH = path.resolve(__dirname, '../../public/user/avatar');
@@ -55,12 +46,9 @@ const avatarUpload = multer({
   },
 });
 
-// 提取后缀名
-const extractExt = (filename: string) => filename.slice(filename.lastIndexOf('.') + 1, filename.length);
-
 // 上传头像
 router.post('/avatar-upload', (req, res) => {
-  avatarUpload.single('avatar')(req, res, (err: any) => {
+  avatarUpload.single('avatar')(req, res, async (err: any) => {
     if (err) {
       return res.status(500).json({
         code: 1,
@@ -76,10 +64,27 @@ router.post('/avatar-upload', (req, res) => {
       const hostIP = getIPAddress(os.networkInterfaces()); // 获取主机IP地址
       const port = process.env.PORT || '4001'; // 获取当前的端口号
 
-      const newAvatarPath = path.resolve(AVATAR_PATH, `${userId}.${fileType}`);
-      fse.renameSync(file.path, newAvatarPath); // 重写头像的路径
+      const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
+      const tempAvatarDir = path.resolve(AVATAR_PATH, `${userId}`);
+      const tempAvatarPath = path.resolve(tempAvatarDir, `${userId}-${suffix}.${fileType}`);
 
-      const avatarSrc = `http://${hostIP}:${port}/static/user/avatar/${userId}.${fileType}`;
+      if (!fse.existsSync(tempAvatarDir)) {
+        await fse.mkdir(tempAvatarDir);
+      }
+      fse.renameSync(file.path, tempAvatarPath); // 重写头像的路径
+
+      const avatarSrc = `http://${hostIP}:${port}/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
+
+      schedule.scheduleJob(new Date(new Date().getTime() + 3600000), () => {
+        // 临时文件夹的有效期为一个小时
+        if (fse.existsSync(tempAvatarDir)) {
+          rimraf(tempAvatarDir, (e) => {
+            if (e) {
+              console.error('Error: ', e);
+            }
+          });
+        }
+      });
 
       return res.status(200).json({
         code: 0,
@@ -99,8 +104,74 @@ router.post('/avatar-upload', (req, res) => {
   });
 });
 
+// 修改用户信息
+router.post('/basic-info', async (req, res) => {
+  try {
+    const { uuid } = req.cookies;
+    const { userId, avatar, signature, birth } = req.body;
+
+    const soulUuid = uuid || '',
+      soulSignature = signature || '',
+      soulBirth = birth || '';
+
+    let soulAvatar = avatar || '';
+
+    if (!fse.existsSync(AVATAR_PATH)) {
+      await fse.mkdir(AVATAR_PATH);
+    }
+    const avatarNameArr = soulAvatar.split('/');
+    const avatarName = avatarNameArr[avatarNameArr.length - 1];
+    const tempAvatarPath = path.resolve(AVATAR_PATH, `${userId}`, `${avatarName}`); // 临时的图片路径
+    const realAvatarPath = path.resolve(AVATAR_PATH, `${avatarName}`); // 真正的图片路径
+
+    if (!fse.existsSync(tempAvatarPath)) {
+      return res.status(404).json({
+        code: 404,
+        data: {},
+        msg: 'Image not found or expired',
+      });
+    }
+
+    fse.copyFileSync(tempAvatarPath, realAvatarPath);
+    const fileLists = listFile(AVATAR_PATH); // 以前的文件
+    if (fileLists.length > 0) {
+      fileLists.forEach((path) => {
+        if (path && path !== realAvatarPath) {
+          fse.unlink(path, (e) => {
+            if (e) {
+              throw e;
+            }
+          });
+        }
+      });
+    }
+
+    const hostIP = getIPAddress(os.networkInterfaces()); // 获取主机IP地址
+    const port = process.env.PORT || '4001'; // 获取当前的端口号
+    soulAvatar = `http://${hostIP}:${port}/static/user/avatar/${avatarName}`;
+
+    const updateBasicInfo = `update soulUserInfo set soulAvatar = '${soulAvatar}', soulSignature = '${soulSignature}', soulBirth = '${soulBirth}' where soulUuid = '${soulUuid}'`;
+
+    await query(updateBasicInfo);
+    return res.status(200).json({
+      code: 0,
+      data: {
+        avatar: soulAvatar,
+      },
+      msg: 'success update basic info',
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
 // 注册用户
-router.post('/register', urlencodedParser, async (req, res) => {
+router.post('/register', urlencodedParser, (req, res) => {
   passport.authenticate('register', (err, user, info) => {
     if (err) {
       console.error('Error: ', err);
@@ -198,20 +269,31 @@ router.post('/login', urlencodedParser, (req, res) => {
       }
     } else {
       req.logIn(user, async () => {
-        const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
-        const userInfo = {
-          username: soulUsername,
-          uid: soulUuid,
-          signature: soulSignature,
-          birth: soulBirth,
-          email: soulEmail,
-        };
-        const token = await setToken(userInfo);
-        res.status(200).json({
-          code: 0,
-          data: token,
-          msg: 'user found & logged in',
-        });
+        try {
+          const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar } = user;
+          const userInfo = {
+            username: soulUsername,
+            uid: soulUuid,
+            signature: soulSignature,
+            birth: soulBirth,
+            email: soulEmail,
+            avatar: soulAvatar,
+          };
+          const token = await setToken(userInfo);
+          res.cookie('uuid', userInfo.uid);
+          return res.status(200).json({
+            code: 0,
+            data: token,
+            msg: 'user found & logged in',
+          });
+        } catch (e) {
+          console.error('Error: ', e);
+          return res.status(500).json({
+            code: 1,
+            data: {},
+            msg: e.message.toString(),
+          });
+        }
       });
     }
   })(req, res);
@@ -678,34 +760,69 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
       }
     } else {
       req.logIn(user, async () => {
-        const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
-        const userInfo = {
-          username: soulUsername,
-          uid: soulUuid,
-          signature: soulSignature,
-          birth: soulBirth,
-          email: soulEmail,
-        };
-        const token = await setToken(userInfo);
-        res.status(200).json({
-          code: 0,
-          data: token,
-          msg: 'user found & logged in',
-        });
+        try {
+          const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar } = user;
+          const userInfo = {
+            username: soulUsername,
+            uid: soulUuid,
+            signature: soulSignature,
+            birth: soulBirth,
+            email: soulEmail,
+            avatar: soulAvatar,
+          };
+          const token = await setToken(userInfo);
+          res.cookie('uuid', userInfo.uid);
+          return res.status(200).json({
+            code: 0,
+            data: token,
+            msg: 'user found & logged in',
+          });
+        } catch (e) {
+          console.error('Error: ', e);
+          return res.status(500).json({
+            code: 1,
+            data: {},
+            msg: e.message.toString(),
+          });
+        }
       });
     }
   })(req, res);
 });
 
 // 初始化，验证token
-router.get('/init', function (req, res) {
-  res.status(200).json({
-    code: 0,
-    data: {
-      userInfo: _.pick(req.user, ['username', 'uid', 'email', 'signature', 'birth']),
-    },
-    msg: 'init success',
-  });
+router.get('/init', async function (req, res) {
+  try {
+    // @ts-ignore
+    const { uid } = req.user;
+    const getUserInfo = `select soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar from soulUserInfo where soulUuid = '${uid}'`;
+    const userInfo = await query(getUserInfo);
+    if (userInfo.length > 1) {
+      throw new Error('invalid uuid');
+    }
+    const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar } = userInfo[0];
+    return res.status(200).json({
+      code: 0,
+      data: {
+        userInfo: {
+          username: soulUsername,
+          uid: soulUuid,
+          email: soulEmail,
+          birth: soulBirth,
+          signature: soulSignature,
+          avatar: soulAvatar,
+        },
+      },
+      msg: 'init success',
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
 });
 
 // 设置xsrfToken

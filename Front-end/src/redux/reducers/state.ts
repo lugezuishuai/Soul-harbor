@@ -1,5 +1,5 @@
 import { EmployeeResponse } from '@/interface/employee';
-import { UserInfo } from '@/interface/user/login';
+import { UserInfo } from '@/interface/user/init';
 export type EmployeeState = {
   employeeList: EmployeeResponse;
 };

@@ -15,6 +15,7 @@ export const INIT = '/api/user/init'; // 获取token的接口
 export const XSRFINIT = '/api/user/xsrf'; // 设置xsrfToken
 export const LOGOUT = '/api/user/logout'; // 退出登录的接口
 export const UPLOADAVATAR = '/api/user/avatar-upload'; // 上传用户头像的接口
+export const BASICINFO = '/api/user/basic-info'; // 修改用户基础信息的接口
 export const UPLOADCHUNK = '/api/file/uploadChunks'; // 上传文件的接口
 export const MERGECHUNK = '/api/file/mergeChunks'; // 合并文件的接口
 export const CHECKCHUNK = '/api/file/verifyChunks'; // 验证文件的接口
