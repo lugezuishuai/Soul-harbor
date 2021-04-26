@@ -1,15 +1,20 @@
 /* eslint-disable */
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const miniCssExtractPlugin = require("mini-css-extract-plugin");          // 单独抽离css文件
+const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
-const resolve = require('./helper/resolve')
+const resolve = require('./helper/resolve');
+const webpack = require('webpack');
 const px2rem = require('postcss-px2rem-exclude');
+const dotenv = require('dotenv');
+dotenv.config({ path: '.env' });
+
 const isEnvProduction = process.env.NODE_ENV === 'production';            // 是否是生产环境
 const sourceMap = !isEnvProduction; // 生产模式不开启sourceMap
 const miniCssLoader = isEnvProduction ? { 
   loader: miniCssExtractPlugin.loader, 
   options: {
-    publicPath: '/',
+    publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
     modules: { namedExport: true }
   }
 } : 'style-loader';
@@ -76,9 +81,9 @@ module.exports = {
     'app': './src/index.tsx'
   },
   output: {
-    filename: isEnvProduction ? '[name].[chunkhash:8].js' : '[name].[hash:8].js',
+    filename: isEnvProduction ? 'js/[name].[chunkhash:8].js' : '[name].[hash:8].js',
     path: resolve('dist'),
-    publicPath: isEnvProduction ? process.env.SERVERPATH : '/', // 这里后续还要改为线上服务器的地址，在打包后的index.html中，资源统一会加上的路径
+    publicPath: isEnvProduction ? process.env.SERVICE_URL : '/', // 这里后续还要改为线上服务器的地址，在打包后的index.html中，资源统一会加上的路径
   },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
@@ -141,37 +146,50 @@ module.exports = {
         ]
       },
       {
-        test: /\.(png|jpe?g|gif)$/,
+        test: /\.(png|jpe?g|gif)(\?.*)?$/,
         use: [{
           loader: 'url-loader',
           options: {
-            // outputPath:'../',//输出**文件夹
-            publicPath: '/',
-            name: "images/[name].[hash:8].[ext]",
-            limit: 8192  // 把小于8kB的文件打成Base64的格式，写入JS
-          }
-        }]
-      },
-      {
-        test: /\.(woff|eot|woff2|tff)$/,
-        use: [{
-          loader: 'url-loader',
-          options: {
-            publicPath: '/',
-            name: "fonts/[name].[hash:8].[ext]",
-            limit: 8192
+            publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
+            name: "image/[name].[hash:8].[ext]",
+            limit: 500000,
           }
         }],
-        exclude: /node_modules/
+      },
+      {
+        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+        use: [{
+          loader: 'url-loader',
+          options: {
+            publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
+            name: "font/[name].[hash:8].[ext]",
+            limit: 10000,
+          }
+        }],
+      },
+      {
+        test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+        use: [{
+          loader: 'url-loader',
+          options: {
+            publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
+            name: "media/[name].[hash:8].[ext]",
+            limit: 10000,
+          }
+        }],
       },
       {
         test: /\.svg$/,
         use: ['@svgr/webpack'],
-        exclude: /node_modules/
       }
     ]
   },
   plugins: [
+    // 这可以帮助我们在代码中安全地使用环境变量
+    new webpack.DefinePlugin({
+      'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      'SERVICE_URL': JSON.stringify(process.env.SERVICE_URL),
+    }),
     new HtmlWebpackPlugin({
       template: './public/index.html',
       favicon: './public/favicon.ico',
@@ -179,7 +197,12 @@ module.exports = {
       env: process.env.NODE_ENV,
     }),
     new miniCssExtractPlugin({
-      filename: isEnvProduction ? '[name].[contenthash:8].css' : '[name].[hash:8].css'
+      filename: isEnvProduction ? 'css/[name].[contenthash:8].css' : '[name].[hash:8].css'
+    }),
+    new OptimizeCSSPlugin({
+      cssProcessorOptions: isEnvProduction
+      ? { safe: true }
+      : { safe: true, map: { inline: false } },
     }),
     new AntdDayjsWebpackPlugin({
       preset: 'antdv3'
