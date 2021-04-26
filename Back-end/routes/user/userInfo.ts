@@ -124,26 +124,28 @@ router.post('/basic-info', async (req, res) => {
     const tempAvatarPath = path.resolve(AVATAR_PATH, `${userId}`, `${avatarName}`); // 临时的图片路径
     const realAvatarPath = path.resolve(AVATAR_PATH, `${avatarName}`); // 真正的图片路径
 
-    if (!fse.existsSync(tempAvatarPath)) {
-      return res.status(404).json({
-        code: 404,
-        data: {},
-        msg: 'Image not found or expired',
-      });
-    }
-
-    fse.copyFileSync(tempAvatarPath, realAvatarPath);
-    const fileLists = listFile(AVATAR_PATH); // 以前的文件
-    if (fileLists.length > 0) {
-      fileLists.forEach((path) => {
-        if (path && path !== realAvatarPath) {
-          fse.unlink(path, (e) => {
-            if (e) {
-              throw e;
-            }
-          });
-        }
-      });
+    if (!fse.existsSync(realAvatarPath)) {
+      if (!fse.existsSync(tempAvatarPath)) {
+        return res.status(404).json({
+          code: 404,
+          data: {},
+          msg: 'Image not found or expired',
+        });
+      }
+  
+      fse.copyFileSync(tempAvatarPath, realAvatarPath);
+      const fileLists = listFile(AVATAR_PATH); // 以前的文件
+      if (fileLists.length > 0) {
+        fileLists.forEach((path) => {
+          if (path && path !== realAvatarPath) {
+            fse.unlink(path, (e) => {
+              if (e) {
+                throw e;
+              }
+            });
+          }
+        });
+      }
     }
 
     const hostIP = getIPAddress(os.networkInterfaces()); // 获取主机IP地址
