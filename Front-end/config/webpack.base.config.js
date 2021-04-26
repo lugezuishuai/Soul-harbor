@@ -78,7 +78,7 @@ module.exports = {
   output: {
     filename: isEnvProduction ? '[name].[chunkhash:8].js' : '[name].[hash:8].js',
     path: resolve('dist'),
-    publicPath: '/', // 这里后续还要改为线上服务器的地址，在打包后的index.html中，资源统一会加上的路径
+    publicPath: isEnvProduction ? process.env.SERVERPATH : '/', // 这里后续还要改为线上服务器的地址，在打包后的index.html中，资源统一会加上的路径
   },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],

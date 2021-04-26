@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import query from '../../models/query';
+import query from '../../utils/query';
 import { v4 as uuidv4 } from 'uuid';
 import md5 from 'md5';
 import passport from 'passport';
