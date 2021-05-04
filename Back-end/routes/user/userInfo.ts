@@ -132,7 +132,7 @@ router.post('/basic-info', async (req, res) => {
           msg: 'Image not found or expired',
         });
       }
-  
+
       fse.copyFileSync(tempAvatarPath, realAvatarPath);
       const fileLists = listFile(AVATAR_PATH); // 以前的文件
       if (fileLists.length > 0) {
@@ -272,7 +272,19 @@ router.post('/login', urlencodedParser, (req, res) => {
     } else {
       req.logIn(user, async () => {
         try {
-          const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar } = user;
+          const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
+          let { soulAvatar } = user;
+
+          const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+          const newIPAddress = getIPAddress(os.networkInterfaces());
+
+          if (oldIPAddress !== newIPAddress) {
+            // 如果IP地址发生了改变，要修改头像链接的IP地址
+            soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
+            const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+            await query(updateAvatar);
+          }
+
           const userInfo = {
             username: soulUsername,
             uid: soulUuid,
@@ -763,7 +775,19 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
     } else {
       req.logIn(user, async () => {
         try {
-          const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar } = user;
+          const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
+          let { soulAvatar } = user;
+
+          const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+          const newIPAddress = getIPAddress(os.networkInterfaces());
+
+          if (oldIPAddress !== newIPAddress) {
+            // 如果IP地址发生了改变，要修改头像链接的IP地址
+            soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
+            const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+            await query(updateAvatar);
+          }
+
           const userInfo = {
             username: soulUsername,
             uid: soulUuid,
@@ -802,7 +826,21 @@ router.get('/init', async function (req, res) {
     if (userInfo.length > 1) {
       throw new Error('invalid uuid');
     }
-    const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar } = userInfo[0];
+    const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = userInfo[0];
+    let { soulAvatar } = userInfo[0];
+
+    // console.log(soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]);
+    // console.log('ip: ', getIPAddress(os.networkInterfaces()));
+    const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+    const newIPAddress = getIPAddress(os.networkInterfaces());
+
+    if (oldIPAddress !== newIPAddress) {
+      // 如果IP地址发生了改变，要修改头像链接的IP地址
+      soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
+      const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${uid}'`;
+      await query(updateAvatar);
+    }
+
     return res.status(200).json({
       code: 0,
       data: {

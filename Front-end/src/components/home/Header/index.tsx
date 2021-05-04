@@ -8,7 +8,7 @@ import { WrapOperation } from '@/components/operation';
 import { apiGet } from '@/utils/request';
 import { UserInfo } from '@/interface/user/init';
 import { INIT } from '@/constants/urls';
-import { Link } from 'react-router-dom';
+import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 import { State } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { screen } from '@/constants/screen';
@@ -22,7 +22,7 @@ import './index.less';
 
 const { Item, Divider } = Menu;
 
-export interface HeaderProps {
+export interface HeaderProps extends RouteComponentProps {
   dispatch(action: Action): void;
   selectMenu: string;
   userInfo: UserInfo | null;
@@ -58,7 +58,7 @@ function MenuSkeleton() {
 }
 
 function Header(props: HeaderProps) {
-  const { selectMenu, dispatch, userInfo, login } = props;
+  const { selectMenu, dispatch, userInfo, login, location } = props;
   const [visible, setVisible] = useState(false);
   const [signUpMenu, setSignUpMenu] = useState<MenuItemType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,16 +76,6 @@ function Header(props: HeaderProps) {
     setVisible(true);
     setSignUpMenu('register');
   }, []);
-
-  // 获取初始选中的菜单
-  const setInitialMenu = useCallback(() => {
-    const pathArr = window.location.href.split('/');
-    const activeMenu = pathArr[3];
-    dispatch({
-      type: 'CHANGE_SELECT_MENU',
-      payload: activeMenu,
-    });
-  }, [dispatch]);
 
   // 检查用户是否已经登录
   const checkLogin = useCallback(async () => {
@@ -115,22 +105,26 @@ function Header(props: HeaderProps) {
 
   useEffect(() => {
     checkLogin();
-    setInitialMenu();
-  }, [checkLogin, setInitialMenu]);
+  }, [checkLogin]);
 
-  function handleMenuChange({ key }: SelectParam | { key: string }) {
+  useEffect(() => {
+    const pathArr = location.pathname.split('/');
+    const activeMenu = pathArr[1];
     dispatch({
       type: 'CHANGE_SELECT_MENU',
-      payload: key,
+      payload: activeMenu,
     });
-  }
+  }, [location.pathname, dispatch]);
 
-  function handleBackHome() {
-    dispatch({
-      type: 'CHANGE_SELECT_MENU',
-      payload: 'home',
-    });
-  }
+  const handleMenuChange = useCallback(
+    ({ key }: SelectParam | { key: string }) => {
+      dispatch({
+        type: 'CHANGE_SELECT_MENU',
+        payload: key,
+      });
+    },
+    [dispatch]
+  );
 
   function renderHomeMenu(config: MenuConfig[], isMobile = false) {
     return (
@@ -138,7 +132,6 @@ function Header(props: HeaderProps) {
         className={isMobile ? 'little_screen_menu' : 'home_menu'}
         mode={isMobile ? 'vertical' : 'horizontal'}
         selectedKeys={selectMenu ? [selectMenu] : []}
-        onClick={handleMenuChange}
       >
         {isMobile
           ? config.map(({ key, to, text }, index, arr) => {
@@ -221,7 +214,7 @@ function Header(props: HeaderProps) {
           {renderHomeMenu(loginMenu)}
         </WrapWithLogin>
       )}
-      <Link to="/" className="back_to_home" onClick={handleBackHome}>
+      <Link to="/" className="back_to_home">
         <Icon component={Heart as any} className="back_to_home_icon" />
         <span className="back_to_home_text">Soul Harbor</span>
       </Link>
@@ -231,8 +224,10 @@ function Header(props: HeaderProps) {
   );
 }
 
-export default connect(({ header: { selectMenu }, user: { userInfo, login } }: State) => ({
-  selectMenu,
-  userInfo,
-  login,
-}))(Header);
+export default withRouter(
+  connect(({ header: { selectMenu }, user: { userInfo, login } }: State) => ({
+    selectMenu,
+    userInfo,
+    login,
+  }))(Header)
+);
