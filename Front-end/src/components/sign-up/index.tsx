@@ -62,7 +62,7 @@ function SignUp(props: Props) {
           type: 'GET_USERINFO',
           payload: {
             ...res.data.userInfo,
-            uid: res.data.userInfo?.uid.slice(0, 8) || '',
+            uid: res.data.userInfo?.uid?.slice(0, 8) || '',
           },
         });
         dispatch({

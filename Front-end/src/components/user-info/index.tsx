@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { State } from '@/redux/reducers/state';
+import { State, UserInfoState } from '@/redux/reducers/state';
 import { UserInfo } from '@/interface/user/login';
 import { Action } from '@/redux/actions/index';
 import { BasicInfo } from './basic-info';
@@ -8,7 +8,7 @@ import { WrapAccountInfo } from './account-info';
 import './index.less';
 
 interface UserInfoProps {
-  userInfo: UserInfo | null;
+  userInfo: UserInfoState;
   userNameShow: boolean;
   userIdShow: boolean;
   emailShow: boolean;
@@ -51,9 +51,9 @@ function UserInfo(props: UserInfoProps) {
     return (
       <>
         <WrapAccountInfo
-          userName={username}
-          userId={uid}
-          email={email}
+          userName={username || ''}
+          userId={uid || ''}
+          email={email || ''}
           showUserName={showUserName}
           showUserId={showUserId}
           showEmail={showEmail}
@@ -61,7 +61,7 @@ function UserInfo(props: UserInfoProps) {
           handleShowUserId={handleShowUserId}
           handleShowEmail={handleShowEmail}
         />
-        <BasicInfo basicInfo={basicInfo} userId={uid} />
+        <BasicInfo basicInfo={basicInfo} userId={uid || ''} />
       </>
     );
   }

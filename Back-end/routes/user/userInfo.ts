@@ -20,6 +20,7 @@ import rimraf from 'rimraf';
 import { listFile } from '../../utils/listFile';
 import { getIPAddress } from '../../utils/getIPAddress';
 import { extractExt } from '../../utils/extractExt';
+import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 
 const { alreadyExit, noMatch, expiredOrUnValid, badAccount } = SuccessCodeType;
 
@@ -75,8 +76,8 @@ router.post('/avatar-upload', (req, res) => {
 
       const avatarSrc = `http://${hostIP}:${port}/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
 
-      schedule.scheduleJob(new Date(new Date().getTime() + 3600000), () => {
-        // 临时文件夹的有效期为一个小时
+      schedule.scheduleJob(new Date(new Date().getTime() + 1800000), () => {
+        // 临时文件夹的有效期为半个小时
         if (fse.existsSync(tempAvatarDir)) {
           rimraf(tempAvatarDir, (e) => {
             if (e) {
@@ -275,14 +276,16 @@ router.post('/login', urlencodedParser, (req, res) => {
           const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
           let { soulAvatar } = user;
 
-          const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
-          const newIPAddress = getIPAddress(os.networkInterfaces());
+          if (!isNullOrUndefined(soulAvatar)) {
+            const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+            const newIPAddress = getIPAddress(os.networkInterfaces());
 
-          if (oldIPAddress !== newIPAddress) {
-            // 如果IP地址发生了改变，要修改头像链接的IP地址
-            soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
-            const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
-            await query(updateAvatar);
+            if (oldIPAddress !== newIPAddress) {
+              // 如果IP地址发生了改变，要修改头像链接的IP地址
+              soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
+              const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+              await query(updateAvatar);
+            }
           }
 
           const userInfo = {
@@ -778,14 +781,16 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
           const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
           let { soulAvatar } = user;
 
-          const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
-          const newIPAddress = getIPAddress(os.networkInterfaces());
+          if (!isNullOrUndefined(soulAvatar)) {
+            const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+            const newIPAddress = getIPAddress(os.networkInterfaces());
 
-          if (oldIPAddress !== newIPAddress) {
-            // 如果IP地址发生了改变，要修改头像链接的IP地址
-            soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
-            const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
-            await query(updateAvatar);
+            if (oldIPAddress !== newIPAddress) {
+              // 如果IP地址发生了改变，要修改头像链接的IP地址
+              soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
+              const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+              await query(updateAvatar);
+            }
           }
 
           const userInfo = {
@@ -829,16 +834,18 @@ router.get('/init', async function (req, res) {
     const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = userInfo[0];
     let { soulAvatar } = userInfo[0];
 
-    // console.log(soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]);
-    // console.log('ip: ', getIPAddress(os.networkInterfaces()));
-    const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
-    const newIPAddress = getIPAddress(os.networkInterfaces());
+    if (!isNullOrUndefined(soulAvatar)) {
+      // console.log(soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]);
+      // console.log('ip: ', getIPAddress(os.networkInterfaces()));
+      const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+      const newIPAddress = getIPAddress(os.networkInterfaces());
 
-    if (oldIPAddress !== newIPAddress) {
-      // 如果IP地址发生了改变，要修改头像链接的IP地址
-      soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
-      const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${uid}'`;
-      await query(updateAvatar);
+      if (oldIPAddress !== newIPAddress) {
+        // 如果IP地址发生了改变，要修改头像链接的IP地址
+        soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
+        const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${uid}'`;
+        await query(updateAvatar);
+      }
     }
 
     return res.status(200).json({

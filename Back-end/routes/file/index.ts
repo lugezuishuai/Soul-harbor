@@ -1,4 +1,4 @@
-import sliceFileUpload from './FileUpload';
+import sliceFileUpload from './file-upload';
 
 export default {
   sliceFileUpload,

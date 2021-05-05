@@ -4,9 +4,12 @@ export type EmployeeState = {
   employeeList: EmployeeResponse;
 };
 
+export type UserInfoState = UserInfo | null;
+export type LoginState = boolean | null;
+
 export type UserState = {
-  userInfo: UserInfo | null;
-  login: boolean | null;
+  userInfo: UserInfoState;
+  login: LoginState;
   userNameShow: boolean;
   userIdShow: boolean;
   emailShow: boolean;

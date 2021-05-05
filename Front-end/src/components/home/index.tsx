@@ -16,6 +16,7 @@ import { WrapWithLogin } from '@/components/with-login';
 import { WrapScrollToTop } from './scroll-to-top';
 import { apiGet } from '@/utils/request';
 import { XSRFINIT } from '@/constants/urls';
+import { WrapChatPage } from '@/pages/chat';
 import './index.less';
 
 function WrapUserInfo() {
@@ -59,7 +60,7 @@ export default function Home() {
                   <WrapScrollToTop>
                     <Switch>
                       <Route path="/home" exact component={Content} />
-                      <Route path="/chat" exact component={Employee} />
+                      <Route path="/chat" exact component={WrapChatPage} />
                       <Route path="/news" exact component={UploadFile} />
                       <Route path="/blog" exact component={Employee} />
                       <Route path="/user/:id" exact component={WrapUserInfo} />

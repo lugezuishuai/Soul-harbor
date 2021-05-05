@@ -19,7 +19,7 @@ import './config/passport';
 const { sliceFileUpload } = fileRouter;
 const { userInfo } = userRouter;
 
-let app = express();
+const app = express();
 
 // 设置跨域（使用中间件）
 app.use(cors()); // 配置全部跨域

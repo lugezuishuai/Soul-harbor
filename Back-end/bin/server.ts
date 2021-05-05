@@ -8,6 +8,7 @@ import app from '../app';
 import debug from 'debug';
 debug('ts-node:server');
 import http from 'http';
+import { createSocketIo } from './chat/chat';
 
 /**
  * Get port from environment and store in Express.
@@ -21,7 +22,7 @@ app.set('port', port);
  */
 
 let server = http.createServer(app);
-
+createSocketIo(server); // 创建socketIo
 /**
  * Listen on provided port, on all network interfaces.
  */
@@ -59,9 +60,7 @@ function onError(error: any) {
     throw error;
   }
 
-  let bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  let bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
@@ -84,8 +83,6 @@ function onError(error: any) {
 
 function onListening() {
   let addr = server.address();
-  let bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr!.port;         //加一个！就是把null类型排除
+  let bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr!.port; //加一个！就是把null类型排除
   debug('Listening on ' + bind);
 }
