@@ -3,6 +3,10 @@ import { Server, Socket } from 'socket.io';
 import os from 'os';
 import { getIPAddress } from '../../utils/getIPAddress';
 import { formatMessage, getCurrentUser, getRoomUsers, userJoin, userLeave } from './helpers';
+import redis from 'redis';
+import { redisConfig } from '../../config/db';
+
+const client = redis.createClient(redisConfig);
 
 interface JoinRoom {
   username: string;
@@ -18,6 +22,11 @@ export function createSocketIo(server: HttpServer) {
   });
 
   io.of('/chat').on('connection', (socket: Socket) => {
+    // 用户登录
+    socket.on('login', (userId: string) => {
+      client.set(`socket_${userId}`, socket.id);
+    });
+
     // 加入聊天室
     socket.on('join room', ({ username, room }: JoinRoom) => {
       const user = userJoin(socket.id, username, room);
@@ -45,8 +54,13 @@ export function createSocketIo(server: HttpServer) {
       user && io.of('/chat').to(user.room).emit('message', formatMessage(user.username, msg));
     });
 
-    // 离开聊天室
-    socket.on('disconnect', () => {
+    // 关闭
+    socket.on('close', (userId: string) => {
+      client.del(`socket_${userId}`);
+    });
+
+    // 断开连接
+    socket.on('disconnect', (reason) => {
       const user = userLeave(socket.id);
 
       if (user) {

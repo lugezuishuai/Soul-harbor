@@ -3,5 +3,6 @@ export const notTokenPath = [
   /^\/api\/user\/[^init]/g,
   /^\/api\/employee\/(.*?)/g,
   /^\/api\/file\/(.*?)/g,
+  /^\/api\/chat\/(.*?)/g,
   /^\/static\/(.*?)/g,
-]
+];

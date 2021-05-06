@@ -9,6 +9,7 @@ import debug from 'debug';
 debug('ts-node:server');
 import http from 'http';
 import { createSocketIo } from './chat/chat';
+import { batchDelSockets } from '../utils/batchDelSockets';
 
 /**
  * Get port from environment and store in Express.
@@ -23,6 +24,7 @@ app.set('port', port);
 
 let server = http.createServer(app);
 createSocketIo(server); // 创建socketIo
+batchDelSockets(); // 每次服务重启的时候都需要删除以前的socket
 /**
  * Listen on provided port, on all network interfaces.
  */

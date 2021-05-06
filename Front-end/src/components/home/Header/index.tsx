@@ -6,10 +6,9 @@ import Heart from '@/assets/icon/heart.svg';
 import { WrapSignUp } from '@/components/sign-up';
 import { WrapOperation } from '@/components/operation';
 import { apiGet } from '@/utils/request';
-import { UserInfo } from '@/interface/user/init';
 import { INIT } from '@/constants/urls';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
-import { State } from '@/redux/reducers/state';
+import { LoginState, SocketState, State, UserInfoState } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { screen } from '@/constants/screen';
 import { MenuItemType } from '@/components/sign-up';
@@ -18,6 +17,7 @@ import { WrapWithLogin } from '@/components/with-login';
 import { SelectParam } from 'antd/lib/menu';
 import { MenuConfig, loginMenu, noLoginMenu } from './menu-config';
 import classnames from 'classnames';
+import io from 'socket.io-client';
 import './index.less';
 
 const { Item, Divider } = Menu;
@@ -25,8 +25,9 @@ const { Item, Divider } = Menu;
 export interface HeaderProps extends RouteComponentProps {
   dispatch(action: Action): void;
   selectMenu: string;
-  userInfo: UserInfo | null;
-  login: boolean | null;
+  userInfo: UserInfoState;
+  login: LoginState;
+  socket: SocketState;
 }
 
 const { Block, InlineBlock, Avatar } = Skeleton;
@@ -58,7 +59,7 @@ function MenuSkeleton() {
 }
 
 function Header(props: HeaderProps) {
-  const { selectMenu, dispatch, userInfo, login, location } = props;
+  const { selectMenu, dispatch, userInfo, login, location, socket } = props;
   const [visible, setVisible] = useState(false);
   const [signUpMenu, setSignUpMenu] = useState<MenuItemType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +82,14 @@ function Header(props: HeaderProps) {
   const checkLogin = useCallback(async () => {
     try {
       const res = await apiGet(INIT);
-      const userId = res.data.userInfo.uid ? res.data.userInfo.uid.slice(0, 8) : '';
+      const userId = res.data.userInfo?.uid?.slice(0, 8) || '';
+      const socket = io('http://localhost:4001/chat', { forceNew: true });
+      socket.emit('login', userId);
+      // 建立socket连接
+      dispatch({
+        type: 'INSERT_SOCKET',
+        payload: socket,
+      });
       dispatch({
         type: 'GET_USERINFO',
         payload: {
@@ -173,6 +181,7 @@ function Header(props: HeaderProps) {
             handleMenuChange={handleMenuChange}
             username={username}
             avatar={avatar}
+            socket={socket}
             uid={uid}
             dispatch={dispatch}
           />
@@ -225,9 +234,10 @@ function Header(props: HeaderProps) {
 }
 
 export default withRouter(
-  connect(({ header: { selectMenu }, user: { userInfo, login } }: State) => ({
+  connect(({ header: { selectMenu }, user: { userInfo, login }, chat: { socket } }: State) => ({
     selectMenu,
     userInfo,
     login,
+    socket,
   }))(Header)
 );

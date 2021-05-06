@@ -13,11 +13,13 @@ import { notTokenPath } from './config/token/path';
 import indexRouter from './routes/index';
 import userRouter from './routes/user'; // 用户相关
 import fileRouter from './routes/file'; // 文件相关
+import chatRouter from './routes/chat'; // 聊天相关
 import employeeRouter from './routes/employee';
 import './config/passport';
 
 const { sliceFileUpload } = fileRouter;
 const { userInfo } = userRouter;
+const { chat } = chatRouter;
 
 const app = express();
 
@@ -67,6 +69,7 @@ app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/api/user', userInfo);
 app.use('/api/employee', employeeRouter);
 app.use('/api/file', sliceFileUpload);
+app.use('/api/chat', chat);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

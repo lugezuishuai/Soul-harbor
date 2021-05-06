@@ -27,6 +27,14 @@ function WrapUserInfo() {
   );
 }
 
+function WrapChatInfoPage() {
+  return (
+    <WrapWithLogin noLoginPlaceholder={<NoPermission className="wrap-exception" />}>
+      <WrapChatPage />
+    </WrapWithLogin>
+  );
+}
+
 export default function Home() {
   async function initXsrf() {
     try {
@@ -60,7 +68,7 @@ export default function Home() {
                   <WrapScrollToTop>
                     <Switch>
                       <Route path="/home" exact component={Content} />
-                      <Route path="/chat" exact component={WrapChatPage} />
+                      <Route path="/chat" exact component={WrapChatInfoPage} />
                       <Route path="/news" exact component={UploadFile} />
                       <Route path="/blog" exact component={Employee} />
                       <Route path="/user/:id" exact component={WrapUserInfo} />

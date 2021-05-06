@@ -15,6 +15,7 @@ import { LoginResponse, LoginRequest } from '@/interface/user/login';
 import Cookies from 'js-cookie';
 import { Action } from '@/redux/actions';
 import { apiPost } from '@/utils/request';
+import io from 'socket.io-client';
 import './index.less';
 
 export type MenuItemType = 'login' | 'register' | 'forgetPw';
@@ -57,12 +58,21 @@ function SignUp(props: Props) {
     apiPost(LOGINURL, reqData)
       .then((res: LoginResponse) => {
         message.success('登录成功');
+        const userId = res.data.userInfo?.uid?.slice(0, 8) || '';
+        const socket = io('http://localhost:4001/chat', { forceNew: true });
+        socket.emit('login', userId);
+
         res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });
+        // 建立socket连接
+        dispatch({
+          type: 'INSERT_SOCKET',
+          payload: socket,
+        });
         dispatch({
           type: 'GET_USERINFO',
           payload: {
             ...res.data.userInfo,
-            uid: res.data.userInfo?.uid?.slice(0, 8) || '',
+            uid: userId,
           },
         });
         dispatch({

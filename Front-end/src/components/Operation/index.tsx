@@ -7,6 +7,7 @@ import { LOGOUT } from '@/constants/urls';
 import { Action } from '@/redux/actions';
 import { SelectParam } from 'antd/lib/menu';
 import defaultAvatar from '@/assets/image/default-avatar.png';
+import { SocketState } from '@/redux/reducers/state';
 import './index.less';
 
 interface OperationProps extends RouteComponentProps {
@@ -15,10 +16,11 @@ interface OperationProps extends RouteComponentProps {
   username?: string;
   avatar?: string | null;
   uid?: string;
+  socket: SocketState;
 }
 
 function Operation(props: OperationProps): any {
-  const { handleMenuChange, username, avatar, dispatch, uid, history } = props;
+  const { handleMenuChange, username, avatar, dispatch, uid, history, socket } = props;
   function handleClickItem() {
     const obj = {
       key: 'user',
@@ -31,7 +33,15 @@ function Operation(props: OperationProps): any {
     try {
       await apiGet(LOGOUT);
       message.success('退出成功');
-      history.push({ pathname: '/home' });
+      if (socket) {
+        // 退出登录之后需要删除键值对并关闭socket连接
+        socket.emit('close', uid);
+        socket.close();
+      }
+      dispatch({
+        type: 'INSERT_SOCKET',
+        payload: null,
+      });
       dispatch({
         type: 'GET_USERINFO',
         payload: null,
@@ -44,6 +54,7 @@ function Operation(props: OperationProps): any {
         type: 'CHANGE_SELECT_MENU',
         payload: 'home',
       });
+      history.push({ pathname: '/home' });
     } catch (e) {
       console.error(e);
     }
