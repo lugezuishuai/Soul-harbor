@@ -28,7 +28,7 @@ export function ChatNav({ userInfo, activeMenu, dispatch }: ChatNavProps) {
         });
       }
     },
-    [dispatch]
+    [dispatch, activeMenu]
   );
 
   return (

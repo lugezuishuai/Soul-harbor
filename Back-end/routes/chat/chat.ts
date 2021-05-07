@@ -1,44 +1,47 @@
 import express from 'express';
-import redis from 'redis';
-import { redisConfig } from '../../config/db';
 import { ChatSearchRes, ResUserInfo, UserInfo } from '../../type/type';
+import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
+import { redisGet } from '../../utils/redis';
 
-const client = redis.createClient(redisConfig);
 const router = express.Router();
 
 router.get('/search', async (req, res) => {
   try {
-    const { search } = req.query;
+    let { search }: any = req.query;
+    search = search.replace(/'|‘/g, '');
     const searchByUsernameOrEmail = `select * from soulUserInfo where binary soulUsername like '%${search}%' or binary soulEmail like '%${search}%'`;
     const result: UserInfo[] = await query(searchByUsernameOrEmail);
-    console.log('result: ', result);
 
     const lastResult = result.length
-      ? result.map((user) => {
-          const { soulUsername, soulEmail, soulUuid, soulSignature, soulAvatar, soulBirth } = user;
-          const userId = soulUuid.slice(0, 8);
+      ? await Promise.all(
+          result.map(async (user) => {
+            const { soulUsername, soulEmail, soulUuid, soulSignature, soulAvatar, soulBirth } = user;
+            const userId = soulUuid.slice(0, 8);
 
-          const userInfo: ResUserInfo = {
-            username: soulUsername,
-            uid: soulUuid,
-            email: soulEmail,
-            signature: soulSignature,
-            birth: soulBirth,
-            avatar: soulAvatar,
-          };
+            const userInfo: ResUserInfo = {
+              username: soulUsername,
+              uid: soulUuid,
+              email: soulEmail,
+              signature: soulSignature,
+              birth: soulBirth,
+              avatar: soulAvatar,
+            };
 
-          const data: ChatSearchRes = {
-            userInfo,
-            online: false,
-          };
+            const data: ChatSearchRes = {
+              userInfo,
+              online: false,
+            };
 
-          if (client.get(`socket_${userId}`)) {
-            data.online = true;
-          }
+            const reply = await redisGet(`socket_${userId}`);
 
-          return data;
-        })
+            if (!isNullOrUndefined(reply)) {
+              data.online = true;
+            }
+
+            return data;
+          })
+        )
       : [];
 
     const onlineUsers = lastResult.filter((user) => user.online);

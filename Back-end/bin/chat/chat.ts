@@ -3,10 +3,7 @@ import { Server, Socket } from 'socket.io';
 import os from 'os';
 import { getIPAddress } from '../../utils/getIPAddress';
 import { formatMessage, getCurrentUser, getRoomUsers, userJoin, userLeave } from './helpers';
-import redis from 'redis';
-import { redisConfig } from '../../config/db';
-
-const client = redis.createClient(redisConfig);
+import { redisDel, redisSet } from '../../utils/redis';
 
 interface JoinRoom {
   username: string;
@@ -24,7 +21,7 @@ export function createSocketIo(server: HttpServer) {
   io.of('/chat').on('connection', (socket: Socket) => {
     // 用户登录
     socket.on('login', (userId: string) => {
-      client.set(`socket_${userId}`, socket.id);
+      redisSet(`socket_${userId}`, socket.id);
     });
 
     // 加入聊天室
@@ -56,7 +53,7 @@ export function createSocketIo(server: HttpServer) {
 
     // 关闭
     socket.on('close', (userId: string) => {
-      client.del(`socket_${userId}`);
+      redisDel(`socket_${userId}`);
     });
 
     // 断开连接

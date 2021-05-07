@@ -8,5 +8,32 @@
     height: calc(100vh - 106px);
     min-height: 500px;
     background: #fff;
+    &__left {
+      height: 100%;
+      width: 300px;
+      border: 1px solid @N300;
+      background: @N100;
+      &-container {
+        height: calc(100% - 64px);
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      &-chat {
+        height: 2000px;
+        width: 100%;
+        background: blue;
+      }
+      &-friend {
+        height: 2000px;
+        width: 100%;
+        background: red;
+      }
+      &-search {
+        height: 100%;
+        width: 100%;
+        background: @N100;
+      }
+    }
   }
 }

@@ -49,8 +49,9 @@ passport.use(
                   } else {
                     if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
                       // 验证码尚未过期，生成密码
+                      const uuid = uuidv4(); // 生成随机的uuid
                       bcrypt.hash(password, BCRYPT_SALT_ROUNDS).then((hashedPassword) => {
-                        const createUser = `insert into soulUserInfo (soulUsername, soulPassword, soulEmail, soulUuid) values ('${username}', '${hashedPassword}', '${email}', '${uuidv4()}')`;
+                        const createUser = `insert into soulUserInfo (soulUsername, soulPassword, soulEmail, soulUuid) values ('${username}', '${hashedPassword}', '${email}', '${uuid}')`;
                         const searchNewUser = `select * from soulUserInfo where binary soulUsername = '${username}' and soulPassword = '${hashedPassword}'`;
                         query(createUser)
                           .then(() => {

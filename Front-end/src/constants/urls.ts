@@ -19,3 +19,4 @@ export const BASICINFO = '/api/user/basic-info'; // 修改用户基础信息的�
 export const UPLOADCHUNK = '/api/file/uploadChunks'; // 上传文件的接口
 export const MERGECHUNK = '/api/file/mergeChunks'; // 合并文件的接口
 export const CHECKCHUNK = '/api/file/verifyChunks'; // 验证文件的接口
+export const SEARCH_MEMBER = '/api/chat/search'; // 聊天搜索用户的接口
