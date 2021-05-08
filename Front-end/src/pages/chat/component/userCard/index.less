@@ -1,0 +1,47 @@
+@import '~@/variable.less';
+:global {
+  .chat-user-card {
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 64px;
+    padding: 12px;
+    background: @N100;
+    border-bottom: 1px solid @N400;
+    &:hover {
+      cursor: pointer;
+    }
+    &-online {
+      user-select: none;
+      pointer-events: none;
+      position: absolute;
+      left: 48px;
+      top: 12px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    &-avatar {
+      user-select: none;
+      pointer-events: none;
+      width: 36px;
+      height: 36px;
+      margin-right: 20px;
+    }
+    &-info {
+      user-select: none;
+      pointer-events: none;
+      flex: 1;
+      &-text {
+        font-size: 14px;
+        line-height: 20px;
+        color: @N650;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}

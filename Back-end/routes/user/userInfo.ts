@@ -828,6 +828,13 @@ router.get('/init', async function (req, res) {
     const { uid } = req.user;
     const getUserInfo = `select soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar from soulUserInfo where soulUuid = '${uid}'`;
     const userInfo = await query(getUserInfo);
+    if (!userInfo.length) {
+      return res.status(400).json({
+        code: 400,
+        data: {},
+        msg: 'client error',
+      });
+    }
     if (userInfo.length > 1) {
       throw new Error('invalid uuid');
     }

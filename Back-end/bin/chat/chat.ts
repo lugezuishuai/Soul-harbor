@@ -3,11 +3,19 @@ import { Server, Socket } from 'socket.io';
 import os from 'os';
 import { getIPAddress } from '../../utils/getIPAddress';
 import { formatMessage, getCurrentUser, getRoomUsers, userJoin, userLeave } from './helpers';
-import { redisDel, redisSet } from '../../utils/redis';
+import { redisDel, redisGet, redisSet } from '../../utils/redis';
+import dayjs from 'dayjs';
 
 interface JoinRoom {
   username: string;
   room: string;
+}
+
+interface MessageBody {
+  senderId: string;
+  receiveId: string;
+  message: string;
+  messageId: number;
 }
 
 export function createSocketIo(server: HttpServer) {
@@ -22,6 +30,25 @@ export function createSocketIo(server: HttpServer) {
     // 用户登录
     socket.on('login', (userId: string) => {
       redisSet(`socket_${userId}`, socket.id);
+    });
+
+    // 私聊
+    socket.on('private message', (messageBody: MessageBody) => {
+      const { senderId, receiveId, message, messageId } = messageBody;
+      // 根据receiveId获取socketId
+      const socketId = redisGet(`socket_${senderId.slice(0, 8)}`);
+      if (typeof socketId === 'string') {
+        io.of('/chat')
+          .to(socketId)
+          .emit('receive message', {
+            senderId, // uuid
+            receiveId, // uuid
+            message,
+            messageId,
+            time: dayjs().format('h:mm a'),
+            readMessageId: 0, // 默认0是未读信息，由前端去控制信息已读未读
+          });
+      }
     });
 
     // 加入聊天室
@@ -53,6 +80,7 @@ export function createSocketIo(server: HttpServer) {
 
     // 关闭
     socket.on('close', (userId: string) => {
+      console.log('来到了这里');
       redisDel(`socket_${userId}`);
     });
 

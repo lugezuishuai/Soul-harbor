@@ -18,3 +18,4 @@ export const CHANGE_SELECT_MENU = 'CHANGE_SELECT_MENU'; // 改变选择的菜单
 export const INSERT_SOCKET = 'INSERT_SOCKET'; // 插入socket
 export const CHANGE_ACTIVE_MENU = 'CHANGE_ACTIVE_MENU'; // 改变聊天界面的menu
 export const IS_SEARCH = 'IS_SEARCH'; // 是否正在搜索
+export const PRIVATE_CHAT = 'PRIVATE_CHAT'; // 私聊信息

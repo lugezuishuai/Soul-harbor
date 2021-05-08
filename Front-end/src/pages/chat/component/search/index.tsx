@@ -1,13 +1,11 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Icon, Input, Form } from 'antd';
 import NoResult from '@/assets/icon/no-result.svg';
 import Search from '@/assets/icon/search.svg';
 import { Action } from '@/redux/actions';
 import { IS_SEARCH } from '@/redux/actions/action_types';
-import { apiGet } from '@/utils/request';
-import { SEARCH_MEMBER } from '@/constants/urls';
-import { SearchMemberRequest } from '@/interface/chat/searchMember';
 import { FormComponentProps } from 'antd/lib/form';
+import { useChat } from '../../state';
 import './index.less';
 
 interface ChatSearchProps extends FormComponentProps {
@@ -28,46 +26,29 @@ export function NoSearchResult() {
 
 function ChatSearch({ dispatch, isSearch, form }: ChatSearchProps) {
   const { getFieldDecorator, resetFields } = form;
-  const [loading, setLoading] = useState(false);
+  const { handleSearch, setSearchData } = useChat();
   const ref = useRef<HTMLInputElement>();
-  const timer = useRef(-1);
-  // 给每次请求增加标识
-  const count = useRef(0);
 
-  const handleFocus = useCallback(() => {
-    if (isSearch) {
-      resetFields(['input']);
-      if (ref.current) {
-        ref.current.blur();
+  function handleFocus() {
+    setTimeout(() => {
+      if (isSearch) {
+        resetFields(['input']);
+        setSearchData(null);
+        if (ref.current) {
+          ref.current.blur();
+        }
       }
-    }
-    dispatch({
-      type: IS_SEARCH,
-      payload: !isSearch,
-    });
-  }, [dispatch, isSearch]);
+      dispatch({
+        type: IS_SEARCH,
+        payload: !isSearch,
+      });
+    }, 100);
+  }
 
   function handleChange(e: any) {
     if (e?.target?.value) {
       const search = e.target.value;
-      clearTimeout(timer.current);
-      timer.current = setTimeout(async () => {
-        const current = ++count.current;
-        try {
-          setLoading(true);
-          const searchData: SearchMemberRequest = {
-            search,
-          };
-          const { data } = await apiGet(SEARCH_MEMBER, searchData);
-          if (count.current === current) {
-            setLoading(false);
-          }
-        } catch (e) {
-          if (count.current === current) {
-            setLoading(false);
-          }
-        }
-      }, 350) as any;
+      handleSearch(search);
     }
   }
 

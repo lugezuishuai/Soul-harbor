@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { ConfigProvider } from 'antd';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
@@ -17,6 +17,10 @@ import { WrapScrollToTop } from './scroll-to-top';
 import { apiGet } from '@/utils/request';
 import { XSRFINIT } from '@/constants/urls';
 import { WrapChatPage } from '@/pages/chat';
+import { Action } from '@/redux/actions';
+import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
+import { connect } from 'react-redux';
+import { State } from '@/redux/reducers/state';
 import './index.less';
 
 function WrapUserInfo() {
@@ -35,19 +39,37 @@ function WrapChatInfoPage() {
   );
 }
 
-export default function Home() {
-  async function initXsrf() {
+interface HomeProps {
+  dispatch(action: Action): void;
+  selectMenu: string;
+  userInfo: UserInfoState;
+  login: LoginState;
+  socket: SocketState;
+}
+
+function Home(props: HomeProps) {
+  const { userInfo, socket } = props;
+
+  const initXsrf = useCallback(async () => {
     try {
       await apiGet(XSRFINIT);
       console.log('xsrfToken init success');
     } catch (e) {
       console.error(e);
     }
-  }
+  }, []);
 
   useEffect(() => {
     initXsrf();
-  }, []);
+
+    return () => {
+      if (socket && userInfo?.uid) {
+        // 关闭socket连接
+        socket.emit('close', userInfo.uid);
+        socket.close();
+      }
+    };
+  }, [initXsrf]);
 
   return (
     <ConfigProvider locale={zh_CN} prefixCls="ant">
@@ -60,7 +82,7 @@ export default function Home() {
             <Route path="/reset/:token" exact component={ResetPw} />
             <Route path="/">
               <div className="home-global__header">
-                <Header />
+                <Header {...props} />
                 <div className="home-global__divide" />
               </div>
               <div className="home-global__container">
@@ -85,3 +107,10 @@ export default function Home() {
     </ConfigProvider>
   );
 }
+
+export default connect(({ header: { selectMenu }, user: { userInfo, login }, chat: { socket } }: State) => ({
+  selectMenu,
+  userInfo,
+  login,
+  socket,
+}))(Home);

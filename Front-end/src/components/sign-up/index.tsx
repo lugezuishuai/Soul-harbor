@@ -58,9 +58,9 @@ function SignUp(props: Props) {
     apiPost(LOGINURL, reqData)
       .then((res: LoginResponse) => {
         message.success('登录成功');
-        const userId = res.data.userInfo?.uid?.slice(0, 8) || '';
+        const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
         const socket = io('http://localhost:4001/chat', { forceNew: true });
-        socket.emit('login', userId);
+        socket.emit('login', uid);
 
         res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });
         // 建立socket连接
@@ -72,7 +72,7 @@ function SignUp(props: Props) {
           type: 'GET_USERINFO',
           payload: {
             ...res.data.userInfo,
-            uid: userId,
+            uid,
           },
         });
         dispatch({

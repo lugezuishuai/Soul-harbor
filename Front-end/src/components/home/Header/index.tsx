@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Menu, Button, Icon, Dropdown } from 'antd';
-import { connect } from 'react-redux';
 import DropdownMenu from '@/assets/icon/menu.svg';
 import Heart from '@/assets/icon/heart.svg';
 import { WrapSignUp } from '@/components/sign-up';
@@ -8,7 +7,7 @@ import { WrapOperation } from '@/components/operation';
 import { apiGet } from '@/utils/request';
 import { INIT } from '@/constants/urls';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
-import { LoginState, SocketState, State, UserInfoState } from '@/redux/reducers/state';
+import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { screen } from '@/constants/screen';
 import { MenuItemType } from '@/components/sign-up';
@@ -82,9 +81,9 @@ function Header(props: HeaderProps) {
   const checkLogin = useCallback(async () => {
     try {
       const res = await apiGet(INIT);
-      const userId = res.data.userInfo?.uid?.slice(0, 8) || '';
+      const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
       const socket = io('http://localhost:4001/chat', { forceNew: true });
-      socket.emit('login', userId);
+      socket.emit('login', uid);
       // 建立socket连接
       dispatch({
         type: 'INSERT_SOCKET',
@@ -94,7 +93,7 @@ function Header(props: HeaderProps) {
         type: 'GET_USERINFO',
         payload: {
           ...res.data.userInfo,
-          uid: userId,
+          uid,
         },
       });
       dispatch({
@@ -233,11 +232,4 @@ function Header(props: HeaderProps) {
   );
 }
 
-export default withRouter(
-  connect(({ header: { selectMenu }, user: { userInfo, login }, chat: { socket } }: State) => ({
-    selectMenu,
-    userInfo,
-    login,
-    socket,
-  }))(Header)
-);
+export default withRouter(Header);

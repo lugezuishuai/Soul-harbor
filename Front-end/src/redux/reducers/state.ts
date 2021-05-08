@@ -23,10 +23,27 @@ export type HeaderState = {
   selectMenu: string;
 };
 
+export interface MessageBody {
+  senderId: string; // uuid
+  receiveId: string; // uuid
+  message: string;
+  messageId: number; // 递增
+  time: string;
+  readMessageId: number; // 已读的messageId
+}
+
+export interface ChatMessage {
+  // key是uid和room
+  [key: string]: MessageBody[];
+}
+
+export type ChatMessageState = ChatMessage | null;
+
 export type ChatState = {
   socket: SocketState;
   activeMenu: ChatActiveMenuState;
   isSearch: boolean;
+  chatMessage: ChatMessageState;
 };
 
 export type State = Readonly<{
@@ -56,4 +73,5 @@ export const initialChatState: ChatState = {
   socket: null, // socket
   activeMenu: 'chat',
   isSearch: false,
+  chatMessage: null,
 };
