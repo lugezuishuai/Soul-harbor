@@ -1,4 +1,4 @@
-import { CHANGE_ACTIVE_MENU, INSERT_SOCKET, IS_SEARCH } from '../actions/action_types';
+import { CHANGE_ACTIVE_MENU, INSERT_SOCKET, IS_SEARCH, UNREAD, PRIVATE_CHAT } from '../actions/action_types';
 import { initialChatState, ChatState } from './state';
 import { Action } from '../actions';
 
@@ -18,6 +18,16 @@ export default function (state = initialChatState, action: Action): ChatState {
       return {
         ...state,
         isSearch: action.payload,
+      };
+    case PRIVATE_CHAT:
+      return {
+        ...state,
+        chatMessage: action.payload,
+      };
+    case UNREAD:
+      return {
+        ...state,
+        unread: action.payload,
       };
     default:
       return state;

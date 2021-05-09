@@ -1,5 +1,5 @@
 import { Action } from '@/redux/actions';
-import { ChatActiveMenuState, State, UserInfoState } from '@/redux/reducers/state';
+import { ChatActiveMenuState, SocketState, State, UserInfoState } from '@/redux/reducers/state';
 import React from 'react';
 import { connect } from 'react-redux';
 import { ChatNav } from './component/nav';
@@ -13,6 +13,7 @@ interface ChatPageProps {
   userInfo: UserInfoState;
   activeMenu: ChatActiveMenuState;
   isSearch: boolean;
+  socket: SocketState;
 }
 
 function ChatPage(props: ChatPageProps) {
@@ -47,8 +48,9 @@ function ChatPage(props: ChatPageProps) {
   );
 }
 
-export const WrapChatPage = connect(({ user: { userInfo }, chat: { activeMenu, isSearch } }: State) => ({
+export const WrapChatPage = connect(({ user: { userInfo }, chat: { activeMenu, isSearch, socket } }: State) => ({
   userInfo,
   activeMenu,
   isSearch,
+  socket,
 }))(ChatPage);

@@ -44,6 +44,7 @@ export type ChatState = {
   activeMenu: ChatActiveMenuState;
   isSearch: boolean;
   chatMessage: ChatMessageState;
+  unread: boolean;
 };
 
 export type State = Readonly<{
@@ -74,4 +75,5 @@ export const initialChatState: ChatState = {
   activeMenu: 'chat',
   isSearch: false,
   chatMessage: null,
+  unread: false,
 };

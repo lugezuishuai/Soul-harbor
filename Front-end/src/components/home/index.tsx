@@ -18,9 +18,11 @@ import { apiGet } from '@/utils/request';
 import { XSRFINIT } from '@/constants/urls';
 import { WrapChatPage } from '@/pages/chat';
 import { Action } from '@/redux/actions';
-import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
+import { ChatMessageState, LoginState, MessageBody, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
+import { deepClone } from '@/utils/deepClone';
+import { PRIVATE_CHAT, UNREAD } from '@/redux/actions/action_types';
 import './index.less';
 
 function WrapUserInfo() {
@@ -45,10 +47,12 @@ interface HomeProps {
   userInfo: UserInfoState;
   login: LoginState;
   socket: SocketState;
+  chatMessage: ChatMessageState;
+  unread: boolean;
 }
 
 function Home(props: HomeProps) {
-  const { userInfo, socket } = props;
+  const { userInfo, selectMenu, login, socket, unread, chatMessage, dispatch } = props;
 
   const initXsrf = useCallback(async () => {
     try {
@@ -61,6 +65,51 @@ function Home(props: HomeProps) {
 
   useEffect(() => {
     initXsrf();
+
+    if (chatMessage) {
+      // 判断是否有未读信息
+      for (const key in chatMessage) {
+        if (chatMessage.hasOwnProperty(key)) {
+          const unread = chatMessage[key].some((msg) => msg.messageId !== msg.readMessageId); // 是否有未读信息
+          if (unread) {
+            // 有未读信息
+            dispatch({
+              type: UNREAD,
+              payload: true,
+            });
+            break;
+          }
+        }
+      }
+    }
+
+    if (socket) {
+      socket.on('receive message', (msg: MessageBody) => {
+        const { receiveId } = msg;
+        let newChatMessage;
+        if (chatMessage) {
+          newChatMessage = deepClone(chatMessage);
+          if (newChatMessage) {
+            if (newChatMessage.hasOwnProperty(receiveId)) {
+              // @ts-ignore
+              newChatMessage[receiveId] = msg[receiveId].concat(msg);
+            } else {
+              // @ts-ignore
+              newChatMessage[receiveId] = [msg];
+            }
+          }
+        } else {
+          newChatMessage = {
+            receiveId: [msg],
+          };
+        }
+
+        dispatch({
+          type: PRIVATE_CHAT,
+          payload: newChatMessage,
+        });
+      });
+    }
 
     return () => {
       if (socket && userInfo?.uid) {
@@ -82,7 +131,14 @@ function Home(props: HomeProps) {
             <Route path="/reset/:token" exact component={ResetPw} />
             <Route path="/">
               <div className="home-global__header">
-                <Header {...props} />
+                <Header
+                  dispatch={dispatch}
+                  selectMenu={selectMenu}
+                  userInfo={userInfo}
+                  login={login}
+                  socket={socket}
+                  unread={unread}
+                />
                 <div className="home-global__divide" />
               </div>
               <div className="home-global__container">
@@ -108,9 +164,13 @@ function Home(props: HomeProps) {
   );
 }
 
-export default connect(({ header: { selectMenu }, user: { userInfo, login }, chat: { socket } }: State) => ({
-  selectMenu,
-  userInfo,
-  login,
-  socket,
-}))(Home);
+export default connect(
+  ({ header: { selectMenu }, user: { userInfo, login }, chat: { socket, chatMessage, unread } }: State) => ({
+    selectMenu,
+    userInfo,
+    login,
+    socket,
+    chatMessage,
+    unread,
+  })
+)(Home);

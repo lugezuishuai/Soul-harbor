@@ -34,5 +34,6 @@ module.exports = {
     'react/display-name': 'off',
     'no-useless-escape': 'off',
     'no-async-promise-executor': 'off',
+    'no-prototype-builtins': 'on',
   }
 };
