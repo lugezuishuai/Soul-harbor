@@ -5,6 +5,7 @@ import { getIPAddress } from '../../utils/getIPAddress';
 import { formatMessage, getCurrentUser, getRoomUsers, userJoin, userLeave } from './helpers';
 import { redisDel, redisGet, redisSet } from '../../utils/redis';
 import dayjs from 'dayjs';
+import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 
 interface JoinRoom {
   username: string;
@@ -33,11 +34,11 @@ export function createSocketIo(server: HttpServer) {
     });
 
     // 私聊
-    socket.on('private message', (messageBody: MessageBody) => {
+    socket.on('private message', async (messageBody: MessageBody) => {
       const { senderId, receiveId, message, messageId } = messageBody;
       // 根据receiveId获取socketId
-      const socketId = redisGet(`socket_${senderId.slice(0, 8)}`);
-      if (typeof socketId === 'string') {
+      const socketId = await redisGet(`socket_${receiveId.slice(0, 8)}`);
+      if (!isNullOrUndefined(socketId)) {
         io.of('/chat')
           .to(socketId)
           .emit('receive message', {

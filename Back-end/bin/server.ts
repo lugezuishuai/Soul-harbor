@@ -24,7 +24,7 @@ app.set('port', port);
 
 let server = http.createServer(app);
 createSocketIo(server); // 创建socketIo
-batchDelSockets(); // 每次服务重启的时候都需要删除以前的socket
+// batchDelSockets(); // 每次服务重启的时候都需要删除以前的socket
 /**
  * Listen on provided port, on all network interfaces.
  */

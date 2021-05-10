@@ -1,0 +1,88 @@
+@import '~@/variable.less';
+@chatHeaderHeight: 64px;
+:global {
+  .chat-room {
+    background: @N100;
+    flex: 1;
+    height: 100%;
+    &-header {
+      box-sizing: border-box;
+      height: @chatHeaderHeight;
+      width: 100%;
+      border-bottom: 1px solid @N300;
+      display: flex;
+      align-items: center;
+      padding-left: 32px;
+      &-username {
+        font-size: 18px;
+        line-height: 28px;
+        font-weight: 500;
+        color: @N900;
+      }
+    }
+    &-container {
+      display: flex;
+      flex-flow: column;
+      height: calc(100% - @chatHeaderHeight);
+      width: 100%;
+    }
+    &-content {
+      width: 100%;
+      flex: 1;
+      padding: 24px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      &-unread {
+        height: 24px;
+        display: flex;
+        flex-flow: row;
+        align-items: center;
+        color: #1afa29;
+        margin: 24px auto 0;
+        transform: 0.5s;
+        &:hover {
+          cursor: pointer;
+          color: @N500;
+        }
+        &__icon {
+          font-size: 16px;
+          margin-right: 8px;
+        }
+        &__text {
+          font-size: 16px;
+          line-height: 24px;
+        }
+      }
+    }
+    &-send {
+      box-sizing: border-box;
+      width: 100%;
+      height: 80px;
+      padding: 0 24px;
+      border-top: 1px solid @N300;
+      background: #fff;
+      display: flex;
+      // justify-content: space-between;
+      align-items: center;
+      &__form {
+        flex: 1;
+      }
+      &__input {
+        height: 32px;
+        background: @N200;
+      }
+      &__btn {
+        margin-left: 20px;
+        height: 32px;
+        width: 80px;
+      }
+    }
+    .ant-form-item {
+      line-height: 1;
+      margin-bottom: 0;
+    }
+    .ant-form-item-control {
+      line-height: 1;
+    }
+  }
+}

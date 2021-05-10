@@ -4,10 +4,12 @@ import { useChat } from '../../state';
 import { MessageBody } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { UNREAD, PRIVATE_CHAT } from '@/redux/actions/action_types';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, message, Icon } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Cookies from 'js-cookie';
 import dayjs from 'dayjs';
+import Down from '@/assets/icon/down.svg';
+import { Message } from '../message';
 import './index.less';
 
 interface ChatRoomProps extends FormComponentProps {
@@ -30,6 +32,7 @@ interface SendMessageBody {
 
 function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps) {
   const { selectUser } = useChat();
+  console.log('selectUser: ', selectUser);
   const { getFieldDecorator, resetFields, validateFields } = form;
   const [readMessage, setReadMessage] = useState<MessageBody[]>([]); // 该会话已读信息（按照messageId排序）
   const [unreadMsgCount, setUnreadMsgCount] = useState(0); // 该会话未读信息条数
@@ -82,6 +85,7 @@ function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps
             socket.emit('private message', sendMsgBody);
           }
         }
+        resetFields(['msg']);
       }
     });
   }
@@ -97,7 +101,7 @@ function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps
         setReadMessage(chatMessage[receiveUid]);
       }
     }
-  }, [selectUser]);
+  }, [selectUser, chatMessage]);
 
   useEffect(() => {
     renderMessage();
@@ -109,29 +113,42 @@ function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps
         <div className="chat-room-header">
           <div className="chat-room-header-username">{selectUser.userInfo?.username}</div>
         </div>
-        <div className="chat-room-content"></div>
-        <div className="chat-room-send">
-          <Form className="chat-room-form">
-            <Form.Item className="chat-room-form__item">
-              {getFieldDecorator('msg')(
-                <Input
-                  className="chat-room-input"
-                  placeholder="按Enter或”发送“发送信息"
-                  autoComplete="off"
-                  allowClear={false}
-                />
-              )}
-            </Form.Item>
-          </Form>
-          <Button type="primary" className="chat-room-btn" onClick={handleSendMsg}>
-            发送
-          </Button>
+        <div className="chat-room-container">
+          <div className="chat-room-content">
+            {readMessage.map((msg, index) => {
+              const type: 'send' | 'receive' = msg.receiveId === selectUser.userInfo?.uid ? 'send' : 'receive';
+              return <Message key={index} type={type} message={msg.message} time={msg.time} />;
+            })}
+            {unreadMsgCount && (
+              <div className="chat-room-content-unread" onClick={handleClickUnRead}>
+                <Icon className="chat-room-content-unread__icon" component={Down as any} />
+                <div className="chat-room-content-unread__text">{`${unreadMsgCount}条未读信息`}</div>
+              </div>
+            )}
+          </div>
+          <div className="chat-room-send">
+            <Form className="chat-room-send__form">
+              <Form.Item>
+                {getFieldDecorator('msg')(
+                  <Input
+                    className="chat-room-send__input"
+                    placeholder="按Enter或”发送“发送信息"
+                    autoComplete="off"
+                    allowClear={false}
+                  />
+                )}
+              </Form.Item>
+            </Form>
+            <Button type="primary" className="chat-room-send__btn" onClick={handleSendMsg}>
+              发送
+            </Button>
+          </div>
         </div>
       </div>
     )
   );
 }
 
-export const WrapChatRoom = Form.create({
+export const WrapChatRoom = Form.create<ChatRoomProps>({
   name: 'chat-room',
 })(ChatRoom);

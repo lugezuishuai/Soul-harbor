@@ -15,7 +15,7 @@ import md5 from 'md5';
 import { apiGet, apiPost } from '@/utils/request';
 import './index.less';
 
-interface Props {
+interface ForgetPwProps {
   form: WrappedFormUtils<any>;
   [key: string]: any;
 }
@@ -30,7 +30,7 @@ const inputProps = {
   allowClear: true,
 };
 
-function ForgetPw(props: Props) {
+function ForgetPw(props: ForgetPwProps) {
   const { form, history } = props;
   const { getFieldDecorator, getFieldValue, validateFields } = form;
   const [username, setUsername] = useState<string | null>(null);
@@ -159,7 +159,7 @@ function ForgetPw(props: Props) {
   return <div className={prefix()}>{loading ? <Spin className={prefix('spin')} /> : renderContent()}</div>;
 }
 
-const WrapForgetPw = Form.create<Props>({
+const WrapForgetPw = Form.create<ForgetPwProps>({
   name: 'forget-password',
 })(ForgetPw);
 

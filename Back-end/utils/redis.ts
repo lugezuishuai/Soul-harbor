@@ -2,7 +2,7 @@ import redis from 'redis';
 import { redisConfig } from '../config/db';
 const client = redis.createClient(redisConfig);
 
-export function redisGet(key: string) {
+export function redisGet(key: string): Promise<any> {
   return new Promise((resolve, reject) => {
     client.get(key, (err, reply) => {
       if (err) {

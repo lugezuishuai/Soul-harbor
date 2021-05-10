@@ -21,7 +21,7 @@ import { Action } from '@/redux/actions';
 import { ChatMessageState, LoginState, MessageBody, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
-import { deepClone } from '@/utils/deepClone';
+// import { deepClone } from '@/utils/deepClone';
 import { PRIVATE_CHAT, UNREAD } from '@/redux/actions/action_types';
 import './index.less';
 
@@ -63,36 +63,44 @@ function Home(props: HomeProps) {
     }
   }, []);
 
-  useEffect(() => {
-    initXsrf();
+  const updateUnreadMsg = useCallback(() => {
+    if (!chatMessage) {
+      return;
+    }
 
-    if (chatMessage) {
-      // 判断是否有未读信息
-      for (const key in chatMessage) {
-        if (chatMessage.hasOwnProperty(key)) {
-          const unread = chatMessage[key].some((msg) => msg.messageId !== msg.readMessageId); // 是否有未读信息
-          if (unread) {
-            // 有未读信息
-            dispatch({
-              type: UNREAD,
-              payload: true,
-            });
-            break;
-          }
+    for (const key in chatMessage) {
+      if (chatMessage.hasOwnProperty(key)) {
+        const unreadMsg = chatMessage[key].some((msg) => msg.messageId !== msg.readMessageId); // 是否有未读信息
+        if (unreadMsg) {
+          // 有未读信息
+          dispatch({
+            type: UNREAD,
+            payload: true,
+          });
+          break;
         }
       }
     }
+  }, [chatMessage, dispatch]);
 
-    if (socket) {
-      socket.on('receive message', (msg: MessageBody) => {
+  const listenSocket = useCallback(() => {
+    if (!socket) {
+      return;
+    }
+
+    socket.on('receive message', (msg: MessageBody) => {
+      console.log('收到了对方的消息: ', msg);
+      try {
         const { receiveId } = msg;
         let newChatMessage;
         if (chatMessage) {
-          newChatMessage = deepClone(chatMessage);
+          // newChatMessage = deepClone(chatMessage);
+          newChatMessage = JSON.parse(JSON.stringify(chatMessage));
           if (newChatMessage) {
             if (newChatMessage.hasOwnProperty(receiveId)) {
               // @ts-ignore
-              newChatMessage[receiveId] = msg[receiveId].concat(msg);
+              newChatMessage[receiveId].push(msg);
+              newChatMessage[receiveId].sort((a: MessageBody, b: MessageBody) => a.messageId - b.messageId);
             } else {
               // @ts-ignore
               newChatMessage[receiveId] = [msg];
@@ -108,8 +116,14 @@ function Home(props: HomeProps) {
           type: PRIVATE_CHAT,
           payload: newChatMessage,
         });
-      });
-    }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  }, [socket, chatMessage, dispatch]);
+
+  useEffect(() => {
+    initXsrf();
 
     return () => {
       if (socket && userInfo?.uid) {
@@ -118,7 +132,15 @@ function Home(props: HomeProps) {
         socket.close();
       }
     };
-  }, [initXsrf]);
+  }, [initXsrf, userInfo, socket]);
+
+  useEffect(() => {
+    updateUnreadMsg();
+  }, [updateUnreadMsg]);
+
+  useEffect(() => {
+    listenSocket();
+  }, [listenSocket]);
 
   return (
     <ConfigProvider locale={zh_CN} prefixCls="ant">
