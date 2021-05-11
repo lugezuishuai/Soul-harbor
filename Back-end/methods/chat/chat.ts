@@ -14,9 +14,19 @@ interface JoinRoom {
 
 interface MessageBody {
   senderId: string;
-  receiveId: string;
+  receiverId: string;
   message: string;
   messageId: number;
+  time: number;
+}
+
+interface SendMessageBody {
+  senderId: string; // uuid
+  receiverId: string; // uuid
+  message: string;
+  messageId: number; // 递增
+  time: string;
+  readMessageId: number; // 已读的messageId
 }
 
 export function createSocketIo(server: HttpServer) {
@@ -35,20 +45,19 @@ export function createSocketIo(server: HttpServer) {
 
     // 私聊
     socket.on('private message', async (messageBody: MessageBody) => {
-      const { senderId, receiveId, message, messageId } = messageBody;
-      // 根据receiveId获取socketId
-      const socketId = await redisGet(`socket_${receiveId.slice(0, 8)}`);
+      const { senderId, receiverId, message, messageId, time } = messageBody;
+      // 根据receiverId获取socketId
+      const socketId = await redisGet(`socket_${receiverId.slice(0, 8)}`);
       if (!isNullOrUndefined(socketId)) {
-        io.of('/chat')
-          .to(socketId)
-          .emit('receive message', {
-            senderId, // uuid
-            receiveId, // uuid
-            message,
-            messageId,
-            time: dayjs().format('h:mm a'),
-            readMessageId: 0, // 默认0是未读信息，由前端去控制信息已读未读
-          });
+        const sendMessage: SendMessageBody = {
+          senderId, // uuid
+          receiverId, // uuid
+          message,
+          messageId,
+          time: dayjs(time * 1000).format('h:mm a'),
+          readMessageId: 0, // 默认0是未读信息，由前端去控制信息已读未读
+        };
+        io.of('/chat').to(socketId).emit('receive message', sendMessage); // 发送给对方
       }
     });
 

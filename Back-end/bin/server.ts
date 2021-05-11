@@ -8,7 +8,7 @@ import app from '../app';
 import debug from 'debug';
 debug('ts-node:server');
 import http from 'http';
-import { createSocketIo } from './chat/chat';
+import { createSocketIo } from '../methods/chat/chat';
 import { batchDelSockets } from '../utils/redis';
 
 /**

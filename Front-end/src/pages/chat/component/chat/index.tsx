@@ -1,4 +1,4 @@
-import { ChatMessageState, SocketState } from '@/redux/reducers/state';
+import { ChatMessageState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useChat } from '../../state';
 import { MessageBody } from '@/redux/reducers/state';
@@ -10,6 +10,7 @@ import Cookies from 'js-cookie';
 import dayjs from 'dayjs';
 import Down from '@/assets/icon/down.svg';
 import { Message } from '../message';
+import defaultAvatar from '@/assets/image/default-avatar.png';
 import './index.less';
 
 interface ChatRoomProps extends FormComponentProps {
@@ -17,6 +18,7 @@ interface ChatRoomProps extends FormComponentProps {
   unread: boolean;
   chatMessage: ChatMessageState;
   socket: SocketState;
+  userInfo: UserInfoState;
 }
 
 interface FormValues {
@@ -25,14 +27,14 @@ interface FormValues {
 
 interface SendMessageBody {
   senderId: string;
-  receiveId: string;
+  receiverId: string;
   message: string;
   messageId: number;
+  time: number;
 }
 
-function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps) {
+function ChatRoom({ chatMessage, unread, dispatch, form, socket, userInfo }: ChatRoomProps) {
   const { selectUser } = useChat();
-  console.log('selectUser: ', selectUser);
   const { getFieldDecorator, resetFields, validateFields } = form;
   const [readMessage, setReadMessage] = useState<MessageBody[]>([]); // 该会话已读信息（按照messageId排序）
   const [unreadMsgCount, setUnreadMsgCount] = useState(0); // 该会话未读信息条数
@@ -76,13 +78,44 @@ function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps
           message.error('不能发送空信息');
         } else {
           if (socket) {
-            const sendMsgBody: SendMessageBody = {
-              senderId: Cookies.get('uuid') || '',
-              receiveId: selectUser?.userInfo?.uid || '',
-              message: msg,
-              messageId: dayjs().unix(),
-            };
-            socket.emit('private message', sendMsgBody);
+            try {
+              const receiverId = selectUser?.userInfo?.uid || '';
+              const nowTime = dayjs().unix();
+              const sendMsgBody: SendMessageBody = {
+                senderId: Cookies.get('uuid') || '',
+                receiverId,
+                message: msg,
+                messageId: nowTime,
+                time: nowTime,
+              };
+              socket.emit('private message', sendMsgBody);
+              let newChatMessage;
+              const messageBody: MessageBody = {
+                ...sendMsgBody,
+                readMessageId: sendMsgBody.messageId,
+                time: dayjs(sendMsgBody.time * 1000).format('h:mm a'),
+              };
+              if (chatMessage) {
+                newChatMessage = JSON.parse(JSON.stringify(chatMessage));
+                if (newChatMessage && receiverId && newChatMessage[receiverId]) {
+                  newChatMessage[receiverId].push(messageBody);
+                  newChatMessage[receiverId].sort((a: MessageBody, b: MessageBody) => a.messageId - b.messageId);
+                } else {
+                  newChatMessage[receiverId] = [messageBody];
+                }
+              } else {
+                newChatMessage = {
+                  [receiverId]: [messageBody],
+                };
+              }
+
+              dispatch({
+                type: PRIVATE_CHAT,
+                payload: newChatMessage,
+              });
+            } catch (e) {
+              console.error(e);
+            }
           }
         }
         resetFields(['msg']);
@@ -90,18 +123,27 @@ function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps
     });
   }
 
+  function handleKeyPress(e: any) {
+    if (e.nativeEvent.keyCode === 13) {
+      handleSendMsg(e);
+    }
+  }
+
   const renderMessage = useCallback(() => {
-    if (chatMessage && selectUser?.userInfo?.uid && chatMessage[selectUser.userInfo.uid]) {
-      const receiveUid = selectUser.userInfo.uid;
+    console.log('chatMessage: ', chatMessage);
+    const uid = selectUser?.userInfo?.uid || '';
+
+    if (chatMessage && chatMessage[uid]) {
+      console.log('message: ', chatMessage[uid]);
       if (unread) {
-        const alreadyReadMsg = chatMessage[receiveUid].filter((msg) => msg.messageId === msg.readMessageId);
+        const alreadyReadMsg = chatMessage[uid].filter((msg) => msg.messageId === msg.readMessageId);
         setReadMessage(alreadyReadMsg);
-        setUnreadMsgCount(chatMessage[receiveUid].length - alreadyReadMsg.length);
+        setUnreadMsgCount(chatMessage[uid].length - alreadyReadMsg.length);
       } else {
-        setReadMessage(chatMessage[receiveUid]);
+        setReadMessage(chatMessage[uid]);
       }
     }
-  }, [selectUser, chatMessage]);
+  }, [selectUser, chatMessage, unread]);
 
   useEffect(() => {
     renderMessage();
@@ -116,10 +158,19 @@ function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps
         <div className="chat-room-container">
           <div className="chat-room-content">
             {readMessage.map((msg, index) => {
-              const type: 'send' | 'receive' = msg.receiveId === selectUser.userInfo?.uid ? 'send' : 'receive';
-              return <Message key={index} type={type} message={msg.message} time={msg.time} />;
+              const type: 'send' | 'receive' = msg.receiverId === selectUser.userInfo?.uid ? 'send' : 'receive';
+              const avatar = type === 'send' ? userInfo?.avatar : selectUser.userInfo?.avatar;
+              return (
+                <Message
+                  key={index}
+                  avatar={avatar || defaultAvatar}
+                  type={type}
+                  message={msg.message}
+                  time={msg.time}
+                />
+              );
             })}
-            {unreadMsgCount && (
+            {unreadMsgCount > 0 && (
               <div className="chat-room-content-unread" onClick={handleClickUnRead}>
                 <Icon className="chat-room-content-unread__icon" component={Down as any} />
                 <div className="chat-room-content-unread__text">{`${unreadMsgCount}条未读信息`}</div>
@@ -135,6 +186,7 @@ function ChatRoom({ chatMessage, unread, dispatch, form, socket }: ChatRoomProps
                     placeholder="按Enter或”发送“发送信息"
                     autoComplete="off"
                     allowClear={false}
+                    onKeyPress={handleKeyPress}
                   />
                 )}
               </Form.Item>

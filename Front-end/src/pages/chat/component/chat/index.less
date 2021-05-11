@@ -5,6 +5,8 @@
     background: @N100;
     flex: 1;
     height: 100%;
+    min-width: 1000px;
+    overflow-x: auto;
     &-header {
       box-sizing: border-box;
       height: @chatHeaderHeight;
@@ -33,24 +35,23 @@
       overflow-x: hidden;
       overflow-y: auto;
       &-unread {
-        height: 24px;
+        height: 20px;
         display: flex;
         flex-flow: row;
         align-items: center;
+        justify-content: center;
         color: #1afa29;
-        margin: 24px auto 0;
-        transform: 0.5s;
+        margin: 24px 0;
         &:hover {
           cursor: pointer;
-          color: @N500;
         }
         &__icon {
-          font-size: 16px;
-          margin-right: 8px;
+          font-size: 14px;
+          margin-right: 4px;
         }
         &__text {
-          font-size: 16px;
-          line-height: 24px;
+          font-size: 14px;
+          line-height: 20px;
         }
       }
     }
@@ -62,7 +63,6 @@
       border-top: 1px solid @N300;
       background: #fff;
       display: flex;
-      // justify-content: space-between;
       align-items: center;
       &__form {
         flex: 1;

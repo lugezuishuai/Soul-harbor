@@ -21,7 +21,6 @@ import { Action } from '@/redux/actions';
 import { ChatMessageState, LoginState, MessageBody, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
-// import { deepClone } from '@/utils/deepClone';
 import { PRIVATE_CHAT, UNREAD } from '@/redux/actions/action_types';
 import './index.less';
 
@@ -63,6 +62,7 @@ function Home(props: HomeProps) {
     }
   }, []);
 
+  // 更新未读信息
   const updateUnreadMsg = useCallback(() => {
     if (!chatMessage) {
       return;
@@ -83,32 +83,28 @@ function Home(props: HomeProps) {
     }
   }, [chatMessage, dispatch]);
 
+  // 监听socket
   const listenSocket = useCallback(() => {
     if (!socket) {
       return;
     }
 
     socket.on('receive message', (msg: MessageBody) => {
-      console.log('收到了对方的消息: ', msg);
+      console.log('收到了来自服务器的信息: ', msg);
       try {
-        const { receiveId } = msg;
+        const { senderId } = msg; // 获取发送者的uuid
         let newChatMessage;
         if (chatMessage) {
-          // newChatMessage = deepClone(chatMessage);
           newChatMessage = JSON.parse(JSON.stringify(chatMessage));
-          if (newChatMessage) {
-            if (newChatMessage.hasOwnProperty(receiveId)) {
-              // @ts-ignore
-              newChatMessage[receiveId].push(msg);
-              newChatMessage[receiveId].sort((a: MessageBody, b: MessageBody) => a.messageId - b.messageId);
-            } else {
-              // @ts-ignore
-              newChatMessage[receiveId] = [msg];
-            }
+          if (newChatMessage && senderId && newChatMessage[senderId]) {
+            newChatMessage[senderId].push(msg);
+            newChatMessage[senderId].sort((a: MessageBody, b: MessageBody) => a.messageId - b.messageId);
+          } else {
+            newChatMessage[senderId] = [msg];
           }
         } else {
           newChatMessage = {
-            receiveId: [msg],
+            [senderId]: [msg],
           };
         }
 

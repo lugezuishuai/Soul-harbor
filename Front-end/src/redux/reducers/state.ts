@@ -25,7 +25,7 @@ export type HeaderState = {
 
 export interface MessageBody {
   senderId: string; // uuid
-  receiveId: string; // uuid
+  receiverId: string; // uuid
   message: string;
   messageId: number; // 递增
   time: string;

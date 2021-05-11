@@ -5,13 +5,14 @@
     flex-flow: row;
     width: 100%;
     margin-bottom: 16px;
-    &:last-child {
-      margin-bottom: 0;
+    &-user {
+      display: flex;
+      flex-flow: column;
     }
     &-avatar {
       width: 36px;
       height: 36px;
-      margin-bottom: 16px;
+      margin: 0 auto 16px;
     }
     &-time {
       font-size: 14px;
@@ -19,11 +20,13 @@
       color: @N650;
     }
     &-content {
-      position: relative;
-      top: 20px;
-      padding: 4px;
-      border-radius: 4px;
+      margin-top: 20px;
+      margin-bottom: auto;
+      padding: 8px;
+      border-radius: 8px;
       max-width: 400px;
+      font-size: 14px;
+      line-height: 20px;
     }
   }
 }

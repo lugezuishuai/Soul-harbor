@@ -47,7 +47,7 @@ function ChatPage(props: ChatPageProps) {
           {isSearch && renderSearchPage()}
         </div>
       </div>
-      <WrapChatRoom dispatch={dispatch} unread={unread} chatMessage={chatMessage} socket={socket} />
+      <WrapChatRoom userInfo={userInfo} dispatch={dispatch} unread={unread} chatMessage={chatMessage} socket={socket} />
     </div>
   );
 }
