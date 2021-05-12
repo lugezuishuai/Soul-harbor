@@ -13,6 +13,6 @@ export const transporter = nodemailer.createTransport({
     pass: `${process.env.EMAIL_PASSWORD}`,
   },
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
   },
 });
