@@ -24,27 +24,45 @@ export type HeaderState = {
 };
 
 export interface MessageBody {
-  senderId: string; // uuid
-  receiverId: string; // uuid
+  sender_id: string; // uuid
+  receiver_id: string; // uuid
+  message_id: number; // 递增
   message: string;
-  messageId: number; // 递增
   time: string;
-  readMessageId: number; // 已读的messageId
+  type: 'online' | 'offline'; // 是否是离线信息
 }
 
-export interface ChatMessage {
+export interface UnreadChatMessage {
   // key是uid和room
   [key: string]: MessageBody[];
 }
 
-export type ChatMessageState = ChatMessage | null;
+export interface FriendInfo {
+  friend_id: string;
+  friend_username: string;
+  friend_avatar: string | null;
+}
+
+export type FriendList = FriendInfo[] | null;
+
+export interface SessionInfo {
+  type: 'private' | 'room';
+  sessionId: string; // 用户id | 房间id
+  name: string; // 用户名 | 房间名
+  avatar: string | null; // 用户头像 | 房间头像
+  latestTime: number; // 秒为单位的时间戳
+}
+
+export type SessionsList = SessionInfo[] | null;
 
 export type ChatState = {
   socket: SocketState;
   activeMenu: ChatActiveMenuState;
   isSearch: boolean;
-  chatMessage: ChatMessageState;
-  unread: boolean;
+  // chatMessage: ChatMessageState;
+  friendList: FriendList;
+  sessionsList: SessionsList;
+  unreadChatMessage: UnreadChatMessage;
 };
 
 export type State = Readonly<{
@@ -74,6 +92,7 @@ export const initialChatState: ChatState = {
   socket: null, // socket
   activeMenu: 'chat',
   isSearch: false,
-  chatMessage: null,
-  unread: false,
+  friendList: null,
+  sessionsList: null,
+  unreadChatMessage: {},
 };

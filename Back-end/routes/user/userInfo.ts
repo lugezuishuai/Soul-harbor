@@ -9,7 +9,7 @@ import { transporter } from '../../config/nodemailer';
 import dayjs from 'dayjs';
 import bcrypt from 'bcryptjs';
 import { breakPromise } from '../../utils/breakPromise';
-import { SuccessCodeType } from './code-type';
+import { UnSuccessCodeType } from './code-type';
 import crypto from 'crypto';
 import multer from 'multer';
 import path from 'path';
@@ -22,7 +22,7 @@ import { getIPAddress } from '../../utils/getIPAddress';
 import { extractExt } from '../../utils/extractExt';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 
-const { alreadyExit, noMatch, expiredOrUnValid, badAccount } = SuccessCodeType;
+const { alreadyExit, noMatch, expiredOrUnValid, badAccount } = UnSuccessCodeType;
 
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据

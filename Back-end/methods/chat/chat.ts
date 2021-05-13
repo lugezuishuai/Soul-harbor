@@ -6,6 +6,8 @@ import { formatMessage, getCurrentUser, getRoomUsers, userJoin, userLeave } from
 import { redisDel, redisGet, redisSet } from '../../utils/redis';
 import dayjs from 'dayjs';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
+import query from '../../utils/query';
+import { UserInfo, SessionInfo } from '../../type/type';
 
 interface JoinRoom {
   username: string;
@@ -13,20 +15,21 @@ interface JoinRoom {
 }
 
 interface MessageBody {
-  senderId: string;
-  receiverId: string;
+  sender_id: string;
+  receiver_id: string;
+  message_id: number;
   message: string;
-  messageId: number;
-  time: number;
+  time: number; // 秒为单位的时间戳
+  type: 'private' | 'room'; // 私聊信息还是群聊信息
 }
 
 interface SendMessageBody {
-  senderId: string; // uuid
-  receiverId: string; // uuid
+  sender_id: string; // uuid
+  receiver_id: string; // uuid
+  message_id: number; // 递增
   message: string;
-  messageId: number; // 递增
   time: string;
-  readMessageId: number; // 已读的messageId
+  type: 'online' | 'offline'; // 是否是离线信息
 }
 
 export function createSocketIo(server: HttpServer) {
@@ -45,19 +48,51 @@ export function createSocketIo(server: HttpServer) {
 
     // 私聊
     socket.on('private message', async (messageBody: MessageBody) => {
-      const { senderId, receiverId, message, messageId, time } = messageBody;
-      // 根据receiverId获取socketId
-      const socketId = await redisGet(`socket_${receiverId.slice(0, 8)}`);
-      if (!isNullOrUndefined(socketId)) {
+      try {
+        const { sender_id, receiver_id, message, message_id, time, type } = messageBody;
+        // 判断会话是否存在
+        let sessionInfo: SessionInfo | null = JSON.parse(await redisGet(`session_${sender_id}_${receiver_id}`));
+        if (sessionInfo) {
+          sessionInfo.latestTime = time;
+        } else {
+          if (type === 'private') {
+            // 如果是私聊信息
+            const searchUserInfo = `select * from soulUserInfo where soulUuid = '${receiver_id}'`;
+            const userInfo: UserInfo[] = await query(searchUserInfo);
+            if (userInfo && userInfo.length === 1) {
+              const { soulUsername, soulAvatar } = userInfo[0];
+              sessionInfo = {
+                type: 'private',
+                sessionId: receiver_id,
+                latestTime: time,
+                name: soulUsername,
+                avatar: soulAvatar,
+              };
+            }
+          }
+        }
+        redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
+
+        // 根据receiver_id获取socketId, 判断用户是否在线
+        const socketId = await redisGet(`socket_${receiver_id.slice(0, 8)}`);
         const sendMessage: SendMessageBody = {
-          senderId, // uuid
-          receiverId, // uuid
+          sender_id,
+          receiver_id,
           message,
-          messageId,
-          time: dayjs(time * 1000).format('h:mm a'),
-          readMessageId: 0, // 默认0是未读信息，由前端去控制信息已读未读
+          message_id,
+          time: dayjs(time * 1000).format('YYYY-MM-DD h:mm a'),
+          type: 'online',
         };
+        if (isNullOrUndefined(socketId)) {
+          // 如果用户不在线
+          sendMessage.type = 'offline';
+        }
+        const insertMessage = `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}')`;
+        await query(insertMessage);
+
         io.of('/chat').to(socketId).emit('receive message', sendMessage); // 发送给对方
+      } catch (e) {
+        console.error(e);
       }
     });
 

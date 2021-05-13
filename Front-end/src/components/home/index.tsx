@@ -62,26 +62,26 @@ function Home(props: HomeProps) {
     }
   }, []);
 
-  // 更新未读信息
-  const updateUnreadMsg = useCallback(() => {
-    if (!chatMessage) {
-      return;
-    }
+  // // 更新未读信息
+  // const updateUnreadMsg = useCallback(() => {
+  //   if (!chatMessage) {
+  //     return;
+  //   }
 
-    for (const key in chatMessage) {
-      if (chatMessage.hasOwnProperty(key)) {
-        const unreadMsg = chatMessage[key].some((msg) => msg.messageId !== msg.readMessageId); // 是否有未读信息
-        if (unreadMsg) {
-          // 有未读信息
-          dispatch({
-            type: UNREAD,
-            payload: true,
-          });
-          break;
-        }
-      }
-    }
-  }, [chatMessage, dispatch]);
+  //   for (const key in chatMessage) {
+  //     if (chatMessage.hasOwnProperty(key)) {
+  //       const unreadMsg = chatMessage[key].some((msg) => msg.messageId !== msg.readMessageId); // 是否有未读信息
+  //       if (unreadMsg) {
+  //         // 有未读信息
+  //         dispatch({
+  //           type: UNREAD,
+  //           payload: true,
+  //         });
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }, [chatMessage, dispatch]);
 
   // 监听socket
   const listenSocket = useCallback(() => {

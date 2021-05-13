@@ -15,7 +15,7 @@ export async function verifyAvatarFile(file: RcFile) {
 
   const acceptType = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/bmp'];
 
-  // 图标必须是JPEG/PNG/SVG/BMP格式"
+  // 图标必须是JPEG/PNG/SVG/BMP格式
   if (!acceptType.includes(file.type)) {
     throw new Error('图标格式错误');
   }

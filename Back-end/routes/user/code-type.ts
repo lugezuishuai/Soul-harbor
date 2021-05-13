@@ -1,4 +1,4 @@
-export enum SuccessCodeType {
+export enum UnSuccessCodeType {
   alreadyExit = 10001, // 已经存在
   noMatch = 10002, // 不匹配
   expiredOrUnValid = 10003, // 已经过期
