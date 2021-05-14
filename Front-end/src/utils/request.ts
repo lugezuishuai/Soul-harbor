@@ -69,6 +69,7 @@ axios.interceptors.request.use(
   }
 );
 
+// 响应拦截器
 axios.interceptors.response.use(
   function (response) {
     console.log('response config: ', response.config);
