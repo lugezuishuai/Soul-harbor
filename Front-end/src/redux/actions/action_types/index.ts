@@ -17,8 +17,8 @@ export const CHANGE_SELECT_MENU = 'CHANGE_SELECT_MENU'; // 改变选择的菜单
 // chat相关
 export const INSERT_SOCKET = 'INSERT_SOCKET'; // 插入socket
 export const CHANGE_ACTIVE_MENU = 'CHANGE_ACTIVE_MENU'; // 改变聊天界面的menu
-export const GET_FRIEND_LIST = 'GET_FRIEND_LIST'; // 查看好友列表
-export const GET_SESSION_LIST = 'GET_SESSION_LIST'; // 查看会话列表
+export const GET_FRIENDS_LIST_ACTION = 'GET_FRIENDS_LIST_ACTION'; // 查看好友列表
+export const GET_SESSIONS_LIST_ACTION = 'GET_SESSIONS_LIST_ACTION'; // 查看会话列表
 export const IS_SEARCH = 'IS_SEARCH'; // 是否正在搜索
 export const UNREAD_MESSAGE = 'UNREAD_MESSAGE'; // 总的未读信息
 // export const PRIVATE_CHAT = 'PRIVATE_CHAT'; // 私聊信息

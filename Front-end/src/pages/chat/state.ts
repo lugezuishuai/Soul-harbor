@@ -37,26 +37,27 @@ function useCommonData() {
     }, 350) as any;
   }, []);
 
-  // 设置选中的用户
-  const handleSelectUser = useCallback(
-    (uid: string) => {
-      if (!uid || !searchData || !searchData.length) {
-        return;
-      }
+  // // 设置选中的用户
+  // const handleSelectUser = useCallback(
+  //   (uid: string) => {
+  //     if (!uid || !searchData || !searchData.length) {
+  //       return;
+  //     }
 
-      const user = searchData.find(({ userInfo }) => uid === userInfo?.uid);
-      user?.online && setSelectUser(user);
-      return user?.online;
-    },
-    [searchData]
-  );
+  //     const user = searchData.find(({ userInfo }) => uid === userInfo?.uid);
+  //     user?.online && setSelectUser(user);
+  //     return user?.online;
+  //   },
+  //   [searchData]
+  // );
 
   return {
     searchLoading,
     searchData,
     selectUser,
     setSearchData,
-    handleSelectUser,
+    setSelectUser,
+    // handleSelectUser,
     handleSearch,
   };
 }

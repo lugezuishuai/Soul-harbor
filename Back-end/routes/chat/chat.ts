@@ -235,7 +235,7 @@ router.get('getFriendsList', async (req, res) => {
     return res.status(200).json({
       code: 0,
       data: {
-        friendList: result,
+        friendsList: result,
       },
       msg: 'success',
     });
@@ -250,7 +250,7 @@ router.get('getFriendsList', async (req, res) => {
 });
 
 // 拉取会话列表
-router.get('getSessionList', async (req, res) => {
+router.get('getSessionsList', async (req, res) => {
   const { uuid } = req.cookies;
   try {
     const sessionsList: SessionInfo[] = await batchGetSessions(uuid);

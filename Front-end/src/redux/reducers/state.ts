@@ -1,3 +1,6 @@
+import { FriendInfo } from '@/interface/chat/getFriendsList';
+import { SessionInfo } from '@/interface/chat/getSessionsList';
+import { UnreadMsg } from '@/interface/chat/getUnreadMsg';
 import { EmployeeResponse } from '@/interface/employee';
 import { UserInfo } from '@/interface/user/init';
 import { Socket } from 'socket.io-client';
@@ -23,46 +26,45 @@ export type HeaderState = {
   selectMenu: string;
 };
 
-export interface MessageBody {
-  sender_id: string; // uuid
-  receiver_id: string; // uuid
-  message_id: number; // 递增
-  message: string;
-  time: string;
-  type: 'online' | 'offline'; // 是否是离线信息
-}
+// export interface MessageBody {
+//   sender_id: string; // uuid
+//   receiver_id: string; // uuid
+//   message_id: number; // 递增
+//   message: string;
+//   time: string;
+//   type: 'online' | 'offline'; // 是否是离线信息
+// }
 
-export interface UnreadChatMessage {
-  // key是uid和room
-  [key: string]: MessageBody[];
-}
+// export interface UnreadChatMessage {
+//   // key是uid和room
+//   [key: string]: MessageBody[];
+// }
 
-export interface FriendInfo {
-  friend_id: string;
-  friend_username: string;
-  friend_avatar: string | null;
-}
+// export interface FriendInfo {
+//   friend_id: string;
+//   friend_username: string;
+//   friend_avatar: string | null;
+// }
 
-export type FriendList = FriendInfo[] | null;
+export type FriendListState = FriendInfo[] | null;
 
-export interface SessionInfo {
-  type: 'private' | 'room';
-  sessionId: string; // 用户id | 房间id
-  name: string; // 用户名 | 房间名
-  avatar: string | null; // 用户头像 | 房间头像
-  latestTime: number; // 秒为单位的时间戳
-}
+// export interface SessionInfo {
+//   type: 'private' | 'room';
+//   sessionId: string; // 用户id | 房间id
+//   name: string; // 用户名 | 房间名
+//   avatar: string | null; // 用户头像 | 房间头像
+//   latestTime: number; // 秒为单位的时间戳
+// }
 
-export type SessionsList = SessionInfo[] | null;
+export type SessionsListState = SessionInfo[] | null;
 
 export type ChatState = {
   socket: SocketState;
   activeMenu: ChatActiveMenuState;
   isSearch: boolean;
-  // chatMessage: ChatMessageState;
-  friendList: FriendList;
-  sessionsList: SessionsList;
-  unreadChatMessage: UnreadChatMessage;
+  friendsList: FriendListState;
+  sessionsList: SessionsListState;
+  unreadChatMessage: UnreadMsg;
 };
 
 export type State = Readonly<{
@@ -92,7 +94,7 @@ export const initialChatState: ChatState = {
   socket: null, // socket
   activeMenu: 'chat',
   isSearch: false,
-  friendList: null,
+  friendsList: null,
   sessionsList: null,
   unreadChatMessage: {},
 };

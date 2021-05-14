@@ -27,7 +27,6 @@ export interface HeaderProps extends RouteComponentProps {
   userInfo: UserInfoState;
   login: LoginState;
   socket: SocketState;
-  unread: boolean;
 }
 
 const { Block, InlineBlock, Avatar } = Skeleton;

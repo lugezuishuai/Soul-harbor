@@ -15,13 +15,14 @@ import Error from '@/pages/error-page';
 import { WrapWithLogin } from '@/components/with-login';
 import { WrapScrollToTop } from './scroll-to-top';
 import { apiGet } from '@/utils/request';
-import { XSRFINIT } from '@/constants/urls';
+import { GET_UNREAD_MSG, XSRFINIT } from '@/constants/urls';
 import { WrapChatPage } from '@/pages/chat';
 import { Action } from '@/redux/actions';
-import { ChatMessageState, LoginState, MessageBody, SocketState, UserInfoState } from '@/redux/reducers/state';
+import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
-import { PRIVATE_CHAT, UNREAD } from '@/redux/actions/action_types';
+import { UnreadMsg } from '@/interface/chat/getUnreadMsg';
+import Cookies from 'js-cookie';
 import './index.less';
 
 function WrapUserInfo() {
@@ -46,21 +47,34 @@ interface HomeProps {
   userInfo: UserInfoState;
   login: LoginState;
   socket: SocketState;
-  chatMessage: ChatMessageState;
-  unread: boolean;
+  unreadChatMessage: UnreadMsg;
 }
 
 function Home(props: HomeProps) {
-  const { userInfo, selectMenu, login, socket, unread, chatMessage, dispatch } = props;
+  const { userInfo, selectMenu, login, socket, unreadChatMessage, dispatch } = props;
 
+  // 初始化xsrf
   const initXsrf = useCallback(async () => {
     try {
       await apiGet(XSRFINIT);
-      console.log('xsrfToken init success');
     } catch (e) {
       console.error(e);
     }
   }, []);
+
+  // 更新离线信息
+  const updateUnreadMsg = useCallback(async () => {
+    try {
+      const unreadMsg: UnreadMsg = await apiGet(GET_UNREAD_MSG);
+      console.log('unreadMsg: ', unreadMsg);
+      dispatch({
+        type: GET_UNREAD_MSG,
+        payload: unreadMsg,
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }, [dispatch]);
 
   // // 更新未读信息
   // const updateUnreadMsg = useCallback(() => {
@@ -83,60 +97,54 @@ function Home(props: HomeProps) {
   //   }
   // }, [chatMessage, dispatch]);
 
-  // 监听socket
-  const listenSocket = useCallback(() => {
-    if (!socket) {
-      return;
-    }
+  // // 监听socket
+  // const listenSocket = useCallback(() => {
+  //   if (!socket) {
+  //     return;
+  //   }
 
-    socket.on('receive message', (msg: MessageBody) => {
-      console.log('收到了来自服务器的信息: ', msg);
-      try {
-        const { senderId } = msg; // 获取发送者的uuid
-        let newChatMessage;
-        if (chatMessage) {
-          newChatMessage = JSON.parse(JSON.stringify(chatMessage));
-          if (newChatMessage && senderId && newChatMessage[senderId]) {
-            newChatMessage[senderId].push(msg);
-            newChatMessage[senderId].sort((a: MessageBody, b: MessageBody) => a.messageId - b.messageId);
-          } else {
-            newChatMessage[senderId] = [msg];
-          }
-        } else {
-          newChatMessage = {
-            [senderId]: [msg],
-          };
-        }
+  //   socket.on('receive message', (msg: MessageBody) => {
+  //     console.log('收到了来自服务器的信息: ', msg);
+  //     try {
+  //       const { senderId } = msg; // 获取发送者的uuid
+  //       let newChatMessage;
+  //       if (chatMessage) {
+  //         newChatMessage = JSON.parse(JSON.stringify(chatMessage));
+  //         if (newChatMessage && senderId && newChatMessage[senderId]) {
+  //           newChatMessage[senderId].push(msg);
+  //           newChatMessage[senderId].sort((a: MessageBody, b: MessageBody) => a.messageId - b.messageId);
+  //         } else {
+  //           newChatMessage[senderId] = [msg];
+  //         }
+  //       } else {
+  //         newChatMessage = {
+  //           [senderId]: [msg],
+  //         };
+  //       }
 
-        dispatch({
-          type: PRIVATE_CHAT,
-          payload: newChatMessage,
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    });
-  }, [socket, chatMessage, dispatch]);
+  //       dispatch({
+  //         type: PRIVATE_CHAT,
+  //         payload: newChatMessage,
+  //       });
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   });
+  // }, [socket, chatMessage, dispatch]);
 
   useEffect(() => {
     initXsrf();
+    updateUnreadMsg();
 
     return () => {
-      if (socket && userInfo?.uid) {
-        // 关闭socket连接
-        socket.emit('close', userInfo.uid);
+      console.log('home组件被销毁了');
+      const uuid = Cookies.get('uuid');
+      if (socket && uuid) {
+        socket.emit('close', uuid);
         socket.close();
       }
     };
-  }, [initXsrf, userInfo, socket]);
-
-  useEffect(() => {
-    updateUnreadMsg();
-  }, [updateUnreadMsg]);
-
-  useEffect(() => {
-    listenSocket();
-  }, [listenSocket]);
+  }, [initXsrf, updateUnreadMsg, socket]);
 
   return (
     <ConfigProvider locale={zh_CN} prefixCls="ant">
@@ -149,14 +157,7 @@ function Home(props: HomeProps) {
             <Route path="/reset/:token" exact component={ResetPw} />
             <Route path="/">
               <div className="home-global__header">
-                <Header
-                  dispatch={dispatch}
-                  selectMenu={selectMenu}
-                  userInfo={userInfo}
-                  login={login}
-                  socket={socket}
-                  unread={unread}
-                />
+                <Header dispatch={dispatch} selectMenu={selectMenu} userInfo={userInfo} login={login} socket={socket} />
                 <div className="home-global__divide" />
               </div>
               <div className="home-global__container">
@@ -183,12 +184,11 @@ function Home(props: HomeProps) {
 }
 
 export default connect(
-  ({ header: { selectMenu }, user: { userInfo, login }, chat: { socket, chatMessage, unread } }: State) => ({
+  ({ header: { selectMenu }, user: { userInfo, login }, chat: { socket, unreadChatMessage } }: State) => ({
     selectMenu,
     userInfo,
     login,
     socket,
-    chatMessage,
-    unread,
+    unreadChatMessage,
   })
 )(Home);
