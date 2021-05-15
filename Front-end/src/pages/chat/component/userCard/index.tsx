@@ -2,11 +2,12 @@ import React from 'react';
 import { SearchMemberInfo } from '@/interface/chat/searchMember';
 import { Avatar, Modal, message } from 'antd';
 import defaultAvatar from '@/assets/image/default-avatar.png';
-import { useChat } from '../../state';
-import { FriendListState } from '@/redux/reducers/state';
+import { FriendListState, SelectSession } from '@/redux/reducers/state';
 import { apiPost } from '@/utils/request';
 import { AddFriendRequest } from '@/interface/chat/addFriend';
 import { ADD_FRIEND } from '@/constants/urls';
+import { Action } from '@/redux/actions';
+import { SELECT_SESSION } from '@/redux/actions/action_types';
 import './index.less';
 
 const { confirm } = Modal;
@@ -15,11 +16,11 @@ interface UserCardProps {
   userData: SearchMemberInfo;
   friendsList: FriendListState;
   getFriendsList(): void;
+  dispatch(action: Action): void;
 }
 
-export function UserCard({ userData, friendsList, getFriendsList }: UserCardProps) {
+export function UserCard({ userData, friendsList, getFriendsList, dispatch }: UserCardProps) {
   const { userInfo, online } = userData;
-  const { setSelectUser } = useChat();
 
   // 添加好友
   async function handleAddFriend(friendId: string) {
@@ -29,7 +30,18 @@ export function UserCard({ userData, friendsList, getFriendsList }: UserCardProp
       };
       await apiPost(ADD_FRIEND, reqData);
       message.success(`您已成功添加${userInfo?.username || ''}为您的好友`);
-      setSelectUser(userData); // 进入聊天界面
+
+      // 设置选定的会话，进入聊天页面
+      const selectSession: SelectSession = {
+        type: 'private',
+        sessionId: userInfo?.uid || '',
+        name: userInfo?.username || '',
+      };
+      dispatch({
+        type: SELECT_SESSION,
+        payload: selectSession,
+      });
+
       getFriendsList(); // 重新拉取一次好友列表
     } catch (e) {
       console.error(e);
@@ -48,7 +60,16 @@ export function UserCard({ userData, friendsList, getFriendsList }: UserCardProp
         onOk: () => handleAddFriend(userInfo?.uid || ''),
       });
     } else {
-      setSelectUser(userData); // 进入聊天界面
+      // 设置选定的会话，进入聊天页面
+      const selectSession: SelectSession = {
+        type: 'private',
+        sessionId: userInfo?.uid || '',
+        name: userInfo?.username || '',
+      };
+      dispatch({
+        type: SELECT_SESSION,
+        payload: selectSession,
+      });
     }
   }
 

@@ -30,6 +30,7 @@ interface SendMessageBody {
   message: string;
   time: string;
   type: 'online' | 'offline'; // 是否是离线信息
+  sender_avatar: string | null; // 发送者头像
 }
 
 export function createSocketIo(server: HttpServer) {
@@ -50,6 +51,14 @@ export function createSocketIo(server: HttpServer) {
     socket.on('private message', async (messageBody: MessageBody) => {
       try {
         const { sender_id, receiver_id, message, message_id, time, type } = messageBody;
+        const searchUserInfo = `select * from soulUserInfo where soulUuid = '${receiver_id}'`;
+        const userInfo: UserInfo[] = await query(searchUserInfo);
+
+        if (!userInfo || userInfo.length !== 1) {
+          return;
+        }
+        const { soulUsername, soulAvatar } = userInfo[0];
+
         // 判断会话是否存在
         let sessionInfo: SessionInfo | null = JSON.parse(await redisGet(`session_${sender_id}_${receiver_id}`));
         if (sessionInfo) {
@@ -57,18 +66,15 @@ export function createSocketIo(server: HttpServer) {
         } else {
           if (type === 'private') {
             // 如果是私聊信息
-            const searchUserInfo = `select * from soulUserInfo where soulUuid = '${receiver_id}'`;
-            const userInfo: UserInfo[] = await query(searchUserInfo);
-            if (userInfo && userInfo.length === 1) {
-              const { soulUsername, soulAvatar } = userInfo[0];
-              sessionInfo = {
-                type: 'private',
-                sessionId: receiver_id,
-                latestTime: time,
-                name: soulUsername,
-                avatar: soulAvatar,
-              };
-            }
+            sessionInfo = {
+              type: 'private',
+              sessionId: receiver_id,
+              latestTime: time,
+              name: soulUsername,
+              avatar: soulAvatar,
+            };
+          } else {
+            // 如果是群聊，还要补充
           }
         }
         redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
@@ -82,6 +88,7 @@ export function createSocketIo(server: HttpServer) {
           message_id,
           time: dayjs(time * 1000).format('YYYY-MM-DD h:mm a'),
           type: 'online',
+          sender_avatar: soulAvatar,
         };
         if (isNullOrUndefined(socketId)) {
           // 如果用户不在线

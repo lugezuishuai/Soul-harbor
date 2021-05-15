@@ -1,4 +1,4 @@
-import { ChatMessageState, SocketState, UserInfoState } from '@/redux/reducers/state';
+import { ChatMessageState, SelectSessionState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useChat } from '../../state';
 import { MessageBody } from '@/redux/reducers/state';
@@ -15,10 +15,9 @@ import './index.less';
 
 interface ChatRoomProps extends FormComponentProps {
   dispatch(action: Action): void;
-  unread: boolean;
-  chatMessage: ChatMessageState;
   socket: SocketState;
   userInfo: UserInfoState;
+  selectSession: SelectSessionState;
 }
 
 interface FormValues {
@@ -33,40 +32,39 @@ interface SendMessageBody {
   time: number;
 }
 
-function ChatRoom({ chatMessage, unread, dispatch, form, socket, userInfo }: ChatRoomProps) {
-  const { selectUser } = useChat();
+function ChatRoom({ selectSession, dispatch, form, socket, userInfo }: ChatRoomProps) {
   const { getFieldDecorator, resetFields, validateFields } = form;
   const [readMessage, setReadMessage] = useState<MessageBody[]>([]); // 该会话已读信息（按照messageId排序）
   const [unreadMsgCount, setUnreadMsgCount] = useState(0); // 该会话未读信息条数
 
-  // 点击未读信息
-  function handleClickUnRead() {
-    // 将所有的信息设置成已读
-    setUnreadMsgCount(0);
-    dispatch({
-      type: UNREAD,
-      payload: false,
-    });
-    if (chatMessage && chatMessage && selectUser?.userInfo?.uid && chatMessage[selectUser.userInfo.uid]) {
-      const receiveUid = selectUser.userInfo.uid;
-      const newChatMessage = {
-        ...chatMessage,
-        [receiveUid]: chatMessage[receiveUid].map((msg) => {
-          if (msg.messageId !== msg.readMessageId) {
-            msg.readMessageId = msg.messageId;
-          }
+  // // 点击未读信息
+  // function handleClickUnRead() {
+  //   // 将所有的信息设置成已读
+  //   setUnreadMsgCount(0);
+  //   dispatch({
+  //     type: UNREAD,
+  //     payload: false,
+  //   });
+  //   if (chatMessage && chatMessage && selectUser?.userInfo?.uid && chatMessage[selectUser.userInfo.uid]) {
+  //     const receiveUid = selectUser.userInfo.uid;
+  //     const newChatMessage = {
+  //       ...chatMessage,
+  //       [receiveUid]: chatMessage[receiveUid].map((msg) => {
+  //         if (msg.messageId !== msg.readMessageId) {
+  //           msg.readMessageId = msg.messageId;
+  //         }
 
-          return msg;
-        }),
-      };
+  //         return msg;
+  //       }),
+  //     };
 
-      setReadMessage(newChatMessage[receiveUid]);
-      dispatch({
-        type: PRIVATE_CHAT,
-        payload: newChatMessage,
-      });
-    }
-  }
+  //     setReadMessage(newChatMessage[receiveUid]);
+  //     dispatch({
+  //       type: PRIVATE_CHAT,
+  //       payload: newChatMessage,
+  //     });
+  //   }
+  // }
 
   // 发送聊天信息
   function handleSendMsg(e: any) {
@@ -144,6 +142,13 @@ function ChatRoom({ chatMessage, unread, dispatch, form, socket, userInfo }: Cha
       }
     }
   }, [selectUser, chatMessage, unread]);
+
+  // 获取历史信息
+  const getHisMsg = useCallback(() => {
+    if (selectSession) {
+      const { sessionId } = selectSession;
+    }
+  }, []);
 
   useEffect(() => {
     renderMessage();

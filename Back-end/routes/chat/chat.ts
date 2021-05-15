@@ -16,6 +16,7 @@ interface PrivateMsgInfo {
   message: string;
   time: string;
   type: 'online' | 'offline';
+  sender_avatar: string | null;
 }
 
 interface UnreadPrivateMsg {
@@ -125,7 +126,7 @@ router.get('/unread', async (req, res) => {
 });
 
 // 用户查看指定会话信息
-router.post('readHisMsg', async (req, res) => {
+router.post('/getHisMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
     const { sessionId } = req.body; // roomId || uuid

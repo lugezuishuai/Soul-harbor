@@ -2,6 +2,7 @@ import { Action } from '@/redux/actions';
 import {
   ChatActiveMenuState,
   FriendListState,
+  SelectSessionState,
   SessionsListState,
   SocketState,
   State,
@@ -29,10 +30,11 @@ interface ChatPageProps {
   socket: SocketState;
   friendsList: FriendListState;
   sessionsList: SessionsListState;
+  selectSession: SelectSessionState;
 }
 
 function ChatPage(props: ChatPageProps) {
-  const { userInfo, activeMenu, dispatch, isSearch, socket, friendsList, sessionsList } = props;
+  const { userInfo, activeMenu, dispatch, isSearch, socket, friendsList, sessionsList, selectSession } = props;
   const isChatMenu = activeMenu === 'chat' && !isSearch;
   const isFriendMenu = activeMenu === 'friend' && !isSearch;
 
@@ -48,7 +50,13 @@ function ChatPage(props: ChatPageProps) {
       return <NoSearchResult />;
     } else {
       return searchData.map((userData, index) => (
-        <UserCard key={index} userData={userData} getFriendsList={getFriendsList} friendsList={friendsList} />
+        <UserCard
+          key={index}
+          userData={userData}
+          getFriendsList={getFriendsList}
+          friendsList={friendsList}
+          dispatch={dispatch}
+        />
       ));
     }
   }
@@ -105,18 +113,22 @@ function ChatPage(props: ChatPageProps) {
           {isSearch && renderSearchPage()}
         </div>
       </div>
-      <WrapChatRoom userInfo={userInfo} dispatch={dispatch} unread={unread} chatMessage={chatMessage} socket={socket} />
+      <WrapChatRoom userInfo={userInfo} dispatch={dispatch} selectSession={selectSession} socket={socket} />
     </div>
   );
 }
 
 export const WrapChatPage = connect(
-  ({ user: { userInfo }, chat: { activeMenu, isSearch, socket, friendsList, sessionsList } }: State) => ({
+  ({
+    user: { userInfo },
+    chat: { activeMenu, isSearch, socket, friendsList, sessionsList, selectSession },
+  }: State) => ({
     userInfo,
     activeMenu,
     isSearch,
     socket,
     friendsList,
     sessionsList,
+    selectSession,
   })
 )(ChatPage);

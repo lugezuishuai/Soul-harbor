@@ -5,6 +5,7 @@ import {
   GET_FRIENDS_LIST_ACTION,
   GET_SESSIONS_LIST_ACTION,
   UNREAD_MESSAGE,
+  SELECT_SESSION,
 } from '../actions/action_types';
 import { initialChatState, ChatState } from './state';
 import { Action } from '../actions';
@@ -40,6 +41,11 @@ export default function (state = initialChatState, action: Action): ChatState {
       return {
         ...state,
         unreadChatMessage: action.payload,
+      };
+    case SELECT_SESSION:
+      return {
+        ...state,
+        selectSession: action.payload,
       };
     default:
       return state;

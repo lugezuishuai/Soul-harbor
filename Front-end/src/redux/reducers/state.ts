@@ -58,6 +58,14 @@ export type FriendListState = FriendInfo[] | null;
 
 export type SessionsListState = SessionInfo[] | null;
 
+export interface SelectSession {
+  type: 'private' | 'room';
+  sessionId: string;
+  name: string;
+}
+
+export type SelectSessionState = SelectSession | null;
+
 export type ChatState = {
   socket: SocketState;
   activeMenu: ChatActiveMenuState;
@@ -65,6 +73,7 @@ export type ChatState = {
   friendsList: FriendListState;
   sessionsList: SessionsListState;
   unreadChatMessage: UnreadMsg;
+  selectSession: SelectSessionState;
 };
 
 export type State = Readonly<{
@@ -97,4 +106,5 @@ export const initialChatState: ChatState = {
   friendsList: null,
   sessionsList: null,
   unreadChatMessage: {},
+  selectSession: null,
 };

@@ -8,7 +8,6 @@ import { createContainer, useContainer } from 'unstated-next';
 function useCommonData() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchData, setSearchData] = useState<SearchMemberInfo[] | null>(null);
-  const [selectUser, setSelectUser] = useState<SearchMemberInfo | null>(null); // 选中的用户
   const timer = useRef(-1);
   // 给每次请求增加标识
   const count = useRef(0);
@@ -37,27 +36,10 @@ function useCommonData() {
     }, 350) as any;
   }, []);
 
-  // // 设置选中的用户
-  // const handleSelectUser = useCallback(
-  //   (uid: string) => {
-  //     if (!uid || !searchData || !searchData.length) {
-  //       return;
-  //     }
-
-  //     const user = searchData.find(({ userInfo }) => uid === userInfo?.uid);
-  //     user?.online && setSelectUser(user);
-  //     return user?.online;
-  //   },
-  //   [searchData]
-  // );
-
   return {
     searchLoading,
     searchData,
-    selectUser,
     setSearchData,
-    setSelectUser,
-    // handleSelectUser,
     handleSearch,
   };
 }
