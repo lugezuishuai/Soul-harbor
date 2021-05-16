@@ -3,18 +3,18 @@ export interface GetHistoryMsgReq {
   sessionId: string;
 }
 
-export interface HistoryMsgInfo {
-  sender_id: string;
-  receiver_id: string;
-  message_id: string;
+export interface MsgInfo {
+  sender_id: string; // uuid
+  receiver_id: string; // uuid
+  message_id: number; // 递增
   message: string;
   time: string;
-  type: 'online' | 'offline';
-  sender_avatar: string | null;
+  type: 'online' | 'offline'; // 是否是离线信息
+  sender_avatar: string | null; // 发送者头像
 }
 
 export interface GetHistoryMsgData {
-  message?: HistoryMsgInfo[];
+  message?: MsgInfo[];
 }
 
 export interface GetHistoryMsgRes {

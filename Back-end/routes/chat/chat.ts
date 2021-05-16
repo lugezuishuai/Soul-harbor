@@ -126,10 +126,10 @@ router.get('/unread', async (req, res) => {
 });
 
 // 用户查看指定会话信息
-router.post('/getHisMsg', async (req, res) => {
+router.get('/getHisMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    const { sessionId } = req.body; // roomId || uuid
+    const { sessionId } = req.params; // roomId || uuid
 
     const searchMsg = `select * from tb_private_chat where sender_id = '${uuid || sessionId}' and receiver_id = '${
       uuid || sessionId
@@ -158,9 +158,12 @@ router.post('/getHisMsg', async (req, res) => {
 router.post('readUnreadMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    const { sessionId } = req.body; // roomId || uuid
+    const { sessionId, type } = req.body; // roomId || uuid
 
-    const updateUnreadMsg = `update tb_private_chat set type = 'online' where type = 'offline' and sender_id = '${sessionId}' and receiver_id = '${uuid}'`;
+    const updateUnreadMsg =
+      type === 'private'
+        ? `update tb_private_chat set type = 'online' where type = 'offline' and sender_id = '${sessionId}' and receiver_id = '${uuid}'`
+        : `update tb_private_chat set type = 'online' where type = 'offline' and sender_id = '${sessionId}' and receiver_id = '${uuid}'`; // 这里还要改
 
     await query(updateUnreadMsg);
 
@@ -180,7 +183,7 @@ router.post('readUnreadMsg', async (req, res) => {
 });
 
 // 添加好友
-router.post('addFriend', async (req, res) => {
+router.post('/addFriend', async (req, res) => {
   try {
     const { uuid } = req.cookies;
     const { friendId } = req.body; // roomId || uuid
@@ -226,7 +229,7 @@ router.post('addFriend', async (req, res) => {
 });
 
 // 拉取好友列表
-router.get('getFriendsList', async (req, res) => {
+router.get('/getFriendsList', async (req, res) => {
   try {
     const { uuid } = req.cookies;
     const searchFriends = `select friend_id, friend_username, friend_avatar from tb_friend where user_id = '${uuid}' order by add_time asc`; // 按照添加时间升序排列
@@ -251,7 +254,7 @@ router.get('getFriendsList', async (req, res) => {
 });
 
 // 拉取会话列表
-router.get('getSessionsList', async (req, res) => {
+router.get('/getSessionsList', async (req, res) => {
   const { uuid } = req.cookies;
   try {
     const sessionsList: SessionInfo[] = await batchGetSessions(uuid);

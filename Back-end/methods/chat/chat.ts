@@ -20,7 +20,6 @@ interface MessageBody {
   message_id: number;
   message: string;
   time: number; // 秒为单位的时间戳
-  type: 'private' | 'room'; // 私聊信息还是群聊信息
 }
 
 interface SendMessageBody {
@@ -50,7 +49,7 @@ export function createSocketIo(server: HttpServer) {
     // 私聊
     socket.on('private message', async (messageBody: MessageBody) => {
       try {
-        const { sender_id, receiver_id, message, message_id, time, type } = messageBody;
+        const { sender_id, receiver_id, message, message_id, time } = messageBody;
         const searchUserInfo = `select * from soulUserInfo where soulUuid = '${receiver_id}'`;
         const userInfo: UserInfo[] = await query(searchUserInfo);
 
@@ -64,18 +63,13 @@ export function createSocketIo(server: HttpServer) {
         if (sessionInfo) {
           sessionInfo.latestTime = time;
         } else {
-          if (type === 'private') {
-            // 如果是私聊信息
-            sessionInfo = {
-              type: 'private',
-              sessionId: receiver_id,
-              latestTime: time,
-              name: soulUsername,
-              avatar: soulAvatar,
-            };
-          } else {
-            // 如果是群聊，还要补充
-          }
+          sessionInfo = {
+            type: 'private',
+            sessionId: receiver_id,
+            latestTime: time,
+            name: soulUsername,
+            avatar: soulAvatar,
+          };
         }
         redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
 
@@ -94,7 +88,9 @@ export function createSocketIo(server: HttpServer) {
           // 如果用户不在线
           sendMessage.type = 'offline';
         }
-        const insertMessage = `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}')`;
+        const insertMessage = sendMessage.sender_avatar
+          ? `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}')`
+          : `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}')`;
         await query(insertMessage);
 
         io.of('/chat').to(socketId).emit('receive message', sendMessage); // 发送给对方

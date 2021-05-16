@@ -22,4 +22,5 @@ export const GET_SESSIONS_LIST_ACTION = 'GET_SESSIONS_LIST_ACTION'; // 查看会
 export const IS_SEARCH = 'IS_SEARCH'; // 是否正在搜索
 export const UNREAD_MESSAGE = 'UNREAD_MESSAGE'; // 总的未读信息
 export const SELECT_SESSION = 'SELECT_SESSION'; // 选中的会话
-// export const PRIVATE_CHAT = 'PRIVATE_CHAT'; // 私聊信息
+export const PRIVATE_CHAT = 'PRIVATE_CHAT'; // 私聊信息
+export const ACTIVE_SESSION = 'ACTIVE_SESSION'; // 有未读信息的session

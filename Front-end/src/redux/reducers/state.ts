@@ -74,6 +74,7 @@ export type ChatState = {
   sessionsList: SessionsListState;
   unreadChatMessage: UnreadMsg;
   selectSession: SelectSessionState;
+  activeSession: string[];
 };
 
 export type State = Readonly<{
@@ -107,4 +108,5 @@ export const initialChatState: ChatState = {
   sessionsList: null,
   unreadChatMessage: {},
   selectSession: null,
+  activeSession: [],
 };

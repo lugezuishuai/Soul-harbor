@@ -8,7 +8,7 @@ import {
   State,
   UserInfoState,
 } from '@/redux/reducers/state';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { ChatNav } from './component/nav';
 import { NoSearchResult, WrapChatSearch } from './component/search';
@@ -18,8 +18,9 @@ import { WrapChatRoom } from './component/chat';
 import { GetFriendsListRes } from '@/interface/chat/getFriendsList';
 import { apiGet } from '@/utils/request';
 import { GET_FRIENDS_LIST, GET_SESSIONS_LIST } from '@/constants/urls';
-import { GET_FRIENDS_LIST_ACTION, GET_SESSIONS_LIST_ACTION } from '@/redux/actions/action_types';
+import { ACTIVE_SESSION, GET_FRIENDS_LIST_ACTION, GET_SESSIONS_LIST_ACTION } from '@/redux/actions/action_types';
 import { GetSessionsListRes } from '@/interface/chat/getSessionsList';
+import { MsgInfo } from '@/interface/chat/getHistoryMsg';
 import './index.less';
 
 interface ChatPageProps {
@@ -31,17 +32,28 @@ interface ChatPageProps {
   friendsList: FriendListState;
   sessionsList: SessionsListState;
   selectSession: SelectSessionState;
+  activeSession: string[];
 }
 
 function ChatPage(props: ChatPageProps) {
-  const { userInfo, activeMenu, dispatch, isSearch, socket, friendsList, sessionsList, selectSession } = props;
+  const { userInfo, activeMenu, dispatch, isSearch, socket, friendsList, sessionsList, selectSession, activeSession } =
+    props;
   const isChatMenu = activeMenu === 'chat' && !isSearch;
   const isFriendMenu = activeMenu === 'friend' && !isSearch;
 
-  const { searchData } = useChat();
+  const {
+    searchData,
+    friendsLoading,
+    sessionsLoading,
+    sessionMsg,
+    setFriendsLoading,
+    setSessionsLoading,
+    setSessionMsg,
+  } = useChat();
 
-  const [friendsLoading, setFriendsLoading] = useState(false); // 获取好友列表loading
-  const [sessionsLoading, setSessionsLoading] = useState(false); // 获取会话列表loading
+  // const [friendsLoading, setFriendsLoading] = useState(false); // 获取好友列表loading
+  // const [sessionsLoading, setSessionsLoading] = useState(false); // 获取会话列表loading
+  // const [sessionMsg, setSessionMsg] = useState<MsgInfo[]>([]); // 会话接收到的信息
 
   function renderSearchPage() {
     if (!searchData) {
@@ -97,10 +109,39 @@ function ChatPage(props: ChatPageProps) {
     }
   }, [dispatch]);
 
+  // 监听socket
+  const listenSocket = useCallback(() => {
+    if (!socket) {
+      return;
+    }
+
+    socket.on('receive message', (msg: MsgInfo) => {
+      console.log('收到了来自服务器的消息： ', msg);
+      const { sender_id } = msg;
+
+      if (sender_id === selectSession?.sessionId) {
+        // 如果在会话之中
+        setSessionMsg(msg);
+      } else {
+        if (!activeSession.includes(sender_id)) {
+          const newActiveSession = [...activeSession, sender_id];
+          dispatch({
+            type: ACTIVE_SESSION,
+            payload: newActiveSession,
+          });
+        }
+      }
+    });
+  }, [socket, activeSession, selectSession, dispatch]);
+
   useEffect(() => {
     getSessionsList();
     getFriendsList();
   }, [getSessionsList, getFriendsList]);
+
+  useEffect(() => {
+    listenSocket();
+  }, [listenSocket]);
 
   return (
     <div className="chat-page">
@@ -121,7 +162,7 @@ function ChatPage(props: ChatPageProps) {
 export const WrapChatPage = connect(
   ({
     user: { userInfo },
-    chat: { activeMenu, isSearch, socket, friendsList, sessionsList, selectSession },
+    chat: { activeMenu, isSearch, socket, friendsList, sessionsList, selectSession, activeSession },
   }: State) => ({
     userInfo,
     activeMenu,
@@ -130,5 +171,6 @@ export const WrapChatPage = connect(
     friendsList,
     sessionsList,
     selectSession,
+    activeSession,
   })
 )(ChatPage);

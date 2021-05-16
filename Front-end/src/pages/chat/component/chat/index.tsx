@@ -1,16 +1,18 @@
-import { ChatMessageState, SelectSessionState, SocketState, UserInfoState } from '@/redux/reducers/state';
+import { SelectSessionState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useChat } from '../../state';
-import { MessageBody } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
-import { UNREAD, PRIVATE_CHAT } from '@/redux/actions/action_types';
-import { Form, Input, Button, message, Icon } from 'antd';
+import { Form, Input, Button, message, Icon, Spin } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Cookies from 'js-cookie';
 import dayjs from 'dayjs';
 import Down from '@/assets/icon/down.svg';
 import { Message } from '../message';
 import defaultAvatar from '@/assets/image/default-avatar.png';
+import { GetHistoryMsgReq, GetHistoryMsgRes, MsgInfo } from '@/interface/chat/getHistoryMsg';
+import { apiGet, apiPost } from '@/utils/request';
+import { GET_HISTORY_MSG, READ_UNREAD_MSG } from '@/constants/urls';
+import { ReadUnreadMsgReq } from '@/interface/chat/readUnreadMsg';
+import { useChat } from '../../state';
 import './index.less';
 
 interface ChatRoomProps extends FormComponentProps {
@@ -25,17 +27,20 @@ interface FormValues {
 }
 
 interface SendMessageBody {
-  senderId: string;
-  receiverId: string;
+  sender_id: string;
+  receiver_id: string;
+  message_id: number;
   message: string;
-  messageId: number;
-  time: number;
+  time: number; // 秒为单位的时间戳
+  type: 'private' | 'room'; // 私聊信息还是群聊信息
 }
 
-function ChatRoom({ selectSession, dispatch, form, socket, userInfo }: ChatRoomProps) {
+function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
   const { getFieldDecorator, resetFields, validateFields } = form;
-  const [readMessage, setReadMessage] = useState<MessageBody[]>([]); // 该会话已读信息（按照messageId排序）
-  const [unreadMsgCount, setUnreadMsgCount] = useState(0); // 该会话未读信息条数
+  const { sessionMsg, setSessionMsg } = useChat();
+  const [readMessage, setReadMessage] = useState<MsgInfo[]>([]); // 已读信息
+  const [unreadMessage, setUnreadMessage] = useState<MsgInfo[]>([]); // 未读信息
+  const [loading, setLoading] = useState(false);
 
   // // 点击未读信息
   // function handleClickUnRead() {
@@ -77,40 +82,29 @@ function ChatRoom({ selectSession, dispatch, form, socket, userInfo }: ChatRoomP
         } else {
           if (socket) {
             try {
-              const receiverId = selectUser?.userInfo?.uid || '';
-              const nowTime = dayjs().unix();
-              const sendMsgBody: SendMessageBody = {
-                senderId: Cookies.get('uuid') || '',
-                receiverId,
-                message: msg,
-                messageId: nowTime,
-                time: nowTime,
-              };
-              socket.emit('private message', sendMsgBody);
-              let newChatMessage;
-              const messageBody: MessageBody = {
-                ...sendMsgBody,
-                readMessageId: sendMsgBody.messageId,
-                time: dayjs(sendMsgBody.time * 1000).format('h:mm a'),
-              };
-              if (chatMessage) {
-                newChatMessage = JSON.parse(JSON.stringify(chatMessage));
-                if (newChatMessage && receiverId && newChatMessage[receiverId]) {
-                  newChatMessage[receiverId].push(messageBody);
-                  newChatMessage[receiverId].sort((a: MessageBody, b: MessageBody) => a.messageId - b.messageId);
-                } else {
-                  newChatMessage[receiverId] = [messageBody];
-                }
-              } else {
-                newChatMessage = {
-                  [receiverId]: [messageBody],
+              if (selectSession) {
+                const { sessionId, type } = selectSession;
+                const nowTime = dayjs().unix();
+                const sendMsgBody: SendMessageBody = {
+                  sender_id: Cookies.get('uuid') || '',
+                  receiver_id: sessionId,
+                  message: msg,
+                  message_id: nowTime,
+                  time: nowTime,
+                  type,
                 };
-              }
+                socket.emit(type === 'private' ? 'private message' : 'room message', sendMsgBody);
 
-              dispatch({
-                type: PRIVATE_CHAT,
-                payload: newChatMessage,
-              });
+                const msgBySelf: MsgInfo = {
+                  ...sendMsgBody,
+                  time: dayjs(nowTime * 1000).format('YYYY-MM-DD h:mm a'),
+                  type: 'online',
+                  sender_avatar: userInfo?.avatar || '',
+                };
+
+                const newReadMessage: MsgInfo[] = [...readMessage, msgBySelf];
+                setReadMessage(newReadMessage);
+              }
             } catch (e) {
               console.error(e);
             }
@@ -127,60 +121,120 @@ function ChatRoom({ selectSession, dispatch, form, socket, userInfo }: ChatRoomP
     }
   }
 
-  const renderMessage = useCallback(() => {
-    console.log('chatMessage: ', chatMessage);
-    const uid = selectUser?.userInfo?.uid || '';
+  // const renderMessage = useCallback(() => {
+  //   console.log('chatMessage: ', chatMessage);
+  //   const uid = selectUser?.userInfo?.uid || '';
 
-    if (chatMessage && chatMessage[uid]) {
-      console.log('message: ', chatMessage[uid]);
-      if (unread) {
-        const alreadyReadMsg = chatMessage[uid].filter((msg) => msg.messageId === msg.readMessageId);
-        setReadMessage(alreadyReadMsg);
-        setUnreadMsgCount(chatMessage[uid].length - alreadyReadMsg.length);
-      } else {
-        setReadMessage(chatMessage[uid]);
-      }
-    }
-  }, [selectUser, chatMessage, unread]);
+  //   if (chatMessage && chatMessage[uid]) {
+  //     console.log('message: ', chatMessage[uid]);
+  //     if (unread) {
+  //       const alreadyReadMsg = chatMessage[uid].filter((msg) => msg.messageId === msg.readMessageId);
+  //       setReadMessage(alreadyReadMsg);
+  //       setUnreadMsgCount(chatMessage[uid].length - alreadyReadMsg.length);
+  //     } else {
+  //       setReadMessage(chatMessage[uid]);
+  //     }
+  //   }
+  // }, [selectUser, chatMessage, unread]);
 
   // 获取历史信息
-  const getHisMsg = useCallback(() => {
-    if (selectSession) {
-      const { sessionId } = selectSession;
+  const getHistoryMsg = useCallback(async () => {
+    try {
+      if (selectSession) {
+        setLoading(true);
+        const { sessionId } = selectSession;
+        const reqData: GetHistoryMsgReq = {
+          sessionId,
+        };
+
+        const {
+          data: { message },
+        }: GetHistoryMsgRes = await apiGet(GET_HISTORY_MSG, reqData);
+
+        if (message) {
+          const readHisMsg: MsgInfo[] = [],
+            unreadHisMsg: MsgInfo[] = [];
+          for (const msg of message) {
+            if (msg.type === 'online') {
+              readHisMsg.push(msg);
+            } else {
+              unreadHisMsg.push(msg);
+            }
+          }
+
+          setReadMessage(readHisMsg);
+          setUnreadMessage(unreadHisMsg);
+        }
+
+        setLoading(false);
+      }
+    } catch (e) {
+      setLoading(false);
+      console.error(e);
     }
-  }, []);
+  }, [selectSession]);
+
+  // 点击未读信息
+  const handleClickUnreadMsg = useCallback(async () => {
+    if (selectSession) {
+      const { sessionId, type } = selectSession;
+      const reqData: ReadUnreadMsgReq = {
+        sessionId,
+        type,
+      };
+
+      await apiPost(READ_UNREAD_MSG, reqData);
+
+      // 重新拉取一次数据
+      getHistoryMsg();
+    }
+  }, [getHistoryMsg, selectSession]);
+
+  // 拼接接收到的信息
+  const receiveMsg = useCallback(() => {
+    if (sessionMsg) {
+      const newReadMsg = [...readMessage, sessionMsg];
+      setReadMessage(newReadMsg);
+      setSessionMsg(null); // 清空sessionMsg
+    }
+  }, [sessionMsg]);
 
   useEffect(() => {
-    renderMessage();
-  }, [renderMessage]);
+    getHistoryMsg();
+  }, [getHistoryMsg]);
+
+  useEffect(() => {
+    receiveMsg();
+  }, [receiveMsg]);
 
   return (
-    selectUser && (
+    selectSession && (
       <div className="chat-room">
         <div className="chat-room-header">
-          <div className="chat-room-header-username">{selectUser.userInfo?.username}</div>
+          <div className="chat-room-header-username">{selectSession.name}</div>
         </div>
         <div className="chat-room-container">
           <div className="chat-room-content">
-            {readMessage.map((msg, index) => {
-              const type: 'send' | 'receive' = msg.receiverId === selectUser.userInfo?.uid ? 'send' : 'receive';
-              const avatar = type === 'send' ? userInfo?.avatar : selectUser.userInfo?.avatar;
-              return (
-                <Message
-                  key={index}
-                  avatar={avatar || defaultAvatar}
-                  type={type}
-                  message={msg.message}
-                  time={msg.time}
-                />
-              );
-            })}
-            {unreadMsgCount > 0 && (
-              <div className="chat-room-content-unread" onClick={handleClickUnRead}>
-                <Icon className="chat-room-content-unread__icon" component={Down as any} />
-                <div className="chat-room-content-unread__text">{`${unreadMsgCount}条未读信息`}</div>
-              </div>
-            )}
+            <Spin spinning={loading}>
+              {readMessage.map((msg, index) => {
+                const type: 'send' | 'receive' = msg.receiver_id === selectSession.sessionId ? 'send' : 'receive';
+                return (
+                  <Message
+                    key={index}
+                    avatar={msg.sender_avatar || defaultAvatar}
+                    type={type}
+                    message={msg.message}
+                    time={msg.time}
+                  />
+                );
+              })}
+              {unreadMessage.length > 0 && (
+                <div className="chat-room-content-unread" onClick={handleClickUnreadMsg}>
+                  <Icon className="chat-room-content-unread__icon" component={Down as any} />
+                  <div className="chat-room-content-unread__text">{`${unreadMessage.length}条未读信息`}</div>
+                </div>
+              )}
+            </Spin>
           </div>
           <div className="chat-room-send">
             <Form className="chat-room-send__form">

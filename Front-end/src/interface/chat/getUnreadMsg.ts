@@ -1,16 +1,8 @@
 // getUnreadMsg
-export interface UnreadMsgInfo {
-  sender_id: string;
-  receiver_id: string;
-  message_id: string;
-  message: string;
-  time: string;
-  type: 'online' | 'offline';
-  sender_avatar: string | null;
-}
+import { MsgInfo } from "./getHistoryMsg";
 
 export interface UnreadMsg {
-  [key: string]: UnreadMsgInfo[];
+  [key: string]: MsgInfo[];
 }
 
 export interface GetUnreadMsgData {

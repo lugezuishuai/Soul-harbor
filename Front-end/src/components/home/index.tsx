@@ -65,16 +65,18 @@ function Home(props: HomeProps) {
   // 更新离线信息
   const updateUnreadMsg = useCallback(async () => {
     try {
-      const unreadMsg: UnreadMsg = await apiGet(GET_UNREAD_MSG);
-      console.log('unreadMsg: ', unreadMsg);
-      dispatch({
-        type: GET_UNREAD_MSG,
-        payload: unreadMsg,
-      });
+      if (login) {
+        const unreadMsg: UnreadMsg = await apiGet(GET_UNREAD_MSG);
+        console.log('unreadMsg: ', unreadMsg);
+        dispatch({
+          type: GET_UNREAD_MSG,
+          payload: unreadMsg,
+        });
+      }
     } catch (e) {
       console.error(e);
     }
-  }, [dispatch]);
+  }, [dispatch, login]);
 
   // // 更新未读信息
   // const updateUnreadMsg = useCallback(() => {
@@ -134,7 +136,6 @@ function Home(props: HomeProps) {
 
   useEffect(() => {
     initXsrf();
-    updateUnreadMsg();
 
     return () => {
       console.log('home组件被销毁了');
@@ -144,7 +145,11 @@ function Home(props: HomeProps) {
         socket.close();
       }
     };
-  }, [initXsrf, updateUnreadMsg, socket]);
+  }, [initXsrf, socket]);
+
+  useEffect(() => {
+    updateUnreadMsg();
+  }, [updateUnreadMsg]);
 
   return (
     <ConfigProvider locale={zh_CN} prefixCls="ant">

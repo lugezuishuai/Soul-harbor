@@ -27,4 +27,5 @@ export const GET_UNREAD_MSG = '/api/chat/unread'; // 查看未读信息
 export const GET_FRIENDS_LIST = '/api/chat/getFriendsList'; // 查看好友列表
 export const GET_SESSIONS_LIST = '/api/chat/getSessionsList'; // 查看会话列表
 export const ADD_FRIEND = '/api/chat/addFriend'; // 添加好友
-export const GET_HISTORY_MSG = '/api/chat/getHisMsg'; // 获取历史信息
+export const GET_HISTORY_MSG = '/api/chat/getHisMsg'; // 获取某个回话的历史信息
+export const READ_UNREAD_MSG = '/api/chat/readUnreadMsg'; // 查阅未读信息
