@@ -1,8 +1,7 @@
 @import '~@/variable.less';
 :global {
-  .chat-user-card {
+  .chat-friend-card {
     box-sizing: border-box;
-    position: relative;
     display: flex;
     align-items: center;
     width: 100%;
@@ -13,16 +12,6 @@
     &:hover {
       cursor: pointer;
     }
-    &-online {
-      user-select: none;
-      pointer-events: none;
-      position: absolute;
-      left: 48px;
-      top: 12px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
     &-avatar {
       user-select: none;
       pointer-events: none;
@@ -30,18 +19,14 @@
       height: 36px;
       margin-right: 20px;
     }
-    &-info {
-      user-select: none;
-      pointer-events: none;
+    &-name {
       flex: 1;
-      &-text {
-        font-size: 14px;
-        line-height: 20px;
-        color: @N650;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
+      font-size: 14px;
+      line-height: 20px;
+      color: @N650;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     &-skeleton {
       box-sizing: border-box;
@@ -61,16 +46,9 @@
         margin-right: 20px;
         border-radius: 50%;
       }
-      &-info {
+      &-text {
         flex: 1;
-        &__item {
-          width: 100%;
-          height: 18px;
-          margin-bottom: 4px;
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
+        height: 20px;
       }
     }
   }

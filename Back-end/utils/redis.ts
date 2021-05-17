@@ -30,27 +30,46 @@ export function batchDelSockets() {
   });
 }
 
-export function batchGetSessions(uid: string): Promise<any> {
+export function batchGetSessions(uid: string, key = `session_${uid}_*`): Promise<any> {
   return new Promise((resolve, reject) => {
-    client.keys(`session_${uid}_*`, function (err, keys) {
+    client.keys(key, async function (err, keys) {
       if (err) {
         reject(err);
       }
 
-      const result: SessionInfo[] = [];
+      try {
+        const result: SessionInfo[] = [];
 
-      if (keys.length) {
-        keys.forEach(async (key) => {
-          try {
+        if (keys.length) {
+          for (const key of keys) {
             const value = await redisGet(key);
             const sessionInfo: SessionInfo = JSON.parse(value);
             result.push(sessionInfo);
-          } catch (e) {
-            reject(e);
           }
-        });
+        }
+
+        resolve(result);
+      } catch (e) {
+        reject(e);
       }
-      resolve(result);
     });
   });
+}
+
+export async function batchSetSessionsAvatar(uid: string, avatar: string) {
+  try {
+    const sessionsList: SessionInfo[] = await batchGetSessions(uid, `session_*_${uid}`);
+    for (const session of sessionsList) {
+      const newSession: SessionInfo = {
+        ...session,
+        avatar,
+      };
+
+      if (session.owner_id) {
+        redisSet(`session_${session.owner_id}_${uid}`, JSON.stringify(newSession));
+      }
+    }
+  } catch (e) {
+    throw new Error(e);
+  }
 }

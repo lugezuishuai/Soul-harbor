@@ -20,7 +20,9 @@ import rimraf from 'rimraf';
 import { listFile } from '../../utils/listFile';
 import { getIPAddress } from '../../utils/getIPAddress';
 import { extractExt } from '../../utils/extractExt';
-import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
+import { getAvatarUrl } from '../../utils/getAvatarUrl';
+import { matchUrls } from '../../utils/matchUrl';
+import { batchSetSessionsAvatar } from '../../utils/redis';
 
 const { alreadyExit, noMatch, expiredOrUnValid, badAccount } = UnSuccessCodeType;
 
@@ -109,57 +111,69 @@ router.post('/avatar-upload', (req, res) => {
 router.post('/basic-info', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    const { userId, avatar, signature, birth } = req.body;
+    const { userId, signature, birth } = req.body;
+    let { avatar } = req.body;
 
     const soulUuid = uuid || '',
       soulSignature = signature || '',
       soulBirth = birth || '';
 
-    let soulAvatar = avatar || '';
-
-    if (!fse.existsSync(AVATAR_PATH)) {
-      await fse.mkdir(AVATAR_PATH);
-    }
-    const avatarNameArr = soulAvatar.split('/');
-    const avatarName = avatarNameArr[avatarNameArr.length - 1];
-    const tempAvatarPath = path.resolve(AVATAR_PATH, `${userId}`, `${avatarName}`); // 临时的图片路径
-    const realAvatarPath = path.resolve(AVATAR_PATH, `${avatarName}`); // 真正的图片路径
-
-    if (!fse.existsSync(realAvatarPath)) {
-      if (!fse.existsSync(tempAvatarPath)) {
-        return res.status(404).json({
-          code: 404,
-          data: {},
-          msg: 'Image not found or expired',
-        });
+    if (avatar) {
+      if (!fse.existsSync(AVATAR_PATH)) {
+        await fse.mkdir(AVATAR_PATH);
       }
+      const avatarNameArr = avatar.split('/');
+      const avatarName = avatarNameArr[avatarNameArr.length - 1];
+      const tempAvatarPath = path.resolve(AVATAR_PATH, `${userId}`, `${avatarName}`); // 临时的图片路径
+      const realAvatarPath = path.resolve(AVATAR_PATH, `${avatarName}`); // 真正的图片路径
 
-      fse.copyFileSync(tempAvatarPath, realAvatarPath);
-      const fileLists = listFile(AVATAR_PATH); // 以前的文件
-      if (fileLists.length > 0) {
-        fileLists.forEach((path) => {
-          if (path && path !== realAvatarPath) {
-            fse.unlink(path, (e) => {
-              if (e) {
-                throw e;
-              }
-            });
-          }
-        });
+      if (!fse.existsSync(realAvatarPath)) {
+        if (!fse.existsSync(tempAvatarPath)) {
+          return res.status(404).json({
+            code: 404,
+            data: {},
+            msg: 'Image not found or expired',
+          });
+        }
+
+        fse.copyFileSync(tempAvatarPath, realAvatarPath);
+        const fileLists = listFile(AVATAR_PATH); // 以前的文件
+        if (fileLists.length > 0) {
+          fileLists.forEach((path) => {
+            if (path && path !== realAvatarPath) {
+              fse.unlink(path, (e) => {
+                if (e) {
+                  throw e;
+                }
+              });
+            }
+          });
+        }
       }
+      avatar = getAvatarUrl(`/static/user/avatar/${avatarName}`);
     }
 
-    const hostIP = getIPAddress(os.networkInterfaces()); // 获取主机IP地址
-    const port = process.env.PORT || '4001'; // 获取当前的端口号
-    soulAvatar = `http://${hostIP}:${port}/static/user/avatar/${avatarName}`;
+    // soulUserInfo
+    const updateBasicInfo = avatar
+      ? `update soulUserInfo set soulAvatar = '${avatar}', soulSignature = '${soulSignature}', soulBirth = '${soulBirth}' where soulUuid = '${soulUuid}'`
+      : `update soulUserInfo set soulSignature = '${soulSignature}', soulBirth = '${soulBirth}' where soulUuid = '${soulUuid}'`;
 
-    const updateBasicInfo = `update soulUserInfo set soulAvatar = '${soulAvatar}', soulSignature = '${soulSignature}', soulBirth = '${soulBirth}' where soulUuid = '${soulUuid}'`;
+    const updateTbFriend = `update tb_friend set friend_avatar = '${avatar}' where friend_id = '${soulUuid}'`;
+    const updateTbPrivateChat = `update tb_private_chat set sender_avatar = '${avatar}' where sender_id = '${soulUuid}'`;
+    const updateTbRoomChat = `update tb_room_chat set sender_avatar = '${avatar}' where sender_id = '${soulUuid}'`;
 
     await query(updateBasicInfo);
+
+    if (avatar) {
+      await query(updateTbFriend);
+      await query(updateTbPrivateChat);
+      await query(updateTbRoomChat);
+      await batchSetSessionsAvatar(soulUuid, avatar);
+    }
     return res.status(200).json({
       code: 0,
       data: {
-        avatar: soulAvatar,
+        avatar,
       },
       msg: 'success update basic info',
     });
@@ -276,8 +290,8 @@ router.post('/login', urlencodedParser, (req, res) => {
           const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
           let { soulAvatar } = user;
 
-          if (!isNullOrUndefined(soulAvatar)) {
-            const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+          if (soulAvatar) {
+            const oldIPAddress = matchUrls(soulAvatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
             const newIPAddress = getIPAddress(os.networkInterfaces());
 
             if (oldIPAddress !== newIPAddress) {
@@ -781,8 +795,8 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
           const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
           let { soulAvatar } = user;
 
-          if (!isNullOrUndefined(soulAvatar)) {
-            const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+          if (soulAvatar) {
+            const oldIPAddress = matchUrls(soulAvatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
             const newIPAddress = getIPAddress(os.networkInterfaces());
 
             if (oldIPAddress !== newIPAddress) {
@@ -792,6 +806,18 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
               await query(updateAvatar);
             }
           }
+
+          // if (!isNullOrUndefined(soulAvatar)) {
+          //   const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+          //   const newIPAddress = getIPAddress(os.networkInterfaces());
+
+          //   if (oldIPAddress !== newIPAddress) {
+          //     // 如果IP地址发生了改变，要修改头像链接的IP地址
+          //     soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
+          //     const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+          //     await query(updateAvatar);
+          //   }
+          // }
 
           const userInfo = {
             username: soulUsername,
@@ -841,20 +867,20 @@ router.get('/init', async function (req, res) {
     const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = userInfo[0];
     let { soulAvatar } = userInfo[0];
 
-    if (!isNullOrUndefined(soulAvatar)) {
-      // console.log(soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]);
-      // console.log('ip: ', getIPAddress(os.networkInterfaces()));
-      const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+    if (soulAvatar) {
+      const oldIPAddress = matchUrls(soulAvatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
+      console.log('oldAddress: ', oldIPAddress);
       const newIPAddress = getIPAddress(os.networkInterfaces());
 
       if (oldIPAddress !== newIPAddress) {
         // 如果IP地址发生了改变，要修改头像链接的IP地址
         soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
-        const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${uid}'`;
+        const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
         await query(updateAvatar);
       }
     }
 
+    res.cookie('uuid', soulUuid);
     return res.status(200).json({
       code: 0,
       data: {

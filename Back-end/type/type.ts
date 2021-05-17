@@ -1,3 +1,4 @@
+// 公共的类型维护在此处
 export interface UserInfo {
   soulUsername: string;
   soulPassword: string;
@@ -25,8 +26,19 @@ export interface ChatSearchRes {
 
 export interface SessionInfo {
   type: 'private' | 'room';
+  owner_id?: string; // 用户自己id
   sessionId: string; // 用户id | 房间id
   name: string; // 用户名 | 房间名
   avatar: string | null; // 用户头像 | 房间头像
   latestTime: number; // 秒为单位的时间戳
+}
+
+export interface MsgInfo {
+  sender_id: string; // uuid
+  receiver_id: string; // uuid
+  sender_avatar: string | null; // 发送者头像
+  message_id: number; // 递增
+  message: string;
+  time: string;
+  type: 'online' | 'offline'; // 是否是离线信息
 }

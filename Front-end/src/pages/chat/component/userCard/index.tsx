@@ -8,9 +8,12 @@ import { AddFriendRequest } from '@/interface/chat/addFriend';
 import { ADD_FRIEND } from '@/constants/urls';
 import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
+import { Skeleton } from '@/components/skeleton';
+import classnames from 'classnames';
 import './index.less';
 
 const { confirm } = Modal;
+const { Block, Avatar: AvatarSkeleton } = Skeleton;
 
 interface UserCardProps {
   userData: SearchMemberInfo;
@@ -82,5 +85,17 @@ export function UserCard({ userData, friendsList, getFriendsList, dispatch }: Us
         <div className="chat-user-card-info-text">{userInfo?.email}</div>
       </div>
     </div>
+  );
+}
+
+export function UserCardSkeleton() {
+  return (
+    <Skeleton className={classnames('row-flex', 'chat-user-card-skeleton')}>
+      <AvatarSkeleton className="chat-user-card-skeleton-avatar" />
+      <div className="chat-user-card-skeleton-info">
+        <Block className="chat-user-card-skeleton-info__item" />
+        <Block className="chat-user-card-skeleton-info__item" />
+      </div>
+    </Skeleton>
   );
 }

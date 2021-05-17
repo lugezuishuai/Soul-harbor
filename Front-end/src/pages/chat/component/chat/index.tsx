@@ -28,11 +28,11 @@ interface FormValues {
 
 interface SendMessageBody {
   sender_id: string;
+  sender_avatar: string | null;
   receiver_id: string;
   message_id: number;
   message: string;
   time: number; // 秒为单位的时间戳
-  type: 'private' | 'room'; // 私聊信息还是群聊信息
 }
 
 function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
@@ -87,19 +87,19 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
                 const nowTime = dayjs().unix();
                 const sendMsgBody: SendMessageBody = {
                   sender_id: Cookies.get('uuid') || '',
+                  sender_avatar: userInfo?.avatar || null,
                   receiver_id: sessionId,
                   message: msg,
                   message_id: nowTime,
                   time: nowTime,
-                  type,
                 };
                 socket.emit(type === 'private' ? 'private message' : 'room message', sendMsgBody);
 
                 const msgBySelf: MsgInfo = {
                   ...sendMsgBody,
-                  time: dayjs(nowTime * 1000).format('YYYY-MM-DD h:mm a'),
+                  time: dayjs(nowTime * 1000).format('h:mm a'),
                   type: 'online',
-                  sender_avatar: userInfo?.avatar || '',
+                  sender_avatar: userInfo?.avatar || null,
                 };
 
                 const newReadMessage: MsgInfo[] = [...readMessage, msgBySelf];
@@ -217,7 +217,7 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
           <div className="chat-room-content">
             <Spin spinning={loading}>
               {readMessage.map((msg, index) => {
-                const type: 'send' | 'receive' = msg.receiver_id === selectSession.sessionId ? 'send' : 'receive';
+                const type: 'send' | 'receive' = msg.sender_id === Cookies.get('uuid') ? 'send' : 'receive';
                 return (
                   <Message
                     key={index}

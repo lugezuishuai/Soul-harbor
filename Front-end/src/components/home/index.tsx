@@ -21,7 +21,7 @@ import { Action } from '@/redux/actions';
 import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
-import { UnreadMsg } from '@/interface/chat/getUnreadMsg';
+import { GetUnreadMsgRes, UnreadMsg } from '@/interface/chat/getUnreadMsg';
 import Cookies from 'js-cookie';
 import './index.less';
 
@@ -66,11 +66,13 @@ function Home(props: HomeProps) {
   const updateUnreadMsg = useCallback(async () => {
     try {
       if (login) {
-        const unreadMsg: UnreadMsg = await apiGet(GET_UNREAD_MSG);
-        console.log('unreadMsg: ', unreadMsg);
+        const {
+          data: { unreadPrivateMsg },
+        }: GetUnreadMsgRes = await apiGet(GET_UNREAD_MSG);
+        console.log('unreadMsg: ', unreadPrivateMsg);
         dispatch({
           type: GET_UNREAD_MSG,
-          payload: unreadMsg,
+          payload: unreadPrivateMsg,
         });
       }
     } catch (e) {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { ChatSearchRes, ResUserInfo, SessionInfo, UserInfo } from '../../type/type';
+import { ChatSearchRes, MsgInfo, ResUserInfo, SessionInfo, UserInfo } from '../../type/type';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
 import { batchGetSessions, redisGet } from '../../utils/redis';
@@ -9,18 +9,14 @@ import dayjs from 'dayjs';
 const router = express.Router();
 const { alreadyAddFriend, invalidUid } = UnSuccessCodeType;
 
-interface PrivateMsgInfo {
-  sender_id: string;
-  receiver_id: string;
-  message_id: string;
-  message: string;
-  time: string;
-  type: 'online' | 'offline';
-  sender_avatar: string | null;
+interface UnreadPrivateMsg {
+  [key: string]: MsgInfo[];
 }
 
-interface UnreadPrivateMsg {
-  [key: string]: PrivateMsgInfo[];
+interface FriendInfo {
+  friend_id: string;
+  friend_username: string;
+  friend_avatar: string | null;
 }
 
 // 搜索用户
@@ -87,7 +83,7 @@ router.get('/unread', async (req, res) => {
   try {
     const { uuid } = req.cookies;
     const searchUnreadMsg = `select * from tb_private_chat where receiver_id = '${uuid}' and type = 'offline' order by message_id asc`; // 按照message_id升序来排列
-    const result: PrivateMsgInfo[] = await query(searchUnreadMsg);
+    const result: MsgInfo[] = await query(searchUnreadMsg);
 
     if (!result || result.length === 0) {
       // 没有未读信息
@@ -103,10 +99,12 @@ router.get('/unread', async (req, res) => {
     const unreadPrivateMsg: UnreadPrivateMsg = {};
 
     result.forEach((msgInfo) => {
-      unreadPrivateMsg[msgInfo.sender_id].push(msgInfo);
+      if (unreadPrivateMsg[msgInfo.sender_id]) {
+        unreadPrivateMsg[msgInfo.sender_id].push(msgInfo);
+      } else {
+        unreadPrivateMsg[msgInfo.sender_id] = [msgInfo];
+      }
     });
-
-    console.log('unreadPrivateMsg: ', unreadPrivateMsg);
 
     return res.status(200).json({
       code: 0,
@@ -129,13 +127,11 @@ router.get('/unread', async (req, res) => {
 router.get('/getHisMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    const { sessionId } = req.params; // roomId || uuid
+    const { sessionId } = req.query; // roomId || uuid
 
-    const searchMsg = `select * from tb_private_chat where sender_id = '${uuid || sessionId}' and receiver_id = '${
-      uuid || sessionId
-    }' order by message_id asc`; // 按照message_id升序来排列
+    const searchMsg = `select * from tb_private_chat where (sender_id = '${uuid}' or sender_id = '${sessionId}') and (receiver_id = '${uuid}' or receiver_id = '${sessionId}') order by message_id asc`; // 按照message_id升序来排列
 
-    const result: PrivateMsgInfo[] = await query(searchMsg);
+    const result: MsgInfo[] = await query(searchMsg);
 
     return res.status(200).json({
       code: 0,
@@ -155,7 +151,7 @@ router.get('/getHisMsg', async (req, res) => {
 });
 
 // 用户点击查看未读信息
-router.post('readUnreadMsg', async (req, res) => {
+router.post('/readUnreadMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
     const { sessionId, type } = req.body; // roomId || uuid
@@ -209,7 +205,9 @@ router.post('/addFriend', async (req, res) => {
         });
       }
 
-      const addFriend = `insert into tb_friend (user_id, friend_id, add_time, friend_username, friend_avatar) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soulUsername}', '${soulAvatar}')`;
+      const addFriend = soulAvatar
+        ? `insert into tb_friend (user_id, friend_id, add_time, friend_username, friend_avatar) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soulUsername}', '${soulAvatar}')`
+        : `insert into tb_friend (user_id, friend_id, add_time, friend_username) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soulUsername}')`;
       await query(addFriend);
 
       return res.status(200).json({
@@ -234,12 +232,12 @@ router.get('/getFriendsList', async (req, res) => {
     const { uuid } = req.cookies;
     const searchFriends = `select friend_id, friend_username, friend_avatar from tb_friend where user_id = '${uuid}' order by add_time asc`; // 按照添加时间升序排列
 
-    const result = await query(searchFriends);
+    const friendsList: FriendInfo[] = await query(searchFriends);
 
     return res.status(200).json({
       code: 0,
       data: {
-        friendsList: result,
+        friendsList,
       },
       msg: 'success',
     });
