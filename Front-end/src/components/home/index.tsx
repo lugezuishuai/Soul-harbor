@@ -21,8 +21,9 @@ import { Action } from '@/redux/actions';
 import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
-import { GetUnreadMsgRes, UnreadMsg } from '@/interface/chat/getUnreadMsg';
+import { GetUnreadMsgRes } from '@/interface/chat/getUnreadMsg';
 import Cookies from 'js-cookie';
+import { UNREAD_MESSAGE_COUNT } from '@/redux/actions/action_types';
 import './index.less';
 
 function WrapUserInfo() {
@@ -47,11 +48,10 @@ interface HomeProps {
   userInfo: UserInfoState;
   login: LoginState;
   socket: SocketState;
-  unreadChatMessage: UnreadMsg;
 }
 
 function Home(props: HomeProps) {
-  const { userInfo, selectMenu, login, socket, unreadChatMessage, dispatch } = props;
+  const { userInfo, selectMenu, login, socket, dispatch } = props;
 
   // 初始化xsrf
   const initXsrf = useCallback(async () => {
@@ -69,7 +69,19 @@ function Home(props: HomeProps) {
         const {
           data: { unreadPrivateMsg },
         }: GetUnreadMsgRes = await apiGet(GET_UNREAD_MSG);
-        console.log('unreadMsg: ', unreadPrivateMsg);
+        let count = 0;
+        if (unreadPrivateMsg) {
+          Object.values(unreadPrivateMsg).forEach((value) => {
+            count += value.length;
+          });
+        }
+
+        if (count > 0) {
+          dispatch({
+            type: UNREAD_MESSAGE_COUNT,
+            payload: count,
+          });
+        }
         dispatch({
           type: GET_UNREAD_MSG,
           payload: unreadPrivateMsg,
@@ -80,67 +92,10 @@ function Home(props: HomeProps) {
     }
   }, [dispatch, login]);
 
-  // // 更新未读信息
-  // const updateUnreadMsg = useCallback(() => {
-  //   if (!chatMessage) {
-  //     return;
-  //   }
-
-  //   for (const key in chatMessage) {
-  //     if (chatMessage.hasOwnProperty(key)) {
-  //       const unreadMsg = chatMessage[key].some((msg) => msg.messageId !== msg.readMessageId); // 是否有未读信息
-  //       if (unreadMsg) {
-  //         // 有未读信息
-  //         dispatch({
-  //           type: UNREAD,
-  //           payload: true,
-  //         });
-  //         break;
-  //       }
-  //     }
-  //   }
-  // }, [chatMessage, dispatch]);
-
-  // // 监听socket
-  // const listenSocket = useCallback(() => {
-  //   if (!socket) {
-  //     return;
-  //   }
-
-  //   socket.on('receive message', (msg: MessageBody) => {
-  //     console.log('收到了来自服务器的信息: ', msg);
-  //     try {
-  //       const { senderId } = msg; // 获取发送者的uuid
-  //       let newChatMessage;
-  //       if (chatMessage) {
-  //         newChatMessage = JSON.parse(JSON.stringify(chatMessage));
-  //         if (newChatMessage && senderId && newChatMessage[senderId]) {
-  //           newChatMessage[senderId].push(msg);
-  //           newChatMessage[senderId].sort((a: MessageBody, b: MessageBody) => a.messageId - b.messageId);
-  //         } else {
-  //           newChatMessage[senderId] = [msg];
-  //         }
-  //       } else {
-  //         newChatMessage = {
-  //           [senderId]: [msg],
-  //         };
-  //       }
-
-  //       dispatch({
-  //         type: PRIVATE_CHAT,
-  //         payload: newChatMessage,
-  //       });
-  //     } catch (e) {
-  //       console.error(e);
-  //     }
-  //   });
-  // }, [socket, chatMessage, dispatch]);
-
   useEffect(() => {
     initXsrf();
 
     return () => {
-      console.log('home组件被销毁了');
       const uuid = Cookies.get('uuid');
       if (socket && uuid) {
         socket.emit('close', uuid);

@@ -31,6 +31,7 @@ export interface SessionInfo {
   name: string; // 用户名 | 房间名
   avatar: string | null; // 用户头像 | 房间头像
   latestTime: number; // 秒为单位的时间戳
+  latestMessage: string; // 最新的信息
 }
 
 export interface MsgInfo {
@@ -41,4 +42,13 @@ export interface MsgInfo {
   message: string;
   time: string;
   type: 'online' | 'offline'; // 是否是离线信息
+}
+
+export interface MessageBody {
+  sender_id: string;
+  sender_avatar: string | null; // 链接
+  receiver_id: string;
+  message_id: number;
+  message: string;
+  time: number; // 秒为单位的时间戳
 }

@@ -7,6 +7,7 @@ import defaultAvatar from '@/assets/image/default-avatar.png';
 import { SelectSession } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
+import robotAvatar from '@/assets/image/robot.png';
 import './index.less';
 
 const { Block, Avatar: AvatarSkeleton } = Skeleton;
@@ -34,7 +35,10 @@ export function FriendCard({ friendInfo, dispatch }: FriendCardProps) {
 
   return (
     <div className="chat-friend-card" onClick={handleClick}>
-      <Avatar className="chat-friend-card-avatar" src={friend_avatar || defaultAvatar} />
+      <Avatar
+        className="chat-friend-card-avatar"
+        src={friend_id !== '0' ? friend_avatar || defaultAvatar : robotAvatar}
+      />
       <div className="chat-friend-card-name">{friend_username}</div>
     </div>
   );

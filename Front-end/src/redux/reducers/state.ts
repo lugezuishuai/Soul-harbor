@@ -26,35 +26,7 @@ export type HeaderState = {
   selectMenu: string;
 };
 
-// export interface MessageBody {
-//   sender_id: string; // uuid
-//   receiver_id: string; // uuid
-//   message_id: number; // 递增
-//   message: string;
-//   time: string;
-//   type: 'online' | 'offline'; // 是否是离线信息
-// }
-
-// export interface UnreadChatMessage {
-//   // key是uid和room
-//   [key: string]: MessageBody[];
-// }
-
-// export interface FriendInfo {
-//   friend_id: string;
-//   friend_username: string;
-//   friend_avatar: string | null;
-// }
-
-export type FriendListState = FriendInfo[] | null;
-
-// export interface SessionInfo {
-//   type: 'private' | 'room';
-//   sessionId: string; // 用户id | 房间id
-//   name: string; // 用户名 | 房间名
-//   avatar: string | null; // 用户头像 | 房间头像
-//   latestTime: number; // 秒为单位的时间戳
-// }
+export type FriendListState = FriendInfo[];
 
 export type SessionsListState = SessionInfo[] | null;
 
@@ -73,6 +45,7 @@ export type ChatState = {
   friendsList: FriendListState;
   sessionsList: SessionsListState;
   unreadChatMessage: UnreadMsg;
+  unreadChatMsgCount: number;
   selectSession: SelectSessionState;
   activeSession: string[];
 };
@@ -104,9 +77,16 @@ export const initialChatState: ChatState = {
   socket: null, // socket
   activeMenu: 'chat',
   isSearch: false,
-  friendsList: null,
+  friendsList: [
+    {
+      friend_id: '0',
+      friend_username: '机器人小X',
+      friend_avatar: null,
+    },
+  ],
   sessionsList: null,
   unreadChatMessage: {},
+  unreadChatMsgCount: 0,
   selectSession: null,
   activeSession: [],
 };

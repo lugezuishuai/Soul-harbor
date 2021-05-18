@@ -1,13 +1,14 @@
 import express from 'express';
-import { ChatSearchRes, MsgInfo, ResUserInfo, SessionInfo, UserInfo } from '../../type/type';
+import { ChatSearchRes, MessageBody, MsgInfo, ResUserInfo, SessionInfo, UserInfo } from '../../type/type';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
-import { batchGetSessions, redisGet } from '../../utils/redis';
+import { batchGetSessions, redisGet, redisSet } from '../../utils/redis';
 import { UnSuccessCodeType } from './code-type';
 import dayjs from 'dayjs';
+import axios from 'axios';
 
 const router = express.Router();
-const { alreadyAddFriend, invalidUid } = UnSuccessCodeType;
+const { alreadyAddFriend, invalidUid, noPermission } = UnSuccessCodeType;
 
 interface UnreadPrivateMsg {
   [key: string]: MsgInfo[];
@@ -17,6 +18,15 @@ interface FriendInfo {
   friend_id: string;
   friend_username: string;
   friend_avatar: string | null;
+}
+
+interface RobotChatReq {
+  messageBody: MessageBody;
+}
+
+interface RobotChatRes {
+  content: string;
+  result: number;
 }
 
 // 搜索用户
@@ -182,11 +192,29 @@ router.post('/readUnreadMsg', async (req, res) => {
 router.post('/addFriend', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    const { friendId } = req.body; // roomId || uuid
+    const { friendId } = req.body;
+
+    if (!uuid) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
+    if (!friendId) {
+      return res.status(400).json({
+        code: invalidUid,
+        data: {},
+        msg: 'invalid uid',
+      });
+    }
 
     const getUserInfo = `select * from soulUserInfo where soulUuid = '${friendId}'`;
+    const getOwnInfo = `select * from soulUserInfo where soulUuid = '${uuid}'`;
     const userInfo: UserInfo[] = await query(getUserInfo);
-    if (userInfo.length !== 1) {
+    const ownInfo: UserInfo[] = await query(getOwnInfo);
+    if (userInfo.length !== 1 || ownInfo.length !== 1) {
       return res.status(400).json({
         code: invalidUid,
         data: {},
@@ -194,10 +222,13 @@ router.post('/addFriend', async (req, res) => {
       });
     } else {
       const { soulAvatar, soulUsername } = userInfo[0];
-      const searchRelation = `select * from tb_friend where user_id = '${uuid}' and friend_id = '${friendId}'`;
-      const result = await query(searchRelation);
+      const { soulAvatar: ownAvatar, soulUsername: ownUsername } = ownInfo[0];
+      const searchOwnRelation = `select * from tb_friend where user_id = '${uuid}' and friend_id = '${friendId}'`;
+      const searchOtherRelation = `select * from tb_friend where user_id = '${friendId}' and friend_id = '${uuid}'`;
+      const ownRelation = await query(searchOwnRelation);
+      const otherRelation = await query(searchOtherRelation);
 
-      if (result && result.length) {
+      if (ownRelation?.length || otherRelation?.length) {
         return res.status(200).json({
           code: alreadyAddFriend,
           data: {},
@@ -208,7 +239,12 @@ router.post('/addFriend', async (req, res) => {
       const addFriend = soulAvatar
         ? `insert into tb_friend (user_id, friend_id, add_time, friend_username, friend_avatar) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soulUsername}', '${soulAvatar}')`
         : `insert into tb_friend (user_id, friend_id, add_time, friend_username) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soulUsername}')`;
+
+      const addFriendByOther = ownAvatar
+        ? `insert into tb_friend (user_id, friend_id, add_time, friend_username, friend_avatar) values ('${friendId}', '${uuid}', ${dayjs().unix()}, '${ownUsername}', '${ownAvatar}')`
+        : `insert into tb_friend (user_id, friend_id, add_time, friend_username) values ('${friendId}', '${uuid}', ${dayjs().unix()}, '${ownUsername}')`;
       await query(addFriend);
+      await query(addFriendByOther);
 
       return res.status(200).json({
         code: 0,
@@ -253,14 +289,95 @@ router.get('/getFriendsList', async (req, res) => {
 
 // 拉取会话列表
 router.get('/getSessionsList', async (req, res) => {
-  const { uuid } = req.cookies;
   try {
+    const { uuid } = req.cookies;
     const sessionsList: SessionInfo[] = await batchGetSessions(uuid);
 
     return res.status(200).json({
       code: 0,
       data: {
         sessionsList,
+      },
+      msg: 'success',
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 机器人聊天
+router.post('/robotChat', async (req, res) => {
+  try {
+    const { messageBody }: RobotChatReq = req.body;
+    const { sender_id, sender_avatar, receiver_id, message, message_id, time } = messageBody;
+
+    // 判断会话是否存在
+    let sessionInfo: SessionInfo | null = JSON.parse(await redisGet(`session_${sender_id}_${receiver_id}`));
+    if (sessionInfo) {
+      sessionInfo.latestTime = time;
+      sessionInfo.latestMessage = message;
+    } else {
+      sessionInfo = {
+        type: 'private',
+        sessionId: receiver_id,
+        owner_id: sender_id,
+        latestTime: time,
+        latestMessage: message,
+        name: '机器人小X',
+        avatar: null,
+      };
+    }
+
+    redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
+
+    const sendMessage: MsgInfo = {
+      sender_id,
+      receiver_id,
+      message,
+      message_id,
+      time: dayjs(time * 1000).format('h:mm a'),
+      type: 'online',
+      sender_avatar,
+    };
+
+    const insertSendMessage = sendMessage.sender_avatar
+      ? `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}')`
+      : `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}')`;
+
+    await query(insertSendMessage);
+
+    const { data } = await axios({
+      method: 'get',
+      baseURL: 'http://api.qingyunke.com',
+      url: encodeURI(`/api.php?key=free&appid=0&msg=${message}`),
+    });
+
+    const { content }: RobotChatRes = data;
+
+    const nowTime = dayjs().unix();
+    // 机器人回复的信息
+    const replyMessage: MsgInfo = {
+      sender_id: '0',
+      receiver_id: sender_id,
+      message: content,
+      message_id: nowTime,
+      time: dayjs(nowTime * 1000).format('h:mm a'),
+      type: 'online',
+      sender_avatar: null,
+    };
+
+    const insertReplyMessage = `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${replyMessage.sender_id}', '${replyMessage.receiver_id}', ${replyMessage.message_id}, '${replyMessage.type}', '${replyMessage.time}', '${replyMessage.message}')`;
+    await query(insertReplyMessage);
+
+    return res.status(200).json({
+      code: 0,
+      data: {
+        message: replyMessage,
       },
       msg: 'success',
     });

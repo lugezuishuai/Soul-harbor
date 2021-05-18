@@ -1,0 +1,98 @@
+@import '~@/variable.less';
+:global {
+  .chat-session-card {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 64px;
+    padding: 12px;
+    background: @N100;
+    border-bottom: 1px solid @N400;
+    &:hover {
+      cursor: pointer;
+    }
+    &-avatar {
+      user-select: none;
+      pointer-events: none;
+      width: 36px;
+      height: 36px;
+      margin-right: 20px;
+    }
+    &-info {
+      user-select: none;
+      pointer-events: none;
+      width: calc(100% - 36px - 20px);
+      overflow: hidden;
+      font-size: 14px;
+      &__top {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        height: 20px;
+      }
+      &-name {
+        color: @N900;
+        font-weight: 500;
+        width: 150px;
+        line-height: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      &-time {
+        color: @N500;
+        line-height: 20px;
+      }
+      &-msg {
+        color: @N500;
+        width: 100%;
+        line-height: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+    &-skeleton {
+      box-sizing: border-box;
+      align-items: center;
+      width: 276px;
+      height: 64px;
+      padding: 12px;
+      border-radius: 4px;
+      background: #fff;
+      margin-bottom: 12px;
+      &:last-child {
+        margin-bottom: 0;
+      }
+      &-avatar {
+        width: 36px;
+        height: 36px;
+        margin-right: 20px;
+        border-radius: 50%;
+      }
+      &-info {
+        flex: 1;
+        &__top {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+          height: 18px;
+          margin-bottom: 4px;
+        }
+        &-name {
+          width: 120px;
+          height: 100%;
+        }
+        &-time {
+          width: 40px;
+          height: 100%;
+        }
+        &-msg {
+          width: 100%;
+          height: 18px;
+        }
+      }
+    }
+  }
+}

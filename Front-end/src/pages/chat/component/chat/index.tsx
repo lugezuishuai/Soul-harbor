@@ -1,5 +1,5 @@
 import { SelectSessionState, SocketState, UserInfoState } from '@/redux/reducers/state';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Action } from '@/redux/actions';
 import { Form, Input, Button, message, Icon, Spin } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
@@ -10,9 +10,11 @@ import { Message } from '../message';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import { GetHistoryMsgReq, GetHistoryMsgRes, MsgInfo } from '@/interface/chat/getHistoryMsg';
 import { apiGet, apiPost } from '@/utils/request';
-import { GET_HISTORY_MSG, READ_UNREAD_MSG } from '@/constants/urls';
+import { GET_HISTORY_MSG, READ_UNREAD_MSG, ROBOT_CHAT } from '@/constants/urls';
 import { ReadUnreadMsgReq } from '@/interface/chat/readUnreadMsg';
 import { useChat } from '../../state';
+import { debounce } from 'lodash';
+import { RobotChatReq, RobotChatRes, SendMessageBody } from '@/interface/chat/robotChat';
 import './index.less';
 
 interface ChatRoomProps extends FormComponentProps {
@@ -26,21 +28,13 @@ interface FormValues {
   msg: string;
 }
 
-interface SendMessageBody {
-  sender_id: string;
-  sender_avatar: string | null;
-  receiver_id: string;
-  message_id: number;
-  message: string;
-  time: number; // 秒为单位的时间戳
-}
-
 function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
   const { getFieldDecorator, resetFields, validateFields } = form;
   const { sessionMsg, setSessionMsg } = useChat();
   const [readMessage, setReadMessage] = useState<MsgInfo[]>([]); // 已读信息
   const [unreadMessage, setUnreadMessage] = useState<MsgInfo[]>([]); // 未读信息
   const [loading, setLoading] = useState(false);
+  const ref = useRef<HTMLDivElement>();
 
   // // 点击未读信息
   // function handleClickUnRead() {
@@ -71,6 +65,24 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
   //   }
   // }
 
+  // 发送机器人聊天信息
+  async function sendRobotMsg(sendMsgBody: SendMessageBody) {
+    try {
+      const reqData: RobotChatReq = {
+        messageBody: sendMsgBody,
+      };
+      const {
+        data: { message },
+      }: RobotChatRes = await apiPost(ROBOT_CHAT, reqData);
+
+      if (message) {
+        setSessionMsg(message);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   // 发送聊天信息
   function handleSendMsg(e: any) {
     e.preventDefault();
@@ -78,7 +90,14 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
       const { msg } = values;
       if (!errors) {
         if (!msg) {
-          message.error('不能发送空信息');
+          debounce(() => {
+            message.destroy();
+            message.error({
+              content: '不能发送空消息',
+              key: 'sent_empty_message',
+              duration: 1,
+            });
+          }, 200)();
         } else {
           if (socket) {
             try {
@@ -93,7 +112,12 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
                   message_id: nowTime,
                   time: nowTime,
                 };
-                socket.emit(type === 'private' ? 'private message' : 'room message', sendMsgBody);
+                if (sessionId !== '0') {
+                  socket.emit(type === 'private' ? 'private message' : 'room message', sendMsgBody);
+                } else {
+                  // 机器人聊天
+                  sendRobotMsg(sendMsgBody);
+                }
 
                 const msgBySelf: MsgInfo = {
                   ...sendMsgBody,
@@ -109,8 +133,13 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
               console.error(e);
             }
           }
+          resetFields(['msg']);
+          setTimeout(() => {
+            if (ref.current) {
+              ref.current.scrollTop = ref.current.scrollHeight;
+            }
+          }, 0);
         }
-        resetFields(['msg']);
       }
     });
   }
@@ -214,7 +243,7 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
           <div className="chat-room-header-username">{selectSession.name}</div>
         </div>
         <div className="chat-room-container">
-          <div className="chat-room-content">
+          <div className="chat-room-content" ref={ref as any}>
             <Spin spinning={loading}>
               {readMessage.map((msg, index) => {
                 const type: 'send' | 'receive' = msg.sender_id === Cookies.get('uuid') ? 'send' : 'receive';

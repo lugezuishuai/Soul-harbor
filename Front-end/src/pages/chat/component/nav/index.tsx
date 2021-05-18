@@ -13,10 +13,11 @@ import './index.less';
 interface ChatNavProps {
   userInfo: UserInfoState;
   activeMenu: ChatActiveMenuState;
+  unreadChatMsgCount: number;
   dispatch(action: Action): void;
 }
 
-export function ChatNav({ userInfo, activeMenu, dispatch }: ChatNavProps) {
+export function ChatNav({ userInfo, activeMenu, unreadChatMsgCount, dispatch }: ChatNavProps) {
   const avatar = userInfo?.avatar || defaultAvatar;
 
   const handleChangeMenu = useCallback(
@@ -34,6 +35,9 @@ export function ChatNav({ userInfo, activeMenu, dispatch }: ChatNavProps) {
   return (
     <div className="chat-nav">
       <Avatar className="chat-nav-avatar" src={avatar} />
+      {unreadChatMsgCount > 0 && (
+        <div className="chat-nav-unread">{unreadChatMsgCount <= 99 ? unreadChatMsgCount.toString() : '99+'}</div>
+      )}
       <Icon
         className="chat-nav-icon"
         component={activeMenu === 'chat' ? (ChatAct as any) : (Chat as any)}

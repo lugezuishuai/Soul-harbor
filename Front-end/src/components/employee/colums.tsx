@@ -33,8 +33,6 @@ const getColumns = (
       key: 'action',
       // eslint-disable-next-line react/display-name
       render: (text: string, record: EmployeeInfo) => {
-        // console.log('text是：', text);
-        // console.log('record是：', record);
         return (
           <span>
             <Button

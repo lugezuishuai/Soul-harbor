@@ -22,6 +22,7 @@ import { ACTIVE_SESSION, GET_FRIENDS_LIST_ACTION, GET_SESSIONS_LIST_ACTION } fro
 import { GetSessionsListRes } from '@/interface/chat/getSessionsList';
 import { MsgInfo } from '@/interface/chat/getHistoryMsg';
 import { FriendCard, FriendCardSkeleton } from './component/friendCard';
+import { SessionCard, SessionCardSkeleton } from './component/sessionCard';
 import './index.less';
 
 interface ChatPageProps {
@@ -34,11 +35,22 @@ interface ChatPageProps {
   sessionsList: SessionsListState;
   selectSession: SelectSessionState;
   activeSession: string[];
+  unreadChatMsgCount: number;
 }
 
 function ChatPage(props: ChatPageProps) {
-  const { userInfo, activeMenu, dispatch, isSearch, socket, friendsList, sessionsList, selectSession, activeSession } =
-    props;
+  const {
+    userInfo,
+    activeMenu,
+    dispatch,
+    isSearch,
+    socket,
+    friendsList,
+    sessionsList,
+    selectSession,
+    activeSession,
+    unreadChatMsgCount,
+  } = props;
   const isChatMenu = activeMenu === 'chat' && !isSearch;
   const isFriendMenu = activeMenu === 'friend' && !isSearch;
 
@@ -51,10 +63,6 @@ function ChatPage(props: ChatPageProps) {
     setSessionsLoading,
     setSessionMsg,
   } = useChat();
-
-  // const [friendsLoading, setFriendsLoading] = useState(false); // 获取好友列表loading
-  // const [sessionsLoading, setSessionsLoading] = useState(false); // 获取会话列表loading
-  // const [sessionMsg, setSessionMsg] = useState<MsgInfo[]>([]); // 会话接收到的信息
 
   function renderSearchPage() {
     if (searchLoading) {
@@ -106,6 +114,27 @@ function ChatPage(props: ChatPageProps) {
     }
   }
 
+  function renderSessionsList() {
+    if (sessionsLoading) {
+      return (
+        <div className="chat-page__left-content">
+          <SessionCardSkeleton />
+          <SessionCardSkeleton />
+          <SessionCardSkeleton />
+          <SessionCardSkeleton />
+          <SessionCardSkeleton />
+          <SessionCardSkeleton />
+        </div>
+      );
+    } else if (!sessionsList || !sessionsList.length) {
+      return <div className="chat-page__left-content" />;
+    } else {
+      return sessionsList.map((sessionInfo, index) => (
+        <SessionCard key={index} sessionInfo={sessionInfo} dispatch={dispatch} />
+      ));
+    }
+  }
+
   // 获取会话列表
   const getSessionsList = useCallback(async () => {
     try {
@@ -134,7 +163,7 @@ function ChatPage(props: ChatPageProps) {
       if (result.data.friendsList) {
         dispatch({
           type: GET_FRIENDS_LIST_ACTION,
-          payload: result.data.friendsList,
+          payload: [...friendsList, ...result.data.friendsList],
         });
       }
       setFriendsLoading(false);
@@ -180,11 +209,16 @@ function ChatPage(props: ChatPageProps) {
 
   return (
     <div className="chat-page">
-      <ChatNav userInfo={userInfo} activeMenu={activeMenu} dispatch={dispatch} />
+      <ChatNav
+        unreadChatMsgCount={unreadChatMsgCount}
+        userInfo={userInfo}
+        activeMenu={activeMenu}
+        dispatch={dispatch}
+      />
       <div className="chat-page__left">
         <WrapChatSearch isSearch={isSearch} dispatch={dispatch} />
         <div className="chat-page__left-container">
-          {isChatMenu && <div className="chat-page__left-chat"></div>}
+          {isChatMenu && renderSessionsList()}
           {isFriendMenu && renderFriendsList()}
           {isSearch && renderSearchPage()}
         </div>
@@ -197,7 +231,7 @@ function ChatPage(props: ChatPageProps) {
 export const WrapChatPage = connect(
   ({
     user: { userInfo },
-    chat: { activeMenu, isSearch, socket, friendsList, sessionsList, selectSession, activeSession },
+    chat: { activeMenu, isSearch, socket, friendsList, sessionsList, selectSession, activeSession, unreadChatMsgCount },
   }: State) => ({
     userInfo,
     activeMenu,
@@ -207,5 +241,6 @@ export const WrapChatPage = connect(
     sessionsList,
     selectSession,
     activeSession,
+    unreadChatMsgCount,
   })
 )(ChatPage);

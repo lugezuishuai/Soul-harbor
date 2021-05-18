@@ -7,20 +7,11 @@ import { redisDel, redisGet, redisSet } from '../../utils/redis';
 import dayjs from 'dayjs';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
-import { UserInfo, SessionInfo, MsgInfo } from '../../type/type';
+import { UserInfo, SessionInfo, MsgInfo, MessageBody } from '../../type/type';
 
 interface JoinRoom {
   username: string;
   room: string;
-}
-
-interface MessageBody {
-  sender_id: string;
-  sender_avatar: string | null; // 链接
-  receiver_id: string;
-  message_id: number;
-  message: string;
-  time: number; // 秒为单位的时间戳
 }
 
 export function createSocketIo(server: HttpServer) {
@@ -50,7 +41,9 @@ export function createSocketIo(server: HttpServer) {
 
         if (sessionInfo_send && sessionInfo_receive) {
           sessionInfo_send.latestTime = time;
+          sessionInfo_send.latestMessage = message;
           sessionInfo_receive.latestTime = time;
+          sessionInfo_receive.latestMessage = message;
         } else if (sessionInfo_send) {
           const userInfo: UserInfo[] = await query(searchUserInfoReceive);
 
@@ -65,6 +58,7 @@ export function createSocketIo(server: HttpServer) {
             sessionId: receiver_id,
             owner_id: sender_id,
             latestTime: time,
+            latestMessage: message,
             name: soulUsername,
             avatar: soulAvatar,
           };
@@ -82,6 +76,7 @@ export function createSocketIo(server: HttpServer) {
             sessionId: sender_id,
             owner_id: receiver_id,
             latestTime: time,
+            latestMessage: message,
             name: soulUsername,
             avatar: soulAvatar,
           };
@@ -99,6 +94,7 @@ export function createSocketIo(server: HttpServer) {
             sessionId: receiver_id,
             owner_id: sender_id,
             latestTime: time,
+            latestMessage: message,
             name: userInfoReceive[0].soulUsername,
             avatar: userInfoReceive[0].soulAvatar,
           };
@@ -109,6 +105,7 @@ export function createSocketIo(server: HttpServer) {
             sessionId: sender_id,
             owner_id: receiver_id,
             latestTime: time,
+            latestMessage: message,
             name: userInfoSend[0].soulUsername,
             avatar: userInfoSend[0].soulAvatar,
           };

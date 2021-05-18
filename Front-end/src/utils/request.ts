@@ -72,7 +72,6 @@ axios.interceptors.request.use(
 // 响应拦截器
 axios.interceptors.response.use(
   function (response) {
-    console.log('response config: ', response.config);
     removePendingRequest(response.config); // 从pendingRequest对象中移除请求
     if (response.data && response.data.code !== 0) {
       /*

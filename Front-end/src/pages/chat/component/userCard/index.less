@@ -33,8 +33,10 @@
     &-info {
       user-select: none;
       pointer-events: none;
-      flex: 1;
+      width: calc(100% - 36px - 20px);
+      overflow: hidden;
       &-text {
+        width: 100%;
         font-size: 14px;
         line-height: 20px;
         color: @N650;

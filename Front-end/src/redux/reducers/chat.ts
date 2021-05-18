@@ -7,6 +7,7 @@ import {
   UNREAD_MESSAGE,
   SELECT_SESSION,
   ACTIVE_SESSION,
+  UNREAD_MESSAGE_COUNT,
 } from '../actions/action_types';
 import { initialChatState, ChatState } from './state';
 import { Action } from '../actions';
@@ -52,6 +53,11 @@ export default function (state = initialChatState, action: Action): ChatState {
       return {
         ...state,
         activeSession: action.payload,
+      };
+    case UNREAD_MESSAGE_COUNT:
+      return {
+        ...state,
+        unreadChatMsgCount: action.payload,
       };
     default:
       return state;
