@@ -17,14 +17,15 @@ import fse from 'fs-extra';
 import os from 'os';
 import schedule from 'node-schedule';
 import rimraf from 'rimraf';
-import { listFile } from '../../utils/listFile';
 import { getIPAddress } from '../../utils/getIPAddress';
 import { extractExt } from '../../utils/extractExt';
 import { getAvatarUrl } from '../../utils/getAvatarUrl';
 import { matchUrls } from '../../utils/matchUrl';
 import { batchSetSessionsAvatar } from '../../utils/redis';
+import { getDirectories } from '../../utils/getDirectories';
+import { listFile } from '../../utils/listFile';
 
-const { alreadyExit, noMatch, expiredOrUnValid, badAccount } = UnSuccessCodeType;
+const { alreadyExit, noMatch, expiredOrUnValid, badAccount, invalidUuid } = UnSuccessCodeType;
 
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
@@ -50,61 +51,73 @@ const avatarUpload = multer({
 });
 
 // 上传头像
-router.post('/avatar-upload', (req, res) => {
-  avatarUpload.single('avatar')(req, res, async (err: any) => {
-    if (err) {
-      return res.status(500).json({
-        code: 1,
-        data: {},
-        msg: err.message.toString(),
-      });
+router.post('/avatar-upload', async (req, res) => {
+  try {
+    if (!fse.existsSync(AVATAR_PATH)) {
+      await fse.mkdir(AVATAR_PATH);
     }
-    try {
-      const file = req.file;
-      const { userId } = req.body;
-      const { mimetype, originalname } = file;
-      const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
-      const hostIP = getIPAddress(os.networkInterfaces()); // 获取主机IP地址
-      const port = process.env.PORT || '4001'; // 获取当前的端口号
-
-      const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
-      const tempAvatarDir = path.resolve(AVATAR_PATH, `${userId}`);
-      const tempAvatarPath = path.resolve(tempAvatarDir, `${userId}-${suffix}.${fileType}`);
-
-      if (!fse.existsSync(tempAvatarDir)) {
-        await fse.mkdir(tempAvatarDir);
+    avatarUpload.single('avatar')(req, res, async (err: any) => {
+      if (err) {
+        return res.status(500).json({
+          code: 1,
+          data: {},
+          msg: err.message.toString(),
+        });
       }
-      fse.renameSync(file.path, tempAvatarPath); // 重写头像的路径
+      try {
+        const file = req.file;
+        const { userId } = req.body;
+        const { mimetype, originalname } = file;
+        const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
+        const hostIP = getIPAddress(os.networkInterfaces()); // 获取主机IP地址
+        const port = process.env.PORT || '4001'; // 获取当前的端口号
 
-      const avatarSrc = `http://${hostIP}:${port}/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
+        const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
+        const tempAvatarDir = path.resolve(AVATAR_PATH, `${userId}`);
+        const tempAvatarPath = path.resolve(tempAvatarDir, `${userId}-${suffix}.${fileType}`);
 
-      schedule.scheduleJob(new Date(new Date().getTime() + 1800000), () => {
-        // 临时文件夹的有效期为半个小时
-        if (fse.existsSync(tempAvatarDir)) {
-          rimraf(tempAvatarDir, (e) => {
-            if (e) {
-              console.error('Error: ', e);
-            }
-          });
+        if (!fse.existsSync(tempAvatarDir)) {
+          await fse.mkdir(tempAvatarDir);
         }
-      });
+        fse.renameSync(file.path, tempAvatarPath); // 重写头像的路径
 
-      return res.status(200).json({
-        code: 0,
-        data: {
-          src: avatarSrc,
-        },
-        msg: 'upload success',
-      });
-    } catch (e) {
-      console.error('Error: ', e);
-      return res.status(500).json({
-        code: 1,
-        data: {},
-        msg: 'upload failed',
-      });
-    }
-  });
+        const avatarSrc = `http://${hostIP}:${port}/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
+
+        schedule.scheduleJob(new Date(new Date().getTime() + 1800000), () => {
+          // 临时文件夹的有效期为半个小时
+          if (fse.existsSync(tempAvatarDir)) {
+            rimraf(tempAvatarDir, (e) => {
+              if (e) {
+                console.error('Error: ', e);
+              }
+            });
+          }
+        });
+
+        return res.status(200).json({
+          code: 0,
+          data: {
+            src: avatarSrc,
+          },
+          msg: 'upload success',
+        });
+      } catch (e) {
+        console.error('Error: ', e);
+        return res.status(500).json({
+          code: 1,
+          data: {},
+          msg: 'upload failed',
+        });
+      }
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: 'upload failed',
+    });
+  }
 });
 
 // 修改用户信息
@@ -137,10 +150,16 @@ router.post('/basic-info', async (req, res) => {
         }
 
         fse.copyFileSync(tempAvatarPath, realAvatarPath);
-        const fileLists = listFile(AVATAR_PATH); // 以前的文件
-        if (fileLists.length > 0) {
-          fileLists.forEach((path) => {
-            if (path && path !== realAvatarPath) {
+        const directoriesList = getDirectories(AVATAR_PATH); // 文件夹目录
+        let filesList: string[] = [];
+        directoriesList.forEach((dir) => {
+          const files = listFile(dir);
+          filesList = filesList.concat(files);
+        });
+
+        if (filesList.length > 0) {
+          filesList.forEach((path) => {
+            if (fse.existsSync(path)) {
               fse.unlink(path, (e) => {
                 if (e) {
                   throw e;
@@ -148,6 +167,31 @@ router.post('/basic-info', async (req, res) => {
               });
             }
           });
+        }
+
+        const searchOldAvatar = `select soulAvatar from soulUserInfo where soulUuid = '${uuid}'`;
+        const result: Array<any> = await query(searchOldAvatar);
+
+        if (!result || result.length !== 1) {
+          return res.status(400).json({
+            code: invalidUuid,
+            data: {},
+            msg: 'invalid uuid',
+          });
+        }
+
+        if (result[0]?.soulAvatar) {
+          const oldAvatarFileArr = result[0].soulAvatar.split('/');
+          const oldAvatarFileName = oldAvatarFileArr[oldAvatarFileArr.length - 1]; // 老头像的文件名
+          const oldAvatarFilePath = path.resolve(AVATAR_PATH, oldAvatarFileName); // 老头像的文件路径
+
+          if (fse.existsSync(oldAvatarFilePath)) {
+            fse.unlink(oldAvatarFilePath, (e) => {
+              if (e) {
+                throw e;
+              }
+            });
+          }
         }
       }
       avatar = getAvatarUrl(`/static/user/avatar/${avatarName}`);

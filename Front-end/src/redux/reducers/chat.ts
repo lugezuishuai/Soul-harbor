@@ -8,6 +8,8 @@ import {
   SELECT_SESSION,
   ACTIVE_SESSION,
   UNREAD_MESSAGE_COUNT,
+  FRIENDS_LIST_FOLD,
+  GROUPS_LIST_FOLD,
 } from '../actions/action_types';
 import { initialChatState, ChatState } from './state';
 import { Action } from '../actions';
@@ -58,6 +60,16 @@ export default function (state = initialChatState, action: Action): ChatState {
       return {
         ...state,
         unreadChatMsgCount: action.payload,
+      };
+    case FRIENDS_LIST_FOLD:
+      return {
+        ...state,
+        friendsListFold: action.payload,
+      };
+    case GROUPS_LIST_FOLD:
+      return {
+        ...state,
+        groupsListFold: action.payload,
       };
     default:
       return state;

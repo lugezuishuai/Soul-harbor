@@ -6,6 +6,7 @@ import { batchGetSessions, redisGet, redisSet } from '../../utils/redis';
 import { UnSuccessCodeType } from './code-type';
 import dayjs from 'dayjs';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
 const { alreadyAddFriend, invalidUid, noPermission } = UnSuccessCodeType;
@@ -27,6 +28,41 @@ interface RobotChatReq {
 interface RobotChatRes {
   content: string;
   result: number;
+}
+
+interface MemberInfo {
+  member_id: string;
+  member_username: string;
+  member_avatar: string | null;
+  member_role: 0 | 1; // 0表示群主，1表示普通成员
+}
+
+interface NewGroupChatReq {
+  members: MemberInfo[];
+  room_name: string;
+}
+
+interface AddGroupMemberReq {
+  members: MemberInfo[];
+  room_id: string;
+}
+
+function batchInsertMembers(members: MemberInfo[], room_id: string) {
+  const nowTime = dayjs().unix();
+  let batchInsertMembers =
+    'insert into room_member (room_id, room_name, member_id, member_username, member_avatar, member_role, join_time) values ';
+  members.forEach((memberInfo, index) => {
+    const { member_id, member_username, member_role } = memberInfo;
+    let { member_avatar } = memberInfo;
+    member_avatar = member_avatar || '';
+    if (index !== members.length - 1) {
+      batchInsertMembers += `('${room_id}', '${member_id}', '${member_username}', '${member_avatar}', ${member_role}, ${nowTime}), `;
+    } else {
+      batchInsertMembers += `('${room_id}', '${member_id}', '${member_username}', '${member_avatar}', ${member_role}, ${nowTime})`;
+    }
+  });
+
+  return batchInsertMembers;
 }
 
 // 搜索用户
@@ -371,6 +407,11 @@ router.post('/robotChat', async (req, res) => {
       sender_avatar: null,
     };
 
+    sessionInfo.latestTime = nowTime;
+    sessionInfo.latestMessage = replyMessage.message;
+
+    redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
+
     const insertReplyMessage = `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${replyMessage.sender_id}', '${replyMessage.receiver_id}', ${replyMessage.message_id}, '${replyMessage.type}', '${replyMessage.time}', '${replyMessage.message}')`;
     await query(insertReplyMessage);
 
@@ -381,6 +422,84 @@ router.post('/robotChat', async (req, res) => {
       },
       msg: 'success',
     });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 发起群聊
+router.post('/newGroupChat', async (req, res) => {
+  try {
+    const { uuid } = req.cookies;
+    const { members, room_name }: NewGroupChatReq = req.body;
+    const room_id = uuidv4();
+
+    const buildGroup = `insert into room_info (room_id, room_name, create_time, room_create_id) values ('${room_id}', '${room_name}', '${dayjs().format(
+      'YYYY-MM-DD'
+    )}', '${uuid}') `;
+    await query(buildGroup);
+    await query(batchInsertMembers(members, room_id));
+
+    return res.status(200).json({
+      code: 0,
+      data: {},
+      msg: 'success',
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 添加群成员
+router.post('/addGroupMembers', async (req, res) => {
+  try {
+    const { room_id, members }: AddGroupMemberReq = req.body;
+    const addGroupMembers = batchInsertMembers(members, room_id);
+
+    await query(addGroupMembers);
+
+    return res.status(200).json({
+      code: 0,
+      data: {},
+      msg: 'success',
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 获取群列表
+router.get('/getGroupsList', async (req, res) => {
+  try {
+    const { uuid } = req.cookies;
+    const getGroupsId = `select room_id from room_member where member_id = '${uuid}'`;
+
+    const result: { room_id: string[] } = await query(getGroupsId);
+
+    if (!result?.room_id || !result.room_id.length) {
+      return res.status(200).json({
+        code: 0,
+        data: {
+          rooms: [],
+        },
+        msg: 'success',
+      });
+    }
   } catch (e) {
     console.error('Error: ', e);
     return res.status(500).json({

@@ -25,3 +25,5 @@ export const UNREAD_MESSAGE_COUNT = 'UNREAD_MESSAGE_COUNT'; // 未读信息条�
 export const SELECT_SESSION = 'SELECT_SESSION'; // 选中的会话
 export const PRIVATE_CHAT = 'PRIVATE_CHAT'; // 私聊信息
 export const ACTIVE_SESSION = 'ACTIVE_SESSION'; // 有未读信息的session
+export const FRIENDS_LIST_FOLD = 'FRIENDS_LIST_FOLD'; // 好友列表是否折叠
+export const GROUPS_LIST_FOLD = 'GROUPS_LIST_FOLD'; // 群组列表是否折叠

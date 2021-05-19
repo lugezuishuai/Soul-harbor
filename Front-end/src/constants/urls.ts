@@ -30,3 +30,4 @@ export const ADD_FRIEND = '/api/chat/addFriend'; // 添加好友
 export const GET_HISTORY_MSG = '/api/chat/getHisMsg'; // 获取某个回话的历史信息
 export const READ_UNREAD_MSG = '/api/chat/readUnreadMsg'; // 查阅未读信息
 export const ROBOT_CHAT = '/api/chat/robotChat'; // 机器人聊天
+export const NEW_GROUP_CHAT = '/api/chat/newGroupChat'; // 新建群聊

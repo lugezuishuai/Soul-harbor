@@ -26,7 +26,7 @@ export type HeaderState = {
   selectMenu: string;
 };
 
-export type FriendListState = FriendInfo[];
+export type FriendListState = FriendInfo[] | null;
 
 export type SessionsListState = SessionInfo[] | null;
 
@@ -48,6 +48,8 @@ export type ChatState = {
   unreadChatMsgCount: number;
   selectSession: SelectSessionState;
   activeSession: string[];
+  friendsListFold: boolean;
+  groupsListFold: boolean;
 };
 
 export type State = Readonly<{
@@ -77,16 +79,12 @@ export const initialChatState: ChatState = {
   socket: null, // socket
   activeMenu: 'chat',
   isSearch: false,
-  friendsList: [
-    {
-      friend_id: '0',
-      friend_username: '机器人小X',
-      friend_avatar: null,
-    },
-  ],
+  friendsList: null,
   sessionsList: null,
   unreadChatMessage: {},
   unreadChatMsgCount: 0,
   selectSession: null,
   activeSession: [],
+  friendsListFold: false,
+  groupsListFold: false,
 };

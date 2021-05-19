@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import Down from '@/assets/icon/down.svg';
 import { Message } from '../message';
 import defaultAvatar from '@/assets/image/default-avatar.png';
+import robotAvatar from '@/assets/image/robot.png';
 import { GetHistoryMsgReq, GetHistoryMsgRes, MsgInfo } from '@/interface/chat/getHistoryMsg';
 import { apiGet, apiPost } from '@/utils/request';
 import { GET_HISTORY_MSG, READ_UNREAD_MSG, ROBOT_CHAT } from '@/constants/urls';
@@ -250,7 +251,11 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
                 return (
                   <Message
                     key={index}
-                    avatar={msg.sender_avatar || defaultAvatar}
+                    avatar={
+                      selectSession.sessionId === '0' && type === 'receive'
+                        ? robotAvatar
+                        : msg.sender_avatar || defaultAvatar
+                    }
                     type={type}
                     message={msg.message}
                     time={msg.time}
