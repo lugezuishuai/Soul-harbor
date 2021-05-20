@@ -31,3 +31,6 @@ export const GET_HISTORY_MSG = '/api/chat/getHisMsg'; // 获取某个回话的�
 export const READ_UNREAD_MSG = '/api/chat/readUnreadMsg'; // 查阅未读信息
 export const ROBOT_CHAT = '/api/chat/robotChat'; // 机器人聊天
 export const NEW_GROUP_CHAT = '/api/chat/newGroupChat'; // 新建群聊
+export const GET_GROUPS_LIST = '/api/chat/getGroupsList'; // 获取群列表
+export const GET_GROUP_MEMBERS = '/api/chat/getGroupMembers'; // 获取群成员列表
+export const ADD_GROUP_MEMBERS = '/api/chat/addGroupMembers'; // 添加群成员

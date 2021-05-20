@@ -10,6 +10,7 @@ import {
   UNREAD_MESSAGE_COUNT,
   FRIENDS_LIST_FOLD,
   GROUPS_LIST_FOLD,
+  GET_GROUPS_LIST_ACTION,
 } from '../actions/action_types';
 import { initialChatState, ChatState } from './state';
 import { Action } from '../actions';
@@ -70,6 +71,11 @@ export default function (state = initialChatState, action: Action): ChatState {
       return {
         ...state,
         groupsListFold: action.payload,
+      };
+    case GET_GROUPS_LIST_ACTION:
+      return {
+        ...state,
+        groupsList: action.payload,
       };
     default:
       return state;

@@ -1,0 +1,56 @@
+@import '~@/variable.less';
+:global {
+  .chat-room-card {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 64px;
+    padding: 12px;
+    background: @N100;
+    border-bottom: 1px solid @N400;
+    &:hover {
+      cursor: pointer;
+    }
+    &-avatar {
+      user-select: none;
+      pointer-events: none;
+      width: 36px;
+      height: 36px;
+      margin-right: 20px;
+    }
+    &-name {
+      width: calc(100% - 36px - 20px);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      color: @N900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    &-skeleton {
+      box-sizing: border-box;
+      align-items: center;
+      width: 276px;
+      height: 64px;
+      padding: 12px;
+      border-radius: 4px;
+      background: #fff;
+      margin-bottom: 12px;
+      &:last-child {
+        margin-bottom: 0;
+      }
+      &-avatar {
+        width: 36px;
+        height: 36px;
+        margin-right: 20px;
+        border-radius: 50%;
+      }
+      &-text {
+        flex: 1;
+        height: 20px;
+      }
+    }
+  }
+}

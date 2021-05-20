@@ -2,6 +2,7 @@ import { Action } from '@/redux/actions';
 import {
   ChatActiveMenuState,
   FriendListState,
+  GroupsListState,
   SelectSessionState,
   SessionsListState,
   SocketState,
@@ -17,11 +18,12 @@ import { UserCard, UserCardSkeleton } from './component/userCard';
 import { WrapChatRoom } from './component/chat';
 import { FriendInfo, GetFriendsListRes } from '@/interface/chat/getFriendsList';
 import { apiGet } from '@/utils/request';
-import { GET_FRIENDS_LIST, GET_SESSIONS_LIST } from '@/constants/urls';
+import { GET_FRIENDS_LIST, GET_GROUPS_LIST, GET_SESSIONS_LIST } from '@/constants/urls';
 import {
   ACTIVE_SESSION,
   FRIENDS_LIST_FOLD,
   GET_FRIENDS_LIST_ACTION,
+  GET_GROUPS_LIST_ACTION,
   GET_SESSIONS_LIST_ACTION,
   GROUPS_LIST_FOLD,
 } from '@/redux/actions/action_types';
@@ -33,6 +35,8 @@ import GroupChat from '@/assets/icon/group_chat.svg';
 import { Icon, Button, Modal } from 'antd';
 import { openGroupChatModal } from './component/openGroupChatModal';
 import ArrowDown from '@/assets/icon/arrow_down.svg';
+import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
+import { RoomCard, RoomCardSkeleton } from './component/roomCard';
 import './index.less';
 
 const { confirm } = Modal;
@@ -44,6 +48,7 @@ interface ChatPageProps {
   isSearch: boolean;
   socket: SocketState;
   friendsList: FriendListState;
+  groupsList: GroupsListState;
   sessionsList: SessionsListState;
   selectSession: SelectSessionState;
   activeSession: string[];
@@ -60,6 +65,7 @@ function ChatPage(props: ChatPageProps) {
     isSearch,
     socket,
     friendsList,
+    groupsList,
     sessionsList,
     selectSession,
     activeSession,
@@ -74,24 +80,30 @@ function ChatPage(props: ChatPageProps) {
     searchData,
     searchLoading,
     friendsLoading,
+    groupsLoading,
     sessionsLoading,
     setFriendsLoading,
+    setGroupsLoading,
     setSessionsLoading,
     setSessionMsg,
   } = useChat();
 
   // 发起群聊
   async function launchGroupChat() {
-    if (friendsList && friendsList.length >= 2) {
-      await openGroupChatModal(friendsList, userInfo);
-    } else {
-      confirm({
-        title: '注意',
-        content: '抱歉，发起群聊至少需要两名好友，您的好友数量不够',
-        centered: true,
-        okText: '确认',
-        cancelText: '取消',
-      });
+    try {
+      if (friendsList && friendsList.length >= 2) {
+        await openGroupChatModal(friendsList, userInfo);
+      } else {
+        confirm({
+          title: '注意',
+          content: '抱歉，发起群聊至少需要两名好友，您的好友数量不够',
+          centered: true,
+          okText: '确认',
+          cancelText: '取消',
+        });
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -138,22 +150,42 @@ function ChatPage(props: ChatPageProps) {
     }
   }
 
-  function renderFriendsList() {
+  function renderContactsList() {
     const robotInfo: FriendInfo = {
       friend_id: '0',
       friend_username: '机器人小X',
       friend_avatar: null,
     };
     const newFriendsList = friendsList ? [robotInfo, ...friendsList] : [robotInfo];
-    if (friendsLoading) {
+    if (friendsLoading || groupsLoading) {
       return (
-        <div className="chat-page__left-content">
-          <FriendCardSkeleton />
-          <FriendCardSkeleton />
-          <FriendCardSkeleton />
-          <FriendCardSkeleton />
-          <FriendCardSkeleton />
-          <FriendCardSkeleton />
+        <div className="chat-page__left-contracts">
+          <div className="chat-page__left-fold" onClick={handleFriendsListFold}>
+            <Icon
+              className={friendsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
+              component={ArrowDown as any}
+            />
+            <div className="chat-page__left-fold-text">好友</div>
+          </div>
+          <div className="chat-page__left-contracts__item">
+            <FriendCardSkeleton />
+            <FriendCardSkeleton />
+            <FriendCardSkeleton />
+            <FriendCardSkeleton />
+          </div>
+          <div className="chat-page__left-fold" onClick={handleGroupsListFold}>
+            <Icon
+              className={groupsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
+              component={ArrowDown as any}
+            />
+            <div className="chat-page__left-fold-text">群组</div>
+          </div>
+          <div className="chat-page__left-contracts__item">
+            <RoomCardSkeleton />
+            <RoomCardSkeleton />
+            <RoomCardSkeleton />
+            <RoomCardSkeleton />
+          </div>
         </div>
       );
     } else {
@@ -170,6 +202,16 @@ function ChatPage(props: ChatPageProps) {
             newFriendsList.map((friendInfo, index) => (
               <FriendCard key={index} friendInfo={friendInfo} dispatch={dispatch} />
             ))}
+          <div className="chat-page__left-fold" onClick={handleGroupsListFold}>
+            <Icon
+              className={groupsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
+              component={ArrowDown as any}
+            />
+            <div className="chat-page__left-fold-text">群组</div>
+          </div>
+          {!groupsListFold &&
+            groupsList &&
+            groupsList.map((groupInfo, index) => <RoomCard key={index} roomInfo={groupInfo} dispatch={dispatch} />)}
         </>
       );
     }
@@ -242,6 +284,25 @@ function ChatPage(props: ChatPageProps) {
     }
   }, [dispatch]);
 
+  // 获取群组列表
+  const getGroupsList = useCallback(async () => {
+    try {
+      setGroupsLoading(true);
+      const result: GetGroupsListRes = await apiGet(GET_GROUPS_LIST);
+      console.log('groups: ', result.data.rooms);
+      if (result.data.rooms) {
+        dispatch({
+          type: GET_GROUPS_LIST_ACTION,
+          payload: result.data.rooms,
+        });
+      }
+      setGroupsLoading(false);
+    } catch (e) {
+      console.error(e);
+      setGroupsLoading(false);
+    }
+  }, [dispatch]);
+
   // 监听socket
   const listenSocket = useCallback(() => {
     if (!socket) {
@@ -270,7 +331,8 @@ function ChatPage(props: ChatPageProps) {
   useEffect(() => {
     getSessionsList();
     getFriendsList();
-  }, [getSessionsList, getFriendsList]);
+    getGroupsList();
+  }, [getSessionsList, getFriendsList, getGroupsList]);
 
   useEffect(() => {
     listenSocket();
@@ -288,11 +350,17 @@ function ChatPage(props: ChatPageProps) {
         <WrapChatSearch isSearch={isSearch} dispatch={dispatch} />
         <div className="chat-page__left-container">
           {isChatMenu && renderSessionsList()}
-          {isFriendMenu && renderFriendsList()}
+          {isFriendMenu && renderContactsList()}
           {isSearch && renderSearchPage()}
         </div>
       </div>
-      <WrapChatRoom userInfo={userInfo} dispatch={dispatch} selectSession={selectSession} socket={socket} />
+      <WrapChatRoom
+        userInfo={userInfo}
+        dispatch={dispatch}
+        selectSession={selectSession}
+        socket={socket}
+        friendsList={friendsList}
+      />
     </div>
   );
 }
@@ -305,6 +373,7 @@ export const WrapChatPage = connect(
       isSearch,
       socket,
       friendsList,
+      groupsList,
       sessionsList,
       selectSession,
       activeSession,
@@ -318,6 +387,7 @@ export const WrapChatPage = connect(
     isSearch,
     socket,
     friendsList,
+    groupsList,
     sessionsList,
     selectSession,
     activeSession,

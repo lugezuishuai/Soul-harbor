@@ -9,7 +9,7 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
-const { alreadyAddFriend, invalidUid, noPermission } = UnSuccessCodeType;
+const { alreadyAddFriend, invalidUid, noPermission, clientError } = UnSuccessCodeType;
 
 interface UnreadPrivateMsg {
   [key: string]: MsgInfo[];
@@ -47,22 +47,43 @@ interface AddGroupMemberReq {
   room_id: string;
 }
 
+interface RoomInfo {
+  room_id: string;
+  room_name: string;
+  room_avatar: string | null;
+}
+
 function batchInsertMembers(members: MemberInfo[], room_id: string) {
   const nowTime = dayjs().unix();
   let batchInsertMembers =
-    'insert into room_member (room_id, room_name, member_id, member_username, member_avatar, member_role, join_time) values ';
+    'insert into room_member (room_id, member_id, member_username, member_avatar, member_role, join_time) values ';
   members.forEach((memberInfo, index) => {
     const { member_id, member_username, member_role } = memberInfo;
     let { member_avatar } = memberInfo;
     member_avatar = member_avatar || '';
-    if (index !== members.length - 1) {
-      batchInsertMembers += `('${room_id}', '${member_id}', '${member_username}', '${member_avatar}', ${member_role}, ${nowTime}), `;
-    } else {
+    if (index === members.length - 1) {
       batchInsertMembers += `('${room_id}', '${member_id}', '${member_username}', '${member_avatar}', ${member_role}, ${nowTime})`;
+    } else {
+      batchInsertMembers += `('${room_id}', '${member_id}', '${member_username}', '${member_avatar}', ${member_role}, ${nowTime}), `;
     }
   });
 
   return batchInsertMembers;
+}
+
+function batchSearchRoomInfo(roomIds: string[]) {
+  let batchSearchRoomInfo = `select room_id, room_avatar, room_name from room_info where room_info.room_id in (`;
+  roomIds.forEach((roomId, index) => {
+    if (index === roomIds.length - 1) {
+      batchSearchRoomInfo += `'${roomId}')`;
+    } else {
+      batchSearchRoomInfo += `'${roomId}', `;
+    }
+  });
+
+  batchSearchRoomInfo += ' order by room_create_time asc'; // 按照群组创建时间升序排序
+
+  return batchSearchRoomInfo;
 }
 
 // 搜索用户
@@ -439,9 +460,7 @@ router.post('/newGroupChat', async (req, res) => {
     const { members, room_name }: NewGroupChatReq = req.body;
     const room_id = uuidv4();
 
-    const buildGroup = `insert into room_info (room_id, room_name, create_time, room_create_id) values ('${room_id}', '${room_name}', '${dayjs().format(
-      'YYYY-MM-DD'
-    )}', '${uuid}') `;
+    const buildGroup = `insert into room_info (room_id, room_name, room_create_time, room_create_id) values ('${room_id}', '${room_name}', ${dayjs().unix()}, '${uuid}') `;
     await query(buildGroup);
     await query(batchInsertMembers(members, room_id));
 
@@ -464,6 +483,30 @@ router.post('/newGroupChat', async (req, res) => {
 router.post('/addGroupMembers', async (req, res) => {
   try {
     const { room_id, members }: AddGroupMemberReq = req.body;
+    const newMembersIds = members.map((memberInfo) => memberInfo.member_id); // 新添加用户的id
+
+    const searchOldMemberIds = `select member_id from room_member where room_id = '${room_id}'`;
+    const result: { member_id: string }[] = await query(searchOldMemberIds);
+
+    if (!result || !result.length) {
+      // 该群组没有任何成员
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'no members',
+      });
+    }
+
+    const alreadyAddMember = newMembersIds.some((id) => result.some((item) => item.member_id === id));
+
+    if (alreadyAddMember) {
+      // 已经添加了某个成员
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'already add members',
+      });
+    }
     const addGroupMembers = batchInsertMembers(members, room_id);
 
     await query(addGroupMembers);
@@ -489,9 +532,9 @@ router.get('/getGroupsList', async (req, res) => {
     const { uuid } = req.cookies;
     const getGroupsId = `select room_id from room_member where member_id = '${uuid}'`;
 
-    const result: { room_id: string[] } = await query(getGroupsId);
+    const result: { room_id: string }[] = await query(getGroupsId);
 
-    if (!result?.room_id || !result.room_id.length) {
+    if (!result || !result.length) {
       return res.status(200).json({
         code: 0,
         data: {
@@ -500,6 +543,59 @@ router.get('/getGroupsList', async (req, res) => {
         msg: 'success',
       });
     }
+
+    const roomIds = result.map((item) => item.room_id);
+    const roomInfos: RoomInfo[] = await query(batchSearchRoomInfo(roomIds));
+
+    if (!roomInfos || !roomInfos.length) {
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'failed',
+      });
+    }
+
+    return res.status(200).json({
+      code: 0,
+      data: {
+        rooms: roomInfos,
+      },
+      msg: 'success',
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 获取群成员列表
+router.get('/getGroupMembers', async (req, res) => {
+  try {
+    const { room_id } = req.query;
+    const getGroupMembers = `select member_id, member_username, member_avatar, member_role from room_member where room_member.room_id = '${room_id}' order by join_time asc`; // 按照入群时间排序
+    const result: MemberInfo[] = await query(getGroupMembers);
+
+    if (!result || !result.length) {
+      return res.status(200).json({
+        code: 0,
+        data: {
+          members: [],
+        },
+        msg: 'success',
+      });
+    }
+
+    return res.status(200).json({
+      code: 0,
+      data: {
+        members: result,
+      },
+      msg: 'success',
+    });
   } catch (e) {
     console.error('Error: ', e);
     return res.status(500).json({

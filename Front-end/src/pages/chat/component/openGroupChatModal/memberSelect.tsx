@@ -5,25 +5,31 @@ import { Member } from '../member';
 import './index.less';
 
 interface MemberSelectProps {
+  selectedIds?: string[];
   friendsList: FriendInfo[];
   value?: string[];
   onChange?: (ids: string[]) => void;
 }
 
 export const MemberSelect = forwardRef(function (props: MemberSelectProps, ref: any) {
-  const { friendsList, onChange, value } = props;
+  const { selectedIds = [], friendsList, onChange, value } = props;
 
   const [members, setMembers] = useState(friendsList);
   const timer = useRef(-1);
   // 给每次搜索增加标识
   const count = useRef(0);
-  const options: LarkSelectOption[] = members.map((friendInfo) => {
-    const { friend_avatar, friend_username, friend_id } = friendInfo;
+  const options: LarkSelectOption[] = [];
+  members.forEach((friendInfo, index) => {
+    const { friend_avatar, friend_id, friend_username } = friendInfo;
+    if (selectedIds.includes(friend_id)) {
+      // 过滤掉已添加的用户
+      return;
+    }
 
-    return {
+    options.push({
       value: friend_id,
-      label: <Member name={friend_username} avatar={friend_avatar} />,
-    };
+      label: <Member key={index} name={friend_username} avatar={friend_avatar} />,
+    });
   });
 
   // 从好友列表中搜索用户

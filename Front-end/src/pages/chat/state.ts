@@ -10,6 +10,7 @@ function useCommonData() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchData, setSearchData] = useState<SearchMemberInfo[] | null>(null);
   const [friendsLoading, setFriendsLoading] = useState(false); // 获取好友列表loading
+  const [groupsLoading, setGroupsLoading] = useState(false); // 获取群组列表loading
   const [sessionsLoading, setSessionsLoading] = useState(false); // 获取会话列表loading
   const [sessionMsg, setSessionMsg] = useState<MsgInfo | null>(null); // 会话接收到的信息
   const timer = useRef(-1);
@@ -43,11 +44,13 @@ function useCommonData() {
   return {
     searchLoading,
     friendsLoading,
+    groupsLoading,
     sessionsLoading,
     searchData,
     sessionMsg,
     setSearchData,
     setFriendsLoading,
+    setGroupsLoading,
     setSessionsLoading,
     setSessionMsg,
     handleSearch,

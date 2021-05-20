@@ -1,4 +1,5 @@
 import { FriendInfo } from '@/interface/chat/getFriendsList';
+import { RoomInfo } from '@/interface/chat/getGroupsList';
 import { SessionInfo } from '@/interface/chat/getSessionsList';
 import { UnreadMsg } from '@/interface/chat/getUnreadMsg';
 import { EmployeeResponse } from '@/interface/employee';
@@ -30,6 +31,8 @@ export type FriendListState = FriendInfo[] | null;
 
 export type SessionsListState = SessionInfo[] | null;
 
+export type GroupsListState = RoomInfo[] | null;
+
 export interface SelectSession {
   type: 'private' | 'room';
   sessionId: string;
@@ -44,6 +47,7 @@ export type ChatState = {
   isSearch: boolean;
   friendsList: FriendListState;
   sessionsList: SessionsListState;
+  groupsList: GroupsListState;
   unreadChatMessage: UnreadMsg;
   unreadChatMsgCount: number;
   selectSession: SelectSessionState;
@@ -81,6 +85,7 @@ export const initialChatState: ChatState = {
   isSearch: false,
   friendsList: null,
   sessionsList: null,
+  groupsList: null,
   unreadChatMessage: {},
   unreadChatMsgCount: 0,
   selectSession: null,

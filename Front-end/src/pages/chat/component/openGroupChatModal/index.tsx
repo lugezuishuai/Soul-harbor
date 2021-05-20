@@ -28,6 +28,7 @@ function ModalContent({ form, friendsList, onCancel, userInfo }: ModalContentPro
   const { getFieldDecorator, validateFields } = form;
   const [loading, setLoading] = useState(false);
 
+  // 确认发起群聊
   function handleSubmit() {
     validateFields(async (errors: Record<string, any>, values: FormValues) => {
       if (!errors && userInfo) {
@@ -77,6 +78,7 @@ function ModalContent({ form, friendsList, onCancel, userInfo }: ModalContentPro
 
             setLoading(false);
             onCancel();
+            message.success('创建群聊成功');
           } catch (e) {
             console.error(e);
             setLoading(false);

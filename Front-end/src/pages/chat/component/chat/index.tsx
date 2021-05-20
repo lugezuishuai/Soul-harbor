@@ -1,21 +1,28 @@
-import { SelectSessionState, SocketState, UserInfoState } from '@/redux/reducers/state';
+import { FriendListState, SelectSessionState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Action } from '@/redux/actions';
-import { Form, Input, Button, message, Icon, Spin } from 'antd';
+import { Form, Input, Button, message, Icon, Spin, Drawer } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Cookies from 'js-cookie';
 import dayjs from 'dayjs';
 import Down from '@/assets/icon/down.svg';
+import ChatMenu from '@/assets/icon/chat-menu.svg';
+import AddMember from '@/assets/icon/add-member.svg';
 import { Message } from '../message';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import robotAvatar from '@/assets/image/robot.png';
 import { GetHistoryMsgReq, GetHistoryMsgRes, MsgInfo } from '@/interface/chat/getHistoryMsg';
 import { apiGet, apiPost } from '@/utils/request';
-import { GET_HISTORY_MSG, READ_UNREAD_MSG, ROBOT_CHAT } from '@/constants/urls';
+import { GET_GROUP_MEMBERS, GET_HISTORY_MSG, READ_UNREAD_MSG, ROBOT_CHAT } from '@/constants/urls';
 import { ReadUnreadMsgReq } from '@/interface/chat/readUnreadMsg';
 import { useChat } from '../../state';
 import { debounce } from 'lodash';
 import { RobotChatReq, RobotChatRes, SendMessageBody } from '@/interface/chat/robotChat';
+import { GetGroupMembersReq, GetGroupMembersRes } from '@/interface/chat/getGroupMembers';
+import { MemberInfo } from '@/interface/chat/newGroupChat';
+import { GroupMemberCard } from '../groupMemberCard';
+import { addGroupMember } from '../openGroupChatModal/addMembers';
+import Cookie from 'js-cookie';
 import './index.less';
 
 interface ChatRoomProps extends FormComponentProps {
@@ -23,48 +30,22 @@ interface ChatRoomProps extends FormComponentProps {
   socket: SocketState;
   userInfo: UserInfoState;
   selectSession: SelectSessionState;
+  friendsList: FriendListState;
 }
 
 interface FormValues {
   msg: string;
 }
 
-function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
+function ChatRoom({ selectSession, form, socket, userInfo, friendsList }: ChatRoomProps) {
   const { getFieldDecorator, resetFields, validateFields } = form;
   const { sessionMsg, setSessionMsg } = useChat();
   const [readMessage, setReadMessage] = useState<MsgInfo[]>([]); // 已读信息
   const [unreadMessage, setUnreadMessage] = useState<MsgInfo[]>([]); // 未读信息
+  const [membersList, setMembersList] = useState<MemberInfo[]>([]); // 群成员列表
+  const [visible, setVisible] = useState(false); // drawer 显示与否
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>();
-
-  // // 点击未读信息
-  // function handleClickUnRead() {
-  //   // 将所有的信息设置成已读
-  //   setUnreadMsgCount(0);
-  //   dispatch({
-  //     type: UNREAD,
-  //     payload: false,
-  //   });
-  //   if (chatMessage && chatMessage && selectUser?.userInfo?.uid && chatMessage[selectUser.userInfo.uid]) {
-  //     const receiveUid = selectUser.userInfo.uid;
-  //     const newChatMessage = {
-  //       ...chatMessage,
-  //       [receiveUid]: chatMessage[receiveUid].map((msg) => {
-  //         if (msg.messageId !== msg.readMessageId) {
-  //           msg.readMessageId = msg.messageId;
-  //         }
-
-  //         return msg;
-  //       }),
-  //     };
-
-  //     setReadMessage(newChatMessage[receiveUid]);
-  //     dispatch({
-  //       type: PRIVATE_CHAT,
-  //       payload: newChatMessage,
-  //     });
-  //   }
-  // }
 
   // 发送机器人聊天信息
   async function sendRobotMsg(sendMsgBody: SendMessageBody) {
@@ -82,6 +63,19 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  function handleClickMenu() {
+    setVisible(!visible);
+  }
+
+  function handleCloseDrawer() {
+    setVisible(false);
+  }
+
+  // 退出群聊
+  function handleExitGroup() {
+    console.log('退出群聊');
   }
 
   // 发送聊天信息
@@ -151,22 +145,6 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
     }
   }
 
-  // const renderMessage = useCallback(() => {
-  //   console.log('chatMessage: ', chatMessage);
-  //   const uid = selectUser?.userInfo?.uid || '';
-
-  //   if (chatMessage && chatMessage[uid]) {
-  //     console.log('message: ', chatMessage[uid]);
-  //     if (unread) {
-  //       const alreadyReadMsg = chatMessage[uid].filter((msg) => msg.messageId === msg.readMessageId);
-  //       setReadMessage(alreadyReadMsg);
-  //       setUnreadMsgCount(chatMessage[uid].length - alreadyReadMsg.length);
-  //     } else {
-  //       setReadMessage(chatMessage[uid]);
-  //     }
-  //   }
-  // }, [selectUser, chatMessage, unread]);
-
   // 获取历史信息
   const getHistoryMsg = useCallback(async () => {
     try {
@@ -204,6 +182,42 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
     }
   }, [selectSession]);
 
+  // 获取群成员列表
+  const getGroupMembers = useCallback(async () => {
+    try {
+      if (selectSession?.type === 'room') {
+        const reqData: GetGroupMembersReq = {
+          room_id: selectSession.sessionId,
+        };
+
+        const {
+          data: { members },
+        }: GetGroupMembersRes = await apiGet(GET_GROUP_MEMBERS, reqData);
+        if (members) {
+          setMembersList(members);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [selectSession]);
+
+  // 添加群成员
+  async function handleAddMember() {
+    try {
+      if (!friendsList || !selectSession || selectSession.type !== 'room') {
+        return;
+      }
+
+      const selectedIds = membersList
+        .map((memberInfo) => memberInfo.member_id)
+        .filter((id) => id !== Cookie.get('uuid'));
+      await addGroupMember(friendsList, selectedIds, selectSession.sessionId, getGroupMembers);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   // 点击未读信息
   const handleClickUnreadMsg = useCallback(async () => {
     if (selectSession) {
@@ -231,6 +245,7 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
 
   useEffect(() => {
     getHistoryMsg();
+    getGroupMembers();
   }, [getHistoryMsg]);
 
   useEffect(() => {
@@ -242,8 +257,38 @@ function ChatRoom({ selectSession, form, socket, userInfo }: ChatRoomProps) {
       <div className="chat-room">
         <div className="chat-room-header">
           <div className="chat-room-header-username">{selectSession.name}</div>
+          {selectSession.type === 'room' && (
+            <Icon className="chat-room-header-icon" component={ChatMenu as any} onClick={handleClickMenu} />
+          )}
         </div>
         <div className="chat-room-container">
+          {selectSession.type === 'room' && (
+            <Drawer
+              className="chat-room-drawer"
+              placement="right"
+              closable={false}
+              onClose={handleCloseDrawer}
+              visible={visible}
+              getContainer={false}
+            >
+              <div className="chat-room-drawer-content">
+                <div className="chat-room-drawer-content-label">群聊名称</div>
+                <div className="chat-room-drawer-content-text">{selectSession.name}</div>
+                <div className="chat-room-drawer-content-label">群成员</div>
+                <div className="chat-room-drawer-content-member">
+                  <div className="chat-room-drawer-content-member-add" onClick={handleAddMember}>
+                    <Icon className="chat-room-drawer-content-member-add-icon" component={AddMember as any} />
+                    <div className="chat-room-drawer-content-member-add-text">添加成员</div>
+                  </div>
+                  {membersList.length > 0 &&
+                    membersList.map((memberInfo, index) => <GroupMemberCard key={index} memberInfo={memberInfo} />)}
+                </div>
+              </div>
+              <Button type="danger" className="chat-room-drawer-btn" onClick={handleExitGroup}>
+                退出群聊
+              </Button>
+            </Drawer>
+          )}
           <div className="chat-room-content" ref={ref as any}>
             <Spin spinning={loading}>
               {readMessage.map((msg, index) => {
