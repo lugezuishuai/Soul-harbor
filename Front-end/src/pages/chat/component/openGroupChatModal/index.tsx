@@ -15,6 +15,7 @@ import './index.less';
 
 interface ModalContentProps extends FormComponentProps {
   onCancel(): void;
+  getGroupsList(): Promise<any>;
   friendsList: FriendInfo[];
   userInfo: UserInfoState;
 }
@@ -24,7 +25,7 @@ interface FormValues {
   groupName: string;
 }
 
-function ModalContent({ form, friendsList, onCancel, userInfo }: ModalContentProps) {
+function ModalContent({ form, friendsList, onCancel, userInfo, getGroupsList }: ModalContentProps) {
   const { getFieldDecorator, validateFields } = form;
   const [loading, setLoading] = useState(false);
 
@@ -79,6 +80,7 @@ function ModalContent({ form, friendsList, onCancel, userInfo }: ModalContentPro
             setLoading(false);
             onCancel();
             message.success('创建群聊成功');
+            await getGroupsList(); // 重新拉取一遍群组列表
           } catch (e) {
             console.error(e);
             setLoading(false);
@@ -137,7 +139,11 @@ const WrapModalContent = Form.create<ModalContentProps>({
   name: 'modal-content',
 })(ModalContent);
 
-export async function openGroupChatModal(friendsList: FriendInfo[], userInfo: UserInfoState) {
+export async function openGroupChatModal(
+  friendsList: FriendInfo[],
+  userInfo: UserInfoState,
+  getGroupsList: () => Promise<any>
+) {
   const { hide } = await openWidget(
     {
       title: (
@@ -153,6 +159,7 @@ export async function openGroupChatModal(friendsList: FriendInfo[], userInfo: Us
         friendsList,
         userInfo,
         onCancel: () => hide(),
+        getGroupsList,
       },
       centered: true,
       closable: false,

@@ -33,9 +33,8 @@ function Operation(props: OperationProps): any {
     try {
       await apiGet(LOGOUT);
       message.success('退出成功');
+
       if (socket) {
-        // 退出登录之后需要删除键值对并关闭socket连接
-        socket.emit('close', uid);
         socket.close();
       }
       dispatch({

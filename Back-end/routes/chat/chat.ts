@@ -1,5 +1,5 @@
 import express from 'express';
-import { ChatSearchRes, MessageBody, MsgInfo, ResUserInfo, SessionInfo, UserInfo } from '../../type/type';
+import { ChatSearchRes, MessageBody, MsgInfo, ResUserInfo, RoomInfo, SessionInfo, UserInfo } from '../../type/type';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
 import { batchGetSessions, redisGet, redisSet } from '../../utils/redis';
@@ -45,12 +45,6 @@ interface NewGroupChatReq {
 interface AddGroupMemberReq {
   members: MemberInfo[];
   room_id: string;
-}
-
-interface RoomInfo {
-  room_id: string;
-  room_name: string;
-  room_avatar: string | null;
 }
 
 function batchInsertMembers(members: MemberInfo[], room_id: string) {
@@ -400,6 +394,7 @@ router.post('/robotChat', async (req, res) => {
       time: dayjs(time * 1000).format('h:mm a'),
       type: 'online',
       sender_avatar,
+      private_chat: 0,
     };
 
     const insertSendMessage = sendMessage.sender_avatar
@@ -426,6 +421,7 @@ router.post('/robotChat', async (req, res) => {
       time: dayjs(nowTime * 1000).format('h:mm a'),
       type: 'online',
       sender_avatar: null,
+      private_chat: 0,
     };
 
     sessionInfo.latestTime = nowTime;
@@ -596,6 +592,83 @@ router.get('/getGroupMembers', async (req, res) => {
       },
       msg: 'success',
     });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 退出群聊
+router.post('/exitGroup', async (req, res) => {
+  try {
+    const { room_id } = req.body;
+    const { uuid } = req.cookies;
+
+    const searchMember = `select * from room_member where room_id = '${room_id}' and member_id = '${uuid}'`;
+    const result = await query(searchMember);
+
+    if (!result || result.length !== 1) {
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'invalid uuid or invalid room_id',
+      });
+    }
+
+    const exitGroup = `delete from room_member where room_id = '${room_id}' and member_id = '${uuid}'`;
+    await query(exitGroup);
+
+    return res.status(200).json({
+      code: 0,
+      data: {},
+      msg: 'success',
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 删除群成员
+router.post('/deleteMember', async (req, res) => {
+  try {
+    const { uuid } = req.cookies;
+    const { member_id, room_id } = req.body;
+
+    // 判断有没有删除群成员的权限
+    const hasAbility = `select * from room_member where member_id = '${uuid}' and room_id = '${room_id}' and member_role = 0`;
+    const result = await query(hasAbility);
+
+    if (!result || !result.length) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    } else if (result.length !== 1) {
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'client Error',
+      });
+    } else {
+      const deleteMember = `delete from room_member where member_id = '${member_id}' and room_id = '${room_id}'`;
+      await query(deleteMember);
+
+      return res.status(200).json({
+        code: 0,
+        data: {},
+        msg: 'success',
+      });
+    }
   } catch (e) {
     console.error('Error: ', e);
     return res.status(500).json({

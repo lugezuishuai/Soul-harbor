@@ -6,9 +6,10 @@ import defaultAvatar from '@/assets/image/default-avatar.png';
 import { SessionInfo } from '@/interface/chat/getSessionsList';
 import { Action } from '@/redux/actions';
 import { SelectSession } from '@/redux/reducers/state';
-import { SELECT_SESSION } from '@/redux/actions/action_types';
+import { ACTIVE_SESSION, SELECT_SESSION } from '@/redux/actions/action_types';
 import robotAvatar from '@/assets/image/robot.png';
 import dayjs from 'dayjs';
+import { ActiveSessionPayload } from '../../chatPage';
 import './index.less';
 
 const { Block, Avatar: AvatarSkeleton } = Skeleton;
@@ -27,6 +28,16 @@ export function SessionCard({ sessionInfo, dispatch }: SessionCardProps) {
       sessionId,
       name,
     };
+
+    const payload: ActiveSessionPayload = {
+      type: 'delete',
+      value: sessionId,
+    };
+
+    dispatch({
+      type: ACTIVE_SESSION,
+      payload,
+    });
 
     dispatch({
       type: SELECT_SESSION,

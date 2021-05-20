@@ -57,6 +57,11 @@ interface ChatPageProps {
   groupsListFold: boolean;
 }
 
+export interface ActiveSessionPayload {
+  type: 'add' | 'delete';
+  value: string;
+}
+
 function ChatPage(props: ChatPageProps) {
   const {
     userInfo,
@@ -88,11 +93,13 @@ function ChatPage(props: ChatPageProps) {
     setSessionMsg,
   } = useChat();
 
+  console.log('activeSession: ', activeSession);
+
   // 发起群聊
   async function launchGroupChat() {
     try {
       if (friendsList && friendsList.length >= 2) {
-        await openGroupChatModal(friendsList, userInfo);
+        await openGroupChatModal(friendsList, userInfo, getGroupsList);
       } else {
         confirm({
           title: '注意',
@@ -310,23 +317,54 @@ function ChatPage(props: ChatPageProps) {
     }
 
     socket.on('receive message', (msg: MsgInfo) => {
-      console.log('收到了来自服务器的消息： ', msg);
-      const { sender_id } = msg;
+      const { sender_id, receiver_id, private_chat } = msg;
+      console.log('receiver_id: ', receiver_id);
 
-      if (sender_id === selectSession?.sessionId) {
-        // 如果在会话之中
-        setSessionMsg(msg);
-      } else {
-        if (!activeSession.includes(sender_id)) {
-          const newActiveSession = [...activeSession, sender_id];
+      if (private_chat === 0) {
+        // 私聊
+        if (sender_id === selectSession?.sessionId) {
+          // 如果在会话之中
+          setSessionMsg(msg);
+        } else {
+          const payload: ActiveSessionPayload = {
+            type: 'add',
+            value: sender_id,
+          };
           dispatch({
             type: ACTIVE_SESSION,
-            payload: newActiveSession,
+            payload,
+          });
+        }
+      } else {
+        // 群聊
+        if (receiver_id === selectSession?.sessionId) {
+          // 如果在会话之中
+          setSessionMsg(msg);
+        } else {
+          const payload: ActiveSessionPayload = {
+            type: 'add',
+            value: receiver_id,
+          };
+          dispatch({
+            type: ACTIVE_SESSION,
+            payload,
           });
         }
       }
     });
-  }, [socket, activeSession, selectSession, dispatch]);
+  }, [socket, selectSession, dispatch]);
+
+  // 加入房间
+  const joinRoom = useCallback(() => {
+    if (groupsList && groupsList.length > 0 && socket) {
+      const roomIds = groupsList.map((roomInfo) => roomInfo.room_id);
+      socket.emit('join room', roomIds);
+    }
+  }, [groupsList, socket]);
+
+  useEffect(() => {
+    joinRoom();
+  }, [joinRoom]);
 
   useEffect(() => {
     getSessionsList();
@@ -360,6 +398,7 @@ function ChatPage(props: ChatPageProps) {
         selectSession={selectSession}
         socket={socket}
         friendsList={friendsList}
+        getGroupsList={getGroupsList}
       />
     </div>
   );

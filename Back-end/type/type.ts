@@ -42,6 +42,7 @@ export interface MsgInfo {
   message: string;
   time: string;
   type: 'online' | 'offline'; // 是否是离线信息
+  private_chat: 0 | 1; // 0表示私聊
 }
 
 export interface MessageBody {
@@ -51,4 +52,10 @@ export interface MessageBody {
   message_id: number;
   message: string;
   time: number; // 秒为单位的时间戳
+}
+
+export interface RoomInfo {
+  room_id: string;
+  room_name: string;
+  room_avatar: string | null;
 }

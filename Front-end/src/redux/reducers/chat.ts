@@ -52,11 +52,25 @@ export default function (state = initialChatState, action: Action): ChatState {
         ...state,
         selectSession: action.payload,
       };
-    case ACTIVE_SESSION:
+    case ACTIVE_SESSION: {
+      const newActiveSession = [...state.activeSession]; // 深拷贝
+      if (action.payload.type === 'add') {
+        if (!newActiveSession.includes(action.payload.value)) {
+          newActiveSession.push(action.payload.value);
+        }
+      } else {
+        if (newActiveSession.length > 0) {
+          const index = newActiveSession.findIndex(action.payload.value);
+          if (index > -1) {
+            newActiveSession.splice(index, 1);
+          }
+        }
+      }
       return {
         ...state,
-        activeSession: action.payload,
+        activeSession: newActiveSession,
       };
+    }
     case UNREAD_MESSAGE_COUNT:
       return {
         ...state,

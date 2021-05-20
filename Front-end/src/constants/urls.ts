@@ -34,3 +34,5 @@ export const NEW_GROUP_CHAT = '/api/chat/newGroupChat'; // 新建群聊
 export const GET_GROUPS_LIST = '/api/chat/getGroupsList'; // 获取群列表
 export const GET_GROUP_MEMBERS = '/api/chat/getGroupMembers'; // 获取群成员列表
 export const ADD_GROUP_MEMBERS = '/api/chat/addGroupMembers'; // 添加群成员
+export const EXIT_GROUP = '/api/chat/exitGroup'; // 退出群聊
+export const DELETE_GROUP_MEMBER = '/api/chat/deleteMember'; // 删除群成员

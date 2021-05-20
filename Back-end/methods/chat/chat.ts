@@ -7,7 +7,8 @@ import { redisDel, redisGet, redisSet } from '../../utils/redis';
 import dayjs from 'dayjs';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
-import { UserInfo, SessionInfo, MsgInfo, MessageBody } from '../../type/type';
+import { UserInfo, SessionInfo, MsgInfo, MessageBody, RoomInfo } from '../../type/type';
+import cookie from 'cookie';
 
 interface JoinRoom {
   username: string;
@@ -23,12 +24,17 @@ export function createSocketIo(server: HttpServer) {
   });
 
   io.of('/chat').on('connection', (socket: Socket) => {
+    let uuid = '';
+    if (socket.request.headers.cookie && cookie.parse(socket.request.headers.cookie)) {
+      uuid = cookie.parse(socket.request.headers.cookie).uuid;
+    }
+
     // 用户登录
     socket.on('login', (userId: string) => {
       redisSet(`socket_${userId}`, socket.id);
     });
 
-    // 私聊
+    // 私聊信息
     socket.on('private message', async (messageBody: MessageBody) => {
       try {
         const { sender_id, sender_avatar, receiver_id, message, message_id, time } = messageBody;
@@ -124,6 +130,7 @@ export function createSocketIo(server: HttpServer) {
           time: dayjs(time * 1000).format('h:mm a'),
           type: 'online',
           sender_avatar,
+          private_chat: 0,
         };
         if (isNullOrUndefined(socketId)) {
           // 如果用户不在线
@@ -141,50 +148,81 @@ export function createSocketIo(server: HttpServer) {
     });
 
     // 加入聊天室
-    socket.on('join room', ({ username, room }: JoinRoom) => {
-      const user = userJoin(socket.id, username, room);
-      socket.join(user.room);
-
-      // 欢迎当前加入的用户(该用户)
-      socket.emit('message', formatMessage(user.room, `Welcome to ${user.room}`));
-
-      // 当一个用户连接的时候广播给该房间的其他用户(除该用户)
-      socket.broadcast.to(user.room).emit('message', formatMessage(user.room, `${user.username} has joined the chat`));
-
-      // 发送该房间的用户信息(该房间的所有用户)
-      io.of('/chat')
-        .to(user.room)
-        .emit('roomUsers', {
-          room: user.room,
-          users: getRoomUsers(user.room),
+    socket.on('join room', (roomIds: string[]) => {
+      if (roomIds && roomIds.length > 0) {
+        roomIds.forEach((room_id) => {
+          socket.join(room_id);
         });
+      }
     });
 
-    // 监听聊天信息
-    socket.on('chatMessage', (msg) => {
-      const user = getCurrentUser(socket.id);
+    // 群聊信息
+    socket.on('room message', async (messageBody: MessageBody) => {
+      try {
+        const { sender_id, sender_avatar, receiver_id, message, message_id, time } = messageBody;
+        const searchRoomInfo = `select room_id, room_name, room_avatar from room_info where room_id = '${receiver_id}'`;
 
-      user && io.of('/chat').to(user.room).emit('message', formatMessage(user.username, msg));
+        // 判断会话是否存在
+        let sessionInfo: SessionInfo | null = JSON.parse(await redisGet(`room_session_${receiver_id}`));
+        if (sessionInfo) {
+          sessionInfo.latestTime = time;
+          sessionInfo.latestMessage = message;
+        } else {
+          const result: RoomInfo[] = await query(searchRoomInfo);
+
+          if (!result || result.length !== 1) {
+            return;
+          }
+
+          const { room_name, room_avatar } = result[0];
+          sessionInfo = {
+            type: 'room',
+            sessionId: receiver_id,
+            name: room_name,
+            avatar: room_avatar,
+            latestTime: time,
+            latestMessage: message,
+          };
+        }
+        redisSet(`room_session_${receiver_id}`, JSON.stringify(sessionInfo)); // 设置会话
+
+        const sendMessage: MsgInfo = {
+          sender_id,
+          receiver_id,
+          message,
+          message_id,
+          time: dayjs(time * 1000).format('h:mm a'),
+          type: 'online',
+          sender_avatar,
+          private_chat: 1,
+        };
+
+        io.of('/chat').to(receiver_id).emit('receive message', sendMessage); // 发送给该房间的所有在线用户
+
+        const insertMessage = sendMessage.sender_avatar
+          ? `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}')`
+          : `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}')`;
+        await query(insertMessage);
+      } catch (e) {
+        console.error(e);
+      }
     });
 
-    // 关闭
-    socket.on('close', (userId: string) => {
-      console.log('来到了这里');
-      redisDel(`socket_${userId}`);
-    });
+    // socket断开连接
+    socket.on('disconnect', async (reason) => {
+      console.log('断开了连接', reason);
 
-    // 断开连接
-    socket.on('disconnect', (reason) => {
-      const user = userLeave(socket.id);
+      if (uuid) {
+        redisDel(`socket_${uuid.slice(0, 8)}`); // 删除掉用户在线标记
 
-      if (user) {
-        socket.broadcast.to(user.room).emit('message', formatMessage(user.room, `${user.username} has left the chat`));
+        const searchRoomIds = `select room_id from room_member where member_id = '${uuid}'`;
+        const result: { room_id: string }[] = await query(searchRoomIds);
 
-        // 发送该房间的用户信息(除该用户)
-        socket.broadcast.to(user.room).emit('roomUsers', {
-          room: user.room,
-          users: getRoomUsers(user.room),
-        });
+        if (result && result.length > 0) {
+          const roomIds = result.map((roomInfo) => roomInfo.room_id);
+          // 断开所有房间的socket连接
+          roomIds.forEach((room_id) => socket.leave(room_id));
+        }
       }
     });
   });

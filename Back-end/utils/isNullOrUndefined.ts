@@ -1,3 +1,3 @@
-export function isNullOrUndefined(value: any) {
-  return value === null || value === undefined;
+export function isNullOrUndefined<T>(obj: T | null | undefined): obj is null | undefined {
+  return typeof obj === 'undefined' || obj === null;
 }

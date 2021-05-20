@@ -67,22 +67,22 @@ function Header(props: HeaderProps) {
     setVisible(false);
   }
 
-  const handleClickLogin = useCallback(() => {
+  function handleClickLogin() {
     setVisible(true);
     setSignUpMenu('login');
-  }, []);
+  }
 
-  const handleClickRegister = useCallback(() => {
+  function handleClickRegister() {
     setVisible(true);
     setSignUpMenu('register');
-  }, []);
+  }
 
   // 检查用户是否已经登录
   const checkLogin = useCallback(async () => {
     try {
       const res = await apiGet(INIT);
       const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
-      const socket = io('http://localhost:4001/chat', { forceNew: true });
+      const socket = io('http://localhost:5000/chat', { forceNew: true });
       socket.emit('login', uid);
       // 建立socket连接
       dispatch({
@@ -110,28 +110,12 @@ function Header(props: HeaderProps) {
     }
   }, [dispatch]);
 
-  useEffect(() => {
-    checkLogin();
-  }, [checkLogin]);
-
-  useEffect(() => {
-    const pathArr = location.pathname.split('/');
-    const activeMenu = pathArr[1];
+  function handleMenuChange({ key }: SelectParam | { key: string }) {
     dispatch({
       type: 'CHANGE_SELECT_MENU',
-      payload: activeMenu,
+      payload: key,
     });
-  }, [location.pathname, dispatch]);
-
-  const handleMenuChange = useCallback(
-    ({ key }: SelectParam | { key: string }) => {
-      dispatch({
-        type: 'CHANGE_SELECT_MENU',
-        payload: key,
-      });
-    },
-    [dispatch]
-  );
+  }
 
   function renderHomeMenu(config: MenuConfig[], isMobile = false) {
     return (
@@ -170,44 +154,54 @@ function Header(props: HeaderProps) {
 
   const mobileMenu = login ? renderHomeMenu(loginMenu, true) : renderHomeMenu(noLoginMenu, true);
 
-  const renderUserState = useCallback(
-    (login: boolean | null) => {
-      if (login && userInfo) {
-        const { username, avatar, uid } = userInfo;
+  function renderUserState(login: boolean | null) {
+    if (login && userInfo) {
+      const { username, avatar, uid } = userInfo;
+      return (
+        <WrapOperation
+          //@ts-ignore
+          handleMenuChange={handleMenuChange}
+          username={username}
+          avatar={avatar}
+          socket={socket}
+          uid={uid}
+          dispatch={dispatch}
+        />
+      );
+    } else {
+      if (screen.isLittleScreen) {
         return (
-          <WrapOperation
-            //@ts-ignore
-            handleMenuChange={handleMenuChange}
-            username={username}
-            avatar={avatar}
-            socket={socket}
-            uid={uid}
-            dispatch={dispatch}
-          />
+          <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>
+            登录/注册
+          </Button>
         );
       } else {
-        if (screen.isLittleScreen) {
-          return (
-            <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>
-              登录/注册
+        return (
+          <div className="home_user">
+            <Button type="primary" className="home_user_login" onClick={handleClickLogin}>
+              登录
             </Button>
-          );
-        } else {
-          return (
-            <div className="home_user">
-              <Button type="primary" className="home_user_login" onClick={handleClickLogin}>
-                登录
-              </Button>
-              <Button className="home_user_login" onClick={handleClickRegister}>
-                注册
-              </Button>
-            </div>
-          );
-        }
+            <Button className="home_user_login" onClick={handleClickRegister}>
+              注册
+            </Button>
+          </div>
+        );
       }
-    },
-    [login, userInfo, handleClickLogin, handleClickRegister]
-  );
+    }
+  }
+
+  useEffect(() => {
+    checkLogin();
+  }, [checkLogin]);
+
+  useEffect(() => {
+    const pathArr = location.pathname.split('/');
+    const activeMenu = pathArr[1];
+    dispatch({
+      type: 'CHANGE_SELECT_MENU',
+      payload: activeMenu,
+    });
+  }, [location.pathname, dispatch]);
 
   return (
     <div className="home_header">

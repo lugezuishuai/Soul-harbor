@@ -22,7 +22,6 @@ import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { State } from '@/redux/reducers/state';
 import { GetUnreadMsgRes } from '@/interface/chat/getUnreadMsg';
-import Cookies from 'js-cookie';
 import { UNREAD_MESSAGE_COUNT } from '@/redux/actions/action_types';
 import './index.less';
 
@@ -94,15 +93,7 @@ function Home(props: HomeProps) {
 
   useEffect(() => {
     initXsrf();
-
-    return () => {
-      const uuid = Cookies.get('uuid');
-      if (socket && uuid) {
-        socket.emit('close', uuid);
-        socket.close();
-      }
-    };
-  }, [initXsrf, socket]);
+  }, [initXsrf]);
 
   useEffect(() => {
     updateUnreadMsg();

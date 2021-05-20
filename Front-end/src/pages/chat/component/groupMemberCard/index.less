@@ -5,16 +5,38 @@
     width: 100%;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 8px;
+    &-content {
+      height: 100%;
+      width: auto;
+      display: flex;
+      align-items: center;
+    }
     &-avatar {
       width: 28px;
       height: 28px;
       margin-right: 12px;
     }
     &-name {
+      width: 140px;
       font-size: 14px;
       line-height: 20px;
       color: @N900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    &-label {
+      font-size: 12px;
+      line-height: 18px;
+      color: @N500;
+    }
+    &-delete {
+      font-size: 16px;
+      &:hover {
+        cursor: pointer;
+      }
     }
   }
 }

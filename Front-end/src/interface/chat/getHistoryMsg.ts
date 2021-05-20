@@ -11,6 +11,7 @@ export interface MsgInfo {
   time: string;
   type: 'online' | 'offline'; // 是否是离线信息
   sender_avatar: string | null; // 发送者头像
+  private_chat: 0 | 1; // 0 表示私聊, 1表示群聊
 }
 
 export interface GetHistoryMsgData {

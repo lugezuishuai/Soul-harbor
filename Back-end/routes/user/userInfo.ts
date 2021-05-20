@@ -913,7 +913,6 @@ router.get('/init', async function (req, res) {
 
     if (soulAvatar) {
       const oldIPAddress = matchUrls(soulAvatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-      console.log('oldAddress: ', oldIPAddress);
       const newIPAddress = getIPAddress(os.networkInterfaces());
 
       if (oldIPAddress !== newIPAddress) {

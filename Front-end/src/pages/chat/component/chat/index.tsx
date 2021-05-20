@@ -1,7 +1,7 @@
 import { FriendListState, SelectSessionState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Action } from '@/redux/actions';
-import { Form, Input, Button, message, Icon, Spin, Drawer } from 'antd';
+import { Form, Input, Button, message, Icon, Spin, Drawer, Modal } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Cookies from 'js-cookie';
 import dayjs from 'dayjs';
@@ -13,7 +13,7 @@ import defaultAvatar from '@/assets/image/default-avatar.png';
 import robotAvatar from '@/assets/image/robot.png';
 import { GetHistoryMsgReq, GetHistoryMsgRes, MsgInfo } from '@/interface/chat/getHistoryMsg';
 import { apiGet, apiPost } from '@/utils/request';
-import { GET_GROUP_MEMBERS, GET_HISTORY_MSG, READ_UNREAD_MSG, ROBOT_CHAT } from '@/constants/urls';
+import { EXIT_GROUP, GET_GROUP_MEMBERS, GET_HISTORY_MSG, READ_UNREAD_MSG, ROBOT_CHAT } from '@/constants/urls';
 import { ReadUnreadMsgReq } from '@/interface/chat/readUnreadMsg';
 import { useChat } from '../../state';
 import { debounce } from 'lodash';
@@ -23,10 +23,15 @@ import { MemberInfo } from '@/interface/chat/newGroupChat';
 import { GroupMemberCard } from '../groupMemberCard';
 import { addGroupMember } from '../openGroupChatModal/addMembers';
 import Cookie from 'js-cookie';
+import { ExitGroupReq } from '@/interface/chat/exitGroup';
+import { SELECT_SESSION } from '@/redux/actions/action_types';
 import './index.less';
+
+const { confirm } = Modal;
 
 interface ChatRoomProps extends FormComponentProps {
   dispatch(action: Action): void;
+  getGroupsList(): Promise<any>;
   socket: SocketState;
   userInfo: UserInfoState;
   selectSession: SelectSessionState;
@@ -37,7 +42,7 @@ interface FormValues {
   msg: string;
 }
 
-function ChatRoom({ selectSession, form, socket, userInfo, friendsList }: ChatRoomProps) {
+function ChatRoom({ selectSession, form, socket, userInfo, friendsList, dispatch, getGroupsList }: ChatRoomProps) {
   const { getFieldDecorator, resetFields, validateFields } = form;
   const { sessionMsg, setSessionMsg } = useChat();
   const [readMessage, setReadMessage] = useState<MsgInfo[]>([]); // 已读信息
@@ -73,9 +78,68 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList }: ChatRo
     setVisible(false);
   }
 
+  // 获取自己的权限
+  function getRole() {
+    if (!membersList) {
+      return;
+    }
+    const ownInfo = membersList.find((memberInfo) => Cookie.get('uuid') === memberInfo.member_id);
+    if (ownInfo) {
+      return ownInfo.member_role;
+    }
+  }
+
   // 退出群聊
+  async function exitGroup() {
+    try {
+      if (selectSession?.type === 'room') {
+        const reqData: ExitGroupReq = {
+          room_id: selectSession.sessionId,
+        };
+
+        await apiPost(EXIT_GROUP, reqData);
+        message.success('退出成功');
+
+        dispatch({
+          type: SELECT_SESSION,
+          payload: null,
+        });
+
+        // TODO: 拉取会话信息
+        getGroupsList(); // 拉取群聊信息
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   function handleExitGroup() {
-    console.log('退出群聊');
+    if (getRole() === 0) {
+      confirm({
+        title: '注意',
+        content: '群主不能退出群聊',
+        centered: true,
+        okText: '确认',
+        cancelText: '取消',
+      });
+    } else if (membersList.length < 4) {
+      confirm({
+        title: '注意',
+        content: '抱歉，当前群人数小于4人，不允许退出群聊',
+        centered: true,
+        okText: '确认',
+        cancelText: '取消',
+      });
+    } else {
+      confirm({
+        title: '注意',
+        content: '您确定要退出群聊吗？退出之后会删除群聊历史信息',
+        centered: true,
+        okText: '确认',
+        cancelText: '取消',
+        onOk: exitGroup,
+      });
+    }
   }
 
   // 发送聊天信息
@@ -114,15 +178,18 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList }: ChatRo
                   sendRobotMsg(sendMsgBody);
                 }
 
-                const msgBySelf: MsgInfo = {
-                  ...sendMsgBody,
-                  time: dayjs(nowTime * 1000).format('h:mm a'),
-                  type: 'online',
-                  sender_avatar: userInfo?.avatar || null,
-                };
+                if (selectSession.type === 'private') {
+                  const msgBySelf: MsgInfo = {
+                    ...sendMsgBody,
+                    time: dayjs(nowTime * 1000).format('h:mm a'),
+                    type: 'online',
+                    sender_avatar: userInfo?.avatar || null,
+                    private_chat: 0,
+                  };
 
-                const newReadMessage: MsgInfo[] = [...readMessage, msgBySelf];
-                setReadMessage(newReadMessage);
+                  const newReadMessage: MsgInfo[] = [...readMessage, msgBySelf];
+                  setReadMessage(newReadMessage);
+                }
               }
             } catch (e) {
               console.error(e);
@@ -281,7 +348,16 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList }: ChatRo
                     <div className="chat-room-drawer-content-member-add-text">添加成员</div>
                   </div>
                   {membersList.length > 0 &&
-                    membersList.map((memberInfo, index) => <GroupMemberCard key={index} memberInfo={memberInfo} />)}
+                    membersList.map((memberInfo, index) => (
+                      <GroupMemberCard
+                        key={index}
+                        memberInfo={memberInfo}
+                        role={getRole()}
+                        getGroupMembers={getGroupMembers}
+                        room_id={selectSession.sessionId}
+                        membersList={membersList}
+                      />
+                    ))}
                 </div>
               </div>
               <Button type="danger" className="chat-room-drawer-btn" onClick={handleExitGroup}>
