@@ -185,10 +185,9 @@ module.exports = {
     ]
   },
   plugins: [
-    // 这可以帮助我们在代码中安全地使用环境变量
+    // 如果需要web环境也能访问，必须用这个插件注入
     new webpack.DefinePlugin({
-      'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-      'SERVICE_URL': JSON.stringify(process.env.SERVICE_URL),
+      'process.env': JSON.stringify(process.env),
     }),
     new HtmlWebpackPlugin({
       template: './public/index.html',
