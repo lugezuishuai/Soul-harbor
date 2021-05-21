@@ -85,22 +85,22 @@ router.get('/search', async (req, res) => {
   try {
     let { search }: any = req.query;
     search = search.replace(/'|‘/g, '');
-    const searchByUsernameOrEmail = `select * from soulUserInfo where binary soulUsername like '%${search}%' or binary soulEmail like '%${search}%'`;
+    const searchByUsernameOrEmail = `select * from soul_user_info where binary soul_username like '%${search}%' or binary soul_email like '%${search}%'`;
     const result: UserInfo[] = await query(searchByUsernameOrEmail);
 
     const lastResult = result.length
       ? await Promise.all(
           result.map(async (user) => {
-            const { soulUsername, soulEmail, soulUuid, soulSignature, soulAvatar, soulBirth } = user;
-            const userId = soulUuid.slice(0, 8);
+            const { soul_username, soul_email, soul_uuid, soul_signature, soul_avatar, soul_birth } = user;
+            const userId = soul_uuid.slice(0, 8);
 
             const userInfo: ResUserInfo = {
-              username: soulUsername,
-              uid: soulUuid,
-              email: soulEmail,
-              signature: soulSignature,
-              birth: soulBirth,
-              avatar: soulAvatar,
+              username: soul_username,
+              uid: soul_uuid,
+              email: soul_email,
+              signature: soul_signature,
+              birth: soul_birth,
+              avatar: soul_avatar,
             };
 
             const data: ChatSearchRes = {
@@ -188,9 +188,12 @@ router.get('/unread', async (req, res) => {
 router.get('/getHisMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    const { sessionId } = req.query; // roomId || uuid
+    const { sessionId, type } = req.query; // roomId || uuid
 
-    const searchMsg = `select * from tb_private_chat where (sender_id = '${uuid}' or sender_id = '${sessionId}') and (receiver_id = '${uuid}' or receiver_id = '${sessionId}') order by message_id asc`; // 按照message_id升序来排列
+    const searchMsg =
+      type === 'private'
+        ? `select * from tb_private_chat where (sender_id = '${uuid}' or sender_id = '${sessionId}') and (receiver_id = '${uuid}' or receiver_id = '${sessionId}') order by message_id asc`
+        : `select * from tb_room_chat where receiver_id = '${sessionId}' order by message_id asc`; // 按照message_id升序来排列
 
     const result: MsgInfo[] = await query(searchMsg);
 
@@ -261,8 +264,8 @@ router.post('/addFriend', async (req, res) => {
       });
     }
 
-    const getUserInfo = `select * from soulUserInfo where soulUuid = '${friendId}'`;
-    const getOwnInfo = `select * from soulUserInfo where soulUuid = '${uuid}'`;
+    const getUserInfo = `select * from soul_user_info where soul_uuid = '${friendId}'`;
+    const getOwnInfo = `select * from soul_user_info where soul_uuid = '${uuid}'`;
     const userInfo: UserInfo[] = await query(getUserInfo);
     const ownInfo: UserInfo[] = await query(getOwnInfo);
     if (userInfo.length !== 1 || ownInfo.length !== 1) {
@@ -272,8 +275,8 @@ router.post('/addFriend', async (req, res) => {
         msg: 'invalid uid',
       });
     } else {
-      const { soulAvatar, soulUsername } = userInfo[0];
-      const { soulAvatar: ownAvatar, soulUsername: ownUsername } = ownInfo[0];
+      const { soul_avatar, soul_username } = userInfo[0];
+      const { soul_avatar: ownAvatar, soul_username: ownUsername } = ownInfo[0];
       const searchOwnRelation = `select * from tb_friend where user_id = '${uuid}' and friend_id = '${friendId}'`;
       const searchOtherRelation = `select * from tb_friend where user_id = '${friendId}' and friend_id = '${uuid}'`;
       const ownRelation = await query(searchOwnRelation);
@@ -287,9 +290,9 @@ router.post('/addFriend', async (req, res) => {
         });
       }
 
-      const addFriend = soulAvatar
-        ? `insert into tb_friend (user_id, friend_id, add_time, friend_username, friend_avatar) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soulUsername}', '${soulAvatar}')`
-        : `insert into tb_friend (user_id, friend_id, add_time, friend_username) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soulUsername}')`;
+      const addFriend = soul_avatar
+        ? `insert into tb_friend (user_id, friend_id, add_time, friend_username, friend_avatar) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soul_username}', '${soul_avatar}')`
+        : `insert into tb_friend (user_id, friend_id, add_time, friend_username) values ('${uuid}', '${friendId}', ${dayjs().unix()}, '${soul_username}')`;
 
       const addFriendByOther = ownAvatar
         ? `insert into tb_friend (user_id, friend_id, add_time, friend_username, friend_avatar) values ('${friendId}', '${uuid}', ${dayjs().unix()}, '${ownUsername}', '${ownAvatar}')`
@@ -342,7 +345,17 @@ router.get('/getFriendsList', async (req, res) => {
 router.get('/getSessionsList', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    const sessionsList: SessionInfo[] = await batchGetSessions(uuid);
+    const result: SessionInfo[][] = await batchGetSessions(uuid);
+
+    if (!result || result.length !== 2) {
+      return res.status(500).json({
+        code: 1,
+        data: {},
+        msg: 'server error',
+      });
+    }
+
+    const sessionsList = [...result[0], ...result[1]];
 
     return res.status(200).json({
       code: 0,
@@ -351,6 +364,58 @@ router.get('/getSessionsList', async (req, res) => {
       },
       msg: 'success',
     });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 拉取某个会话信息
+router.get('/getSessionInfo', async (req, res) => {
+  try {
+    const { uuid } = req.cookies;
+    const { sessionId, type } = req.query;
+    if (type === 'private') {
+      const sessionInfo: SessionInfo | null = JSON.parse(await redisGet(`session_${uuid}_${sessionId}`));
+
+      if (!sessionInfo) {
+        return res.status(200).json({
+          code: 0,
+          data: {},
+          msg: 'success',
+        });
+      }
+
+      return res.status(200).json({
+        code: 0,
+        data: {
+          sessionInfo,
+        },
+        msg: 'success',
+      });
+    } else {
+      const sessionInfo: SessionInfo | null = JSON.parse(await redisGet(`room_session_${sessionId}`));
+
+      if (!sessionInfo) {
+        return res.status(200).json({
+          code: 0,
+          data: {},
+          msg: 'success',
+        });
+      }
+
+      return res.status(200).json({
+        code: 0,
+        data: {
+          sessionInfo,
+        },
+        msg: 'success',
+      });
+    }
   } catch (e) {
     console.error('Error: ', e);
     return res.status(500).json({
@@ -398,8 +463,8 @@ router.post('/robotChat', async (req, res) => {
     };
 
     const insertSendMessage = sendMessage.sender_avatar
-      ? `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}')`
-      : `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}')`;
+      ? `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}', 0)`
+      : `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', 0)`;
 
     await query(insertSendMessage);
 
@@ -429,7 +494,7 @@ router.post('/robotChat', async (req, res) => {
 
     redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
 
-    const insertReplyMessage = `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${replyMessage.sender_id}', '${replyMessage.receiver_id}', ${replyMessage.message_id}, '${replyMessage.type}', '${replyMessage.time}', '${replyMessage.message}')`;
+    const insertReplyMessage = `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, private_chat) values ('${replyMessage.sender_id}', '${replyMessage.receiver_id}', ${replyMessage.message_id}, '${replyMessage.type}', '${replyMessage.time}', '${replyMessage.message}', 0)`;
     await query(insertReplyMessage);
 
     return res.status(200).json({

@@ -19,9 +19,9 @@ passport.use(
       session: false,
     },
     (req, username, password, done) => {
-      const { email, verifyCode } = req.body;
+      const { email, verify_code } = req.body;
 
-      const searchUsernameAndEmail = `select * from soulUserInfo where binary soulUsername = '${username}' or binary soulEmail = '${email}'`;
+      const searchUsernameAndEmail = `select * from soul_user_info where binary soul_username = '${username}' or binary soul_email = '${email}'`;
 
       query(searchUsernameAndEmail)
         .then((result) => {
@@ -32,27 +32,27 @@ passport.use(
             });
           } else {
             // 用户名和邮箱尚未被注册过，查找该邮箱的验证码
-            const searchVerifyCode = `select * from registerVerifyCode where email = '${email}'`;
+            const searchVerifyCode = `select * from register_verify_code where email = '${email}'`;
             query(searchVerifyCode).then((result) => {
               if (!result || result.length === 0) {
                 // 该邮箱尚未发送过验证码
                 return done(null, false, {
-                  message: 'verifyCode do not match',
+                  message: 'verify_code do not match',
                 });
               } else {
                 // 已经发送过验证码
-                bcrypt.compare(verifyCode, result[0].verifyCode).then((response) => {
+                bcrypt.compare(verify_code, result[0].verify_code).then((response) => {
                   if (!response) {
                     return done(null, false, {
-                      message: 'verifyCode do not match',
+                      message: 'verify_code do not match',
                     });
                   } else {
-                    if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
+                    if (Number(result[0].expire_time) >= dayjs(new Date()).valueOf()) {
                       // 验证码尚未过期，生成密码
                       const uuid = uuidv4(); // 生成随机的uuid
                       bcrypt.hash(password, BCRYPT_SALT_ROUNDS).then((hashedPassword) => {
-                        const createUser = `insert into soulUserInfo (soulUsername, soulPassword, soulEmail, soulUuid) values ('${username}', '${hashedPassword}', '${email}', '${uuid}')`;
-                        const searchNewUser = `select * from soulUserInfo where binary soulUsername = '${username}' and soulPassword = '${hashedPassword}'`;
+                        const createUser = `insert into soul_user_info (soul_username, soul_password, soul_email, soul_uuid) values ('${username}', '${hashedPassword}', '${email}', '${uuid}')`;
+                        const searchNewUser = `select * from soul_user_info where binary soul_username = '${username}' and soul_password = '${hashedPassword}'`;
                         query(createUser)
                           .then(() => {
                             return query(searchNewUser);
@@ -64,7 +64,7 @@ passport.use(
                     } else {
                       // 验证码已过期
                       return done(null, false, {
-                        message: 'verifyCode already expired',
+                        message: 'verify_code already expired',
                       });
                     }
                   }
@@ -91,7 +91,7 @@ passport.use(
       session: false,
     },
     (username, password, done) => {
-      const searchUsername = `select * from soulUserInfo where binary soulUsername = '${username}'`;
+      const searchUsername = `select * from soul_user_info where binary soul_username = '${username}'`;
       query(searchUsername)
         .then((user) => {
           if (!user || user.length === 0) {
@@ -99,7 +99,7 @@ passport.use(
               message: 'bad username',
             });
           } else {
-            bcrypt.compare(password, user[0].soulPassword).then((response) => {
+            bcrypt.compare(password, user[0].soul_password).then((response) => {
               if (!response) {
                 return done(null, false, {
                   message: 'password do not match',
@@ -124,11 +124,11 @@ passport.use(
     {
       // @ts-ignore
       usernameField: 'email',
-      passwordField: 'verifyCode',
+      passwordField: 'verify_code',
       session: false,
     },
     (username, password, done) => {
-      const searchEmail = `select * from soulUserInfo where binary soulEmail = '${username}'`;
+      const searchEmail = `select * from soul_user_info where binary soul_email = '${username}'`;
       query(searchEmail)
         .then((user) => {
           if (!user || user.length === 0) {
@@ -136,28 +136,28 @@ passport.use(
               message: 'bad email',
             });
           } else {
-            const searchVerifyCode = `select * from loginVerifyCode where email = '${username}'`;
+            const searchVerifyCode = `select * from login_verify_code where email = '${username}'`;
             query(searchVerifyCode).then((result) => {
               if (!result || result.length === 0) {
                 // 该邮箱尚未发送过验证码
                 return done(null, false, {
-                  message: 'verifyCode do not match',
+                  message: 'verify_code do not match',
                 });
               } else {
                 // 已经发送过验证码
-                bcrypt.compare(password, result[0].verifyCode).then((response) => {
+                bcrypt.compare(password, result[0].verify_code).then((response) => {
                   if (!response) {
                     return done(null, false, {
-                      message: 'verifyCode do not match',
+                      message: 'verify_code do not match',
                     });
                   } else {
-                    if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
+                    if (Number(result[0].expire_time) >= dayjs(new Date()).valueOf()) {
                       // 验证码尚未过期
                       return done(null, user[0]);
                     } else {
                       // 验证码已过期
                       return done(null, false, {
-                        message: 'verifyCode already expired',
+                        message: 'verify_code already expired',
                       });
                     }
                   }

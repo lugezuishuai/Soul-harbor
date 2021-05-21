@@ -1,5 +1,5 @@
 /node_modules
 /dist
-/public
+/public/user/avatar
 .DS_Store
 .env

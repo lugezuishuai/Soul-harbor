@@ -2,10 +2,10 @@ import React, { useCallback, useEffect } from 'react';
 import { ConfigProvider } from 'antd';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
-import Employee from '@/components/employee';
-import UploadFile from '@/components/setting';
-import Content from '@/components/home/content';
-import UserInfo from '@/components/user-info';
+import Employee from '@/pages/employee';
+import UploadFile from '@/pages/upload';
+import Content from '@/pages/home/content';
+import UserInfo from '@/pages/user-info';
 import Header from './header';
 import Footer from './footer';
 import ResetPw from '@/pages/updatePassword';
@@ -25,6 +25,10 @@ import { GetUnreadMsgRes } from '@/interface/chat/getUnreadMsg';
 import { UNREAD_MESSAGE_COUNT } from '@/redux/actions/action_types';
 import './index.less';
 
+interface WrapChatInfoPageProps {
+  updateUnreadMsg(): Promise<any>;
+}
+
 function WrapUserInfo() {
   return (
     <WrapWithLogin noLoginPlaceholder={<NoPermission className="wrap-exception" />}>
@@ -33,10 +37,10 @@ function WrapUserInfo() {
   );
 }
 
-function WrapChatInfoPage() {
+function WrapChatInfoPage({ updateUnreadMsg }: WrapChatInfoPageProps) {
   return (
     <WrapWithLogin noLoginPlaceholder={<NoPermission className="wrap-exception" />}>
-      <WrapChatPage />
+      <WrapChatPage updateUnreadMsg={updateUnreadMsg} />
     </WrapWithLogin>
   );
 }
@@ -75,12 +79,10 @@ function Home(props: HomeProps) {
           });
         }
 
-        if (count > 0) {
-          dispatch({
-            type: UNREAD_MESSAGE_COUNT,
-            payload: count,
-          });
-        }
+        dispatch({
+          type: UNREAD_MESSAGE_COUNT,
+          payload: count,
+        });
         dispatch({
           type: GET_UNREAD_MSG,
           payload: unreadPrivateMsg,
@@ -93,7 +95,14 @@ function Home(props: HomeProps) {
 
   useEffect(() => {
     initXsrf();
-  }, [initXsrf]);
+
+    return () => {
+      if (socket) {
+        // @ts-ignore
+        socket.removeAllListeners(); // 移除所有监听
+      }
+    };
+  }, [initXsrf, socket]);
 
   useEffect(() => {
     updateUnreadMsg();
@@ -118,7 +127,11 @@ function Home(props: HomeProps) {
                   <WrapScrollToTop>
                     <Switch>
                       <Route path="/home" exact component={Content} />
-                      <Route path="/chat" exact component={WrapChatInfoPage} />
+                      <Route
+                        path="/chat"
+                        exact
+                        component={() => <WrapChatInfoPage updateUnreadMsg={updateUnreadMsg} />}
+                      />
                       <Route path="/news" exact component={UploadFile} />
                       <Route path="/blog" exact component={Employee} />
                       <Route path="/user/:id" exact component={WrapUserInfo} />

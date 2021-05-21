@@ -28,3 +28,4 @@ export const ACTIVE_SESSION = 'ACTIVE_SESSION'; // 有未读信息的session
 export const FRIENDS_LIST_FOLD = 'FRIENDS_LIST_FOLD'; // 好友列表是否折叠
 export const GROUPS_LIST_FOLD = 'GROUPS_LIST_FOLD'; // 群组列表是否折叠
 export const GET_GROUPS_LIST_ACTION = 'GET_GROUPS_LIST_ACTION'; // 查看群列表
+export const UPDATE_SESSION_INFO = 'UPDATE_SESSION_INFO'; // 更新会话信息

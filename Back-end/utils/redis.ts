@@ -1,6 +1,7 @@
 import redis from 'redis';
 import { redisConfig } from '../config/db';
 import { SessionInfo } from '../type/type';
+import query from './query';
 const client = redis.createClient(redisConfig);
 
 export function redisGet(key: string): Promise<any> {
@@ -23,6 +24,7 @@ export function redisDel(key: string) {
 }
 
 export function batchDelSockets() {
+  // 只删除登录信息
   client.keys('socket_*', function (err, keys) {
     if (keys.length) {
       client.del(keys);
@@ -30,9 +32,13 @@ export function batchDelSockets() {
   });
 }
 
-export function batchGetSessions(uid: string, key = `session_${uid}_*`): Promise<any> {
-  return new Promise((resolve, reject) => {
-    client.keys(key, async function (err, keys) {
+export function batchGetSessions(
+  uid: string,
+  privateKey = `session_${uid}_*`,
+  roomKey = 'room_session_*'
+): Promise<any> {
+  const privatePromise = new Promise((resolve, reject) => {
+    client.keys(privateKey, async function (err, keys) {
       if (err) {
         reject(err);
       }
@@ -54,19 +60,63 @@ export function batchGetSessions(uid: string, key = `session_${uid}_*`): Promise
       }
     });
   });
+
+  const roomPromise = new Promise((resolve, reject) => {
+    client.keys(roomKey, async function (err, keys) {
+      if (err) {
+        reject(err);
+      }
+
+      try {
+        const result: SessionInfo[] = [];
+
+        if (keys.length) {
+          for (const key of keys) {
+            const value = await redisGet(key);
+            const sessionInfo: SessionInfo = JSON.parse(value);
+            const { sessionId } = sessionInfo;
+
+            const searchMember = `select * from room_member where room_id = '${sessionId}' and member_id = '${uid}'`;
+            const searchResult = await query(searchMember);
+
+            if (!searchResult || searchResult.length !== 1) {
+              // 不是该群成员
+              continue;
+            }
+
+            result.push(sessionInfo);
+          }
+        }
+
+        resolve(result);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+
+  return Promise.all([privatePromise, roomPromise]);
 }
 
 export async function batchSetSessionsAvatar(uid: string, avatar: string) {
   try {
-    const sessionsList: SessionInfo[] = await batchGetSessions(uid, `session_*_${uid}`);
-    for (const session of sessionsList) {
-      const newSession: SessionInfo = {
-        ...session,
-        avatar,
-      };
+    const result: SessionInfo[][] = await batchGetSessions(uid, `session_*_${uid}`);
 
-      if (session.owner_id) {
-        redisSet(`session_${session.owner_id}_${uid}`, JSON.stringify(newSession));
+    if (!result || result.length !== 2) {
+      return;
+    }
+
+    const sessionsList = [...result[0], ...result[1]];
+    for (const session of sessionsList) {
+      if (session.type === 'private') {
+        const newSession: SessionInfo = {
+          ...session,
+          avatar,
+        };
+
+        if (session.owner_id) {
+          redisSet(`session_${session.owner_id}_${uid}`, JSON.stringify(newSession));
+        }
       }
     }
   } catch (e) {

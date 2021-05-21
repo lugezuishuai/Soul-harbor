@@ -2,18 +2,12 @@ import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import os from 'os';
 import { getIPAddress } from '../../utils/getIPAddress';
-import { formatMessage, getCurrentUser, getRoomUsers, userJoin, userLeave } from './helpers';
 import { redisDel, redisGet, redisSet } from '../../utils/redis';
 import dayjs from 'dayjs';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
 import { UserInfo, SessionInfo, MsgInfo, MessageBody, RoomInfo } from '../../type/type';
 import cookie from 'cookie';
-
-interface JoinRoom {
-  username: string;
-  room: string;
-}
 
 export function createSocketIo(server: HttpServer) {
   const corsOrigin = `http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:5000`;
@@ -38,8 +32,8 @@ export function createSocketIo(server: HttpServer) {
     socket.on('private message', async (messageBody: MessageBody) => {
       try {
         const { sender_id, sender_avatar, receiver_id, message, message_id, time } = messageBody;
-        const searchUserInfoReceive = `select * from soulUserInfo where soulUuid = '${receiver_id}'`;
-        const searchUserInfoSend = `select * from soulUserInfo where soulUuid = '${sender_id}'`;
+        const searchUserInfoReceive = `select * from soul_user_info where soul_uuid = '${receiver_id}'`;
+        const searchUserInfoSend = `select * from soul_user_info where soul_uuid = '${sender_id}'`;
 
         // 判断会话是否存在
         let sessionInfo_send: SessionInfo | null = JSON.parse(await redisGet(`session_${sender_id}_${receiver_id}`));
@@ -56,7 +50,7 @@ export function createSocketIo(server: HttpServer) {
           if (!userInfo || userInfo.length !== 1) {
             return;
           }
-          const { soulUsername, soulAvatar } = userInfo[0];
+          const { soul_username, soul_avatar } = userInfo[0];
 
           // 自己是发送信息的人
           sessionInfo_send = {
@@ -65,8 +59,8 @@ export function createSocketIo(server: HttpServer) {
             owner_id: sender_id,
             latestTime: time,
             latestMessage: message,
-            name: soulUsername,
-            avatar: soulAvatar,
+            name: soul_username,
+            avatar: soul_avatar,
           };
         } else if (sessionInfo_receive) {
           const userInfo: UserInfo[] = await query(searchUserInfoSend);
@@ -74,7 +68,7 @@ export function createSocketIo(server: HttpServer) {
           if (!userInfo || userInfo.length !== 1) {
             return;
           }
-          const { soulUsername, soulAvatar } = userInfo[0];
+          const { soul_username, soul_avatar } = userInfo[0];
 
           // 自己是接收信息的人
           sessionInfo_receive = {
@@ -83,8 +77,8 @@ export function createSocketIo(server: HttpServer) {
             owner_id: receiver_id,
             latestTime: time,
             latestMessage: message,
-            name: soulUsername,
-            avatar: soulAvatar,
+            name: soul_username,
+            avatar: soul_avatar,
           };
         } else {
           const userInfoReceive: UserInfo[] = await query(searchUserInfoReceive);
@@ -101,8 +95,8 @@ export function createSocketIo(server: HttpServer) {
             owner_id: sender_id,
             latestTime: time,
             latestMessage: message,
-            name: userInfoReceive[0].soulUsername,
-            avatar: userInfoReceive[0].soulAvatar,
+            name: userInfoReceive[0].soul_username,
+            avatar: userInfoReceive[0].soul_avatar,
           };
 
           // 自己是接收信息的人
@@ -112,8 +106,8 @@ export function createSocketIo(server: HttpServer) {
             owner_id: receiver_id,
             latestTime: time,
             latestMessage: message,
-            name: userInfoSend[0].soulUsername,
-            avatar: userInfoSend[0].soulAvatar,
+            name: userInfoSend[0].soul_username,
+            avatar: userInfoSend[0].soul_avatar,
           };
         }
 
@@ -138,9 +132,11 @@ export function createSocketIo(server: HttpServer) {
         } else {
           io.of('/chat').to(socketId).emit('receive message', sendMessage); // 发送给对方
         }
+
+        socket.emit('send message success', sendMessage); // 发送给自己
         const insertMessage = sendMessage.sender_avatar
-          ? `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}')`
-          : `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}')`;
+          ? `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}', 0)`
+          : `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', 0)`;
         await query(insertMessage);
       } catch (e) {
         console.error(e);
@@ -200,8 +196,8 @@ export function createSocketIo(server: HttpServer) {
         io.of('/chat').to(receiver_id).emit('receive message', sendMessage); // 发送给该房间的所有在线用户
 
         const insertMessage = sendMessage.sender_avatar
-          ? `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}')`
-          : `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}')`;
+          ? `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}', 1)`
+          : `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', 1)`;
         await query(insertMessage);
       } catch (e) {
         console.error(e);

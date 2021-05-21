@@ -11,9 +11,11 @@ import {
   FRIENDS_LIST_FOLD,
   GROUPS_LIST_FOLD,
   GET_GROUPS_LIST_ACTION,
+  UPDATE_SESSION_INFO,
 } from '../actions/action_types';
 import { initialChatState, ChatState } from './state';
 import { Action } from '../actions';
+import { SessionInfo } from '@/interface/chat/getSessionsList';
 
 export default function (state = initialChatState, action: Action): ChatState {
   switch (action.type) {
@@ -60,7 +62,7 @@ export default function (state = initialChatState, action: Action): ChatState {
         }
       } else {
         if (newActiveSession.length > 0) {
-          const index = newActiveSession.findIndex(action.payload.value);
+          const index = newActiveSession.findIndex((sessionId) => sessionId === action.payload.value);
           if (index > -1) {
             newActiveSession.splice(index, 1);
           }
@@ -69,6 +71,28 @@ export default function (state = initialChatState, action: Action): ChatState {
       return {
         ...state,
         activeSession: newActiveSession,
+      };
+    }
+    case UPDATE_SESSION_INFO: {
+      let newSessionsList: SessionInfo[];
+      if (state.sessionsList) {
+        newSessionsList = [...state.sessionsList];
+
+        for (let i = 0; i < newSessionsList.length; i++) {
+          if (newSessionsList[i].sessionId === action.payload.sessionId) {
+            newSessionsList[i] = action.payload;
+            break;
+          }
+        }
+
+        newSessionsList = newSessionsList.sort((a, b) => b.latestTime - a.latestTime); // 按照latestTime降序排列
+      } else {
+        newSessionsList = [action.payload];
+      }
+
+      return {
+        ...state,
+        sessionsList: newSessionsList,
       };
     }
     case UNREAD_MESSAGE_COUNT:

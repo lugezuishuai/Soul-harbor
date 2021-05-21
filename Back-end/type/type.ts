@@ -1,13 +1,13 @@
 // 公共的类型维护在此处
 export interface UserInfo {
-  soulUsername: string;
-  soulPassword: string;
-  soulEmail: string;
-  soulUuid: string;
-  soulCreateTime: string;
-  soulSignature: string | null;
-  soulAvatar: string | null;
-  soulBirth: string | null;
+  soul_username: string;
+  soul_password: string;
+  soul_email: string;
+  soul_uuid: string;
+  soul_create_time: string;
+  soul_signature: string | null;
+  soul_avatar: string | null;
+  soul_birth: string | null;
 }
 
 export interface ResUserInfo {

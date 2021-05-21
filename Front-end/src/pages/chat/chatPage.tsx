@@ -18,7 +18,7 @@ import { UserCard, UserCardSkeleton } from './component/userCard';
 import { WrapChatRoom } from './component/chat';
 import { FriendInfo, GetFriendsListRes } from '@/interface/chat/getFriendsList';
 import { apiGet } from '@/utils/request';
-import { GET_FRIENDS_LIST, GET_GROUPS_LIST, GET_SESSIONS_LIST } from '@/constants/urls';
+import { GET_FRIENDS_LIST, GET_GROUPS_LIST, GET_SESSIONS_LIST, GET_SESSION_INFO } from '@/constants/urls';
 import {
   ACTIVE_SESSION,
   FRIENDS_LIST_FOLD,
@@ -26,6 +26,7 @@ import {
   GET_GROUPS_LIST_ACTION,
   GET_SESSIONS_LIST_ACTION,
   GROUPS_LIST_FOLD,
+  UPDATE_SESSION_INFO,
 } from '@/redux/actions/action_types';
 import { GetSessionsListRes } from '@/interface/chat/getSessionsList';
 import { MsgInfo } from '@/interface/chat/getHistoryMsg';
@@ -37,12 +38,14 @@ import { openGroupChatModal } from './component/openGroupChatModal';
 import ArrowDown from '@/assets/icon/arrow_down.svg';
 import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
 import { RoomCard, RoomCardSkeleton } from './component/roomCard';
+import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
 import './index.less';
 
 const { confirm } = Modal;
 
 interface ChatPageProps {
   dispatch(action: Action): void;
+  updateUnreadMsg(): Promise<any>;
   userInfo: UserInfoState;
   activeMenu: ChatActiveMenuState;
   isSearch: boolean;
@@ -77,6 +80,7 @@ function ChatPage(props: ChatPageProps) {
     unreadChatMsgCount,
     friendsListFold,
     groupsListFold,
+    updateUnreadMsg,
   } = props;
   const isChatMenu = activeMenu === 'chat' && !isSearch;
   const isFriendMenu = activeMenu === 'friend' && !isSearch;
@@ -92,8 +96,6 @@ function ChatPage(props: ChatPageProps) {
     setSessionsLoading,
     setSessionMsg,
   } = useChat();
-
-  console.log('activeSession: ', activeSession);
 
   // 发起群聊
   async function launchGroupChat() {
@@ -246,7 +248,7 @@ function ChatPage(props: ChatPageProps) {
             <div className="chat-page__left-btn-text">发起群聊</div>
           </Button>
           {sessionsList.map((sessionInfo, index) => (
-            <SessionCard key={index} sessionInfo={sessionInfo} dispatch={dispatch} />
+            <SessionCard key={index} sessionInfo={sessionInfo} activeSession={activeSession} dispatch={dispatch} />
           ))}
         </>
       );
@@ -258,11 +260,11 @@ function ChatPage(props: ChatPageProps) {
     try {
       setSessionsLoading(true);
       const result: GetSessionsListRes = await apiGet(GET_SESSIONS_LIST);
-      console.log('sessions: ', result.data.sessionsList);
       if (result.data.sessionsList) {
+        const newSessionsList = result.data.sessionsList.sort((a, b) => b.latestTime - a.latestTime); // 按照latestTime降序排列
         dispatch({
           type: GET_SESSIONS_LIST_ACTION,
-          payload: result.data.sessionsList,
+          payload: newSessionsList,
         });
       }
       setSessionsLoading(false);
@@ -277,7 +279,6 @@ function ChatPage(props: ChatPageProps) {
     try {
       setFriendsLoading(true);
       const result: GetFriendsListRes = await apiGet(GET_FRIENDS_LIST);
-      console.log('friends: ', result.data.friendsList);
       if (result.data.friendsList) {
         dispatch({
           type: GET_FRIENDS_LIST_ACTION,
@@ -296,7 +297,6 @@ function ChatPage(props: ChatPageProps) {
     try {
       setGroupsLoading(true);
       const result: GetGroupsListRes = await apiGet(GET_GROUPS_LIST);
-      console.log('groups: ', result.data.rooms);
       if (result.data.rooms) {
         dispatch({
           type: GET_GROUPS_LIST_ACTION,
@@ -310,18 +310,42 @@ function ChatPage(props: ChatPageProps) {
     }
   }, [dispatch]);
 
+  // 更新会话信息
+  const updateSessionInfo = useCallback(
+    async (sessionId: string, type: 'private' | 'room') => {
+      const reqData: GetSessionInfoReq = {
+        sessionId: sessionId,
+        type: type,
+      };
+
+      const {
+        data: { sessionInfo },
+      }: GetSessionInfoRes = await apiGet(GET_SESSION_INFO, reqData);
+
+      if (sessionInfo) {
+        dispatch({
+          type: UPDATE_SESSION_INFO,
+          payload: sessionInfo,
+        });
+      }
+    },
+    [dispatch]
+  );
+
   // 监听socket
   const listenSocket = useCallback(() => {
     if (!socket) {
       return;
     }
 
+    // @ts-ignore
+    socket.removeAllListeners(); //一定要先移除原来的事件，否则会有重复的监听器
     socket.on('receive message', (msg: MsgInfo) => {
       const { sender_id, receiver_id, private_chat } = msg;
-      console.log('receiver_id: ', receiver_id);
 
       if (private_chat === 0) {
         // 私聊
+        updateSessionInfo(sender_id, 'private');
         if (sender_id === selectSession?.sessionId) {
           // 如果在会话之中
           setSessionMsg(msg);
@@ -337,6 +361,7 @@ function ChatPage(props: ChatPageProps) {
         }
       } else {
         // 群聊
+        updateSessionInfo(receiver_id, 'room');
         if (receiver_id === selectSession?.sessionId) {
           // 如果在会话之中
           setSessionMsg(msg);
@@ -352,7 +377,13 @@ function ChatPage(props: ChatPageProps) {
         }
       }
     });
-  }, [socket, selectSession, dispatch]);
+
+    socket.on('send message success', () => {
+      if (selectSession) {
+        updateSessionInfo(selectSession.sessionId, selectSession.type);
+      }
+    });
+  }, [socket, selectSession, dispatch, updateSessionInfo]);
 
   // 加入房间
   const joinRoom = useCallback(() => {
@@ -399,6 +430,8 @@ function ChatPage(props: ChatPageProps) {
         socket={socket}
         friendsList={friendsList}
         getGroupsList={getGroupsList}
+        getSessionsList={getSessionsList}
+        updateUnreadMsg={updateUnreadMsg}
       />
     </div>
   );

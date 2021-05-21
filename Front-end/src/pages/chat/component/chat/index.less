@@ -4,7 +4,7 @@
 :global {
   .chat-room {
     background: @N100;
-    flex: 1;
+    width: calc(100% - 380px);
     height: 100%;
     min-width: 1000px;
     overflow-x: auto;
@@ -36,9 +36,10 @@
       }
     }
     &-container {
-      height: calc(100% - @chatHeaderHeight);
       position: relative;
+      height: calc(100% - @chatHeaderHeight);
       width: 100%;
+      overflow: hidden;
     }
     &-drawer {
       position: absolute;

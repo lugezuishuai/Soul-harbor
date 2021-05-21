@@ -1,6 +1,7 @@
 @import '~@/variable.less';
 :global {
   .chat-session-card {
+    position: relative;
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -12,7 +13,19 @@
     &:hover {
       cursor: pointer;
     }
+    &__active {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      z-index: 2;
+      background-color: red;
+      border-radius: 50%;
+      top: 16px;
+      left: 42px;
+    }
     &-avatar {
+      position: relative;
+      z-index: 1;
       user-select: none;
       pointer-events: none;
       width: 36px;

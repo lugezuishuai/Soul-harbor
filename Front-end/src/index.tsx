@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import 'lib-flexible';
 
-import App from '@/components/App';
+import App from '@/pages/App';
 import store from './redux/store';
 
 ReactDOM.render(

@@ -1,6 +1,7 @@
 // getHistoryMsg
 export interface GetHistoryMsgReq {
   sessionId: string;
+  type: 'private' | 'room';
 }
 
 export interface MsgInfo {

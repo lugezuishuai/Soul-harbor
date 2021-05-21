@@ -3,6 +3,7 @@ import { Skeleton } from '@/components/skeleton';
 import classnames from 'classnames';
 import { Avatar } from 'antd';
 import defaultAvatar from '@/assets/image/default-avatar.png';
+import defaultGroup from '@/assets/image/default-group.png';
 import { SessionInfo } from '@/interface/chat/getSessionsList';
 import { Action } from '@/redux/actions';
 import { SelectSession } from '@/redux/reducers/state';
@@ -16,11 +17,13 @@ const { Block, Avatar: AvatarSkeleton } = Skeleton;
 
 interface SessionCardProps {
   sessionInfo: SessionInfo;
+  activeSession: string[];
   dispatch(action: Action): void;
 }
 
-export function SessionCard({ sessionInfo, dispatch }: SessionCardProps) {
+export function SessionCard({ sessionInfo, activeSession, dispatch }: SessionCardProps) {
   const { sessionId, name, avatar, latestTime, latestMessage, type } = sessionInfo;
+  const isActiveSession = activeSession.includes(sessionId);
 
   function handleClick() {
     const selectSession: SelectSession = {
@@ -45,9 +48,18 @@ export function SessionCard({ sessionInfo, dispatch }: SessionCardProps) {
     });
   }
 
+  function getAvatar() {
+    if (type === 'private') {
+      return sessionId !== '0' ? avatar || defaultAvatar : robotAvatar;
+    } else {
+      return avatar || defaultGroup;
+    }
+  }
+
   return (
     <div className="chat-session-card" onClick={handleClick}>
-      <Avatar className="chat-session-card-avatar" src={sessionId !== '0' ? avatar || defaultAvatar : robotAvatar} />
+      {isActiveSession && <div className="chat-session-card__active" />}
+      <Avatar className="chat-session-card-avatar" src={getAvatar()} />
       <div className="chat-session-card-info">
         <div className="chat-session-card-info__top">
           <div className="chat-session-card-info-name">{name}</div>

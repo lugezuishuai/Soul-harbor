@@ -127,9 +127,9 @@ router.post('/basic-info', async (req, res) => {
     const { userId, signature, birth } = req.body;
     let { avatar } = req.body;
 
-    const soulUuid = uuid || '',
-      soulSignature = signature || '',
-      soulBirth = birth || '';
+    const soul_uuid = uuid || '',
+      soul_signature = signature || '',
+      soul_birth = birth || '';
 
     if (avatar) {
       if (!fse.existsSync(AVATAR_PATH)) {
@@ -169,7 +169,7 @@ router.post('/basic-info', async (req, res) => {
           });
         }
 
-        const searchOldAvatar = `select soulAvatar from soulUserInfo where soulUuid = '${uuid}'`;
+        const searchOldAvatar = `select soul_avatar from soul_user_info where soul_uuid = '${uuid}'`;
         const result: Array<any> = await query(searchOldAvatar);
 
         if (!result || result.length !== 1) {
@@ -180,8 +180,8 @@ router.post('/basic-info', async (req, res) => {
           });
         }
 
-        if (result[0]?.soulAvatar) {
-          const oldAvatarFileArr = result[0].soulAvatar.split('/');
+        if (result[0]?.soul_avatar) {
+          const oldAvatarFileArr = result[0].soul_avatar.split('/');
           const oldAvatarFileName = oldAvatarFileArr[oldAvatarFileArr.length - 1]; // 老头像的文件名
           const oldAvatarFilePath = path.resolve(AVATAR_PATH, oldAvatarFileName); // 老头像的文件路径
 
@@ -197,22 +197,26 @@ router.post('/basic-info', async (req, res) => {
       avatar = getAvatarUrl(`/static/user/avatar/${avatarName}`);
     }
 
-    // soulUserInfo
+    // soul_user_info
     const updateBasicInfo = avatar
-      ? `update soulUserInfo set soulAvatar = '${avatar}', soulSignature = '${soulSignature}', soulBirth = '${soulBirth}' where soulUuid = '${soulUuid}'`
-      : `update soulUserInfo set soulSignature = '${soulSignature}', soulBirth = '${soulBirth}' where soulUuid = '${soulUuid}'`;
+      ? `update soul_user_info set soul_avatar = '${avatar}', soul_signature = '${soul_signature}', soul_birth = '${soul_birth}' where soul_uuid = '${soul_uuid}'`
+      : `update soul_user_info set soul_signature = '${soul_signature}', soul_birth = '${soul_birth}' where soul_uuid = '${soul_uuid}'`;
 
-    const updateTbFriend = `update tb_friend set friend_avatar = '${avatar}' where friend_id = '${soulUuid}'`;
-    const updateTbPrivateChat = `update tb_private_chat set sender_avatar = '${avatar}' where sender_id = '${soulUuid}'`;
-    const updateTbRoomChat = `update tb_room_chat set sender_avatar = '${avatar}' where sender_id = '${soulUuid}'`;
+    const updateTbFriend = `update tb_friend set friend_avatar = '${avatar}' where friend_id = '${soul_uuid}'`;
+    const updateTbPrivateChat = `update tb_private_chat set sender_avatar = '${avatar}' where sender_id = '${soul_uuid}'`;
+    const updateTbRoomChat = `update tb_room_chat set sender_avatar = '${avatar}' where sender_id = '${soul_uuid}'`;
+    const updateTbRoomMember = `update room_member set member_avatar = '${avatar}' where member_id = '${soul_uuid}'`;
 
     await query(updateBasicInfo);
 
     if (avatar) {
-      await query(updateTbFriend);
-      await query(updateTbPrivateChat);
-      await query(updateTbRoomChat);
-      await batchSetSessionsAvatar(soulUuid, avatar);
+      await Promise.all([
+        query(updateTbFriend),
+        query(updateTbPrivateChat),
+        query(updateTbRoomChat),
+        query(updateTbRoomMember),
+        batchSetSessionsAvatar(soul_uuid, avatar),
+      ]);
     }
     return res.status(200).json({
       code: 0,
@@ -251,7 +255,7 @@ router.post('/register', urlencodedParser, (req, res) => {
             msg: info.message,
           });
           break;
-        case 'verifyCode do not match':
+        case 'verify_code do not match':
           res.status(200).json({
             code: noMatch,
             data: {},
@@ -269,17 +273,17 @@ router.post('/register', urlencodedParser, (req, res) => {
       req.logIn(user, (error) => {
         const { email, createTime } = req.body;
         const data = {
-          username: user.soulUsername,
+          username: user.soul_username,
           email,
           createTime,
         };
         console.log('Data: ', data);
-        const searchUsername = `select * from soulUserInfo where binary soulUsername = '${data.username}'`;
+        const searchUsername = `select * from soul_user_info where binary soul_username = '${data.username}'`;
 
         query(searchUsername)
           .then((user) => {
             console.log('User: ', user);
-            const updateUser = `update soulUserInfo set soulEmail = '${data.email}', soulCreateTime = '${data.createTime}' where soulUsername = '${data.username}'`;
+            const updateUser = `update soul_user_info set soul_email = '${data.email}', soul_create_time = '${data.createTime}' where soul_username = '${data.username}'`;
             return query(updateUser);
           })
           .then(() => {
@@ -331,28 +335,28 @@ router.post('/login', urlencodedParser, (req, res) => {
     } else {
       req.logIn(user, async () => {
         try {
-          const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
-          let { soulAvatar } = user;
+          const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth } = user;
+          let { soul_avatar } = user;
 
-          if (soulAvatar) {
-            const oldIPAddress = matchUrls(soulAvatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
+          if (soul_avatar) {
+            const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
             const newIPAddress = getIPAddress(os.networkInterfaces());
 
             if (oldIPAddress !== newIPAddress) {
               // 如果IP地址发生了改变，要修改头像链接的IP地址
-              soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
-              const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+              soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
+              const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
               await query(updateAvatar);
             }
           }
 
           const userInfo = {
-            username: soulUsername,
-            uid: soulUuid,
-            signature: soulSignature,
-            birth: soulBirth,
-            email: soulEmail,
-            avatar: soulAvatar,
+            username: soul_username,
+            uid: soul_uuid,
+            signature: soul_signature,
+            birth: soul_birth,
+            email: soul_email,
+            avatar: soul_avatar,
           };
           const token = await setToken(userInfo);
           res.cookie('uuid', userInfo.uid);
@@ -385,7 +389,7 @@ router.post('/sendRegisterVerifyCode', (req, res) => {
     });
   } else {
     console.log('Email: ', email);
-    const searchEmail = `select * from soulUserInfo where binary soulEmail = '${email}'`;
+    const searchEmail = `select * from soul_user_info where binary soul_email = '${email}'`;
     query(searchEmail)
       .then((user) => {
         if (user.length > 0) {
@@ -396,14 +400,14 @@ router.post('/sendRegisterVerifyCode', (req, res) => {
           });
           return breakPromise();
         } else {
-          const checkEmail = `select * from registerVerifyCode where binary email = '${email}'`;
+          const checkEmail = `select * from register_verify_code where binary email = '${email}'`;
           return query(checkEmail);
         }
       })
       .then((result) => {
-        const verifyCode = md5(uuidv4()).slice(0, 6).toLowerCase(); // 生成一个6位数的验证码
-        const verifyCodeMd5 = md5(md5(email + md5(verifyCode))); // 使用md5再次加密
-        const expireTime = (dayjs(new Date()).valueOf() + 60000).toString(); // 60s过期时间
+        const verify_code = md5(uuidv4()).slice(0, 6).toLowerCase(); // 生成一个6位数的验证码
+        const verify_codeMd5 = md5(md5(email + md5(verify_code))); // 使用md5再次加密
+        const expire_time = (dayjs(new Date()).valueOf() + 60000).toString(); // 60s过期时间
 
         const mailOptions = {
           from: `${process.env.EMAIL_ADDRESS}`,
@@ -412,7 +416,7 @@ router.post('/sendRegisterVerifyCode', (req, res) => {
           html: `<div>
                 <h1>Your register verification code is:</h1>
                 <br/>
-                <h2>${verifyCode}</h2>
+                <h2>${verify_code}</h2>
                 <br/>
                 <div>Please use your register verification code within 60 seconds, otherwise it will be invalid</div>
               </div>`,
@@ -423,9 +427,9 @@ router.post('/sendRegisterVerifyCode', (req, res) => {
         if (!result || result.length === 0) {
           // 新增验证码
           bcrypt
-            .hash(verifyCodeMd5, BCRYPT_SALT_ROUNDS)
+            .hash(verify_codeMd5, BCRYPT_SALT_ROUNDS)
             .then((hashedVerifyCode) => {
-              const insertVerifyCode = `insert into registerVerifyCode (email, verifyCode, expireTime) values ('${email}', '${hashedVerifyCode}', '${expireTime}')`;
+              const insertVerifyCode = `insert into register_verify_code (email, verify_code, expire_time) values ('${email}', '${hashedVerifyCode}', '${expire_time}')`;
               return query(insertVerifyCode);
             })
             .then(() => {
@@ -450,9 +454,9 @@ router.post('/sendRegisterVerifyCode', (req, res) => {
         } else {
           // 更新验证码
           bcrypt
-            .hash(verifyCodeMd5, BCRYPT_SALT_ROUNDS)
+            .hash(verify_codeMd5, BCRYPT_SALT_ROUNDS)
             .then((hashedVerifyCode) => {
-              const updateVerifyCode = `update registerVerifyCode set verifyCode = '${hashedVerifyCode}', expireTime = '${expireTime}' where email = '${email}'`;
+              const updateVerifyCode = `update register_verify_code set verify_code = '${hashedVerifyCode}', expire_time = '${expire_time}' where email = '${email}'`;
               return query(updateVerifyCode);
             })
             .then(() => {
@@ -499,7 +503,7 @@ router.post('/forgetPassword', (req, res) => {
       msg: 'email required',
     });
   } else {
-    const searchEmail = `select * from soulUserInfo where binary soulEmail = '${email}'`;
+    const searchEmail = `select * from soul_user_info where binary soul_email = '${email}'`;
     query(searchEmail)
       .then((user) => {
         if (!user || user.length === 0) {
@@ -510,13 +514,13 @@ router.post('/forgetPassword', (req, res) => {
           });
           return breakPromise();
         } else {
-          const checkEmail = `select * from forgetPwToken where binary email = '${email}'`;
+          const checkEmail = `select * from forget_pw_token where binary email = '${email}'`;
           return query(checkEmail);
         }
       })
       .then((result) => {
         const token = crypto.randomBytes(20).toString('hex'); // 生成一个随机的令牌
-        const expireTime = (dayjs(new Date()).valueOf() + 3600000).toString(); // 1h过期时间
+        const expire_time = (dayjs(new Date()).valueOf() + 3600000).toString(); // 1h过期时间
 
         const mailOptions = {
           from: `${process.env.EMAIL_ADDRESS}`,
@@ -539,7 +543,7 @@ router.post('/forgetPassword', (req, res) => {
 
         if (!result || result.length === 0) {
           // 新增链接令牌
-          const insertToken = `insert into forgetPwToken (email, token, expireTime) values ('${email}', '${token}', '${expireTime}')`;
+          const insertToken = `insert into forget_pw_token (email, token, expire_time) values ('${email}', '${token}', '${expire_time}')`;
           query(insertToken).then(() => {
             transporter.sendMail(mailOptions, (err, response) => {
               if (err) {
@@ -561,7 +565,7 @@ router.post('/forgetPassword', (req, res) => {
           });
         } else {
           // 更新链接令牌
-          const updateToken = `update forgetPwToken set token = '${token}', expireTime = '${expireTime}' where binary email = '${email}'`;
+          const updateToken = `update forget_pw_token set token = '${token}', expire_time = '${expire_time}' where binary email = '${email}'`;
           query(updateToken).then(() => {
             transporter.sendMail(mailOptions, (err, response) => {
               if (err) {
@@ -598,7 +602,7 @@ router.post('/forgetPassword', (req, res) => {
 // 检查忘记密码token是否有效
 router.get('/checkTokenValid', (req, res) => {
   const { resetPasswordToken } = req.query;
-  const searchToken = `select * from forgetPwToken where token = '${resetPasswordToken}'`;
+  const searchToken = `select * from forget_pw_token where token = '${resetPasswordToken}'`;
   query(searchToken)
     .then((result) => {
       if (!result || result.length === 0) {
@@ -608,13 +612,13 @@ router.get('/checkTokenValid', (req, res) => {
           msg: 'no valid link or link expired',
         });
       } else {
-        if (Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
-          const searchUsername = `select soulUsername from soulUserInfo where binary soulEmail = '${result[0].email}'`;
+        if (Number(result[0].expire_time) >= dayjs(new Date()).valueOf()) {
+          const searchUsername = `select soul_username from soul_user_info where binary soul_email = '${result[0].email}'`;
           query(searchUsername).then((username) => {
             res.status(200).json({
               code: 0,
               data: {
-                username: username[0].soulUsername,
+                username: username[0].soul_username,
               },
               msg: 'password reset link a-ok',
             });
@@ -641,7 +645,7 @@ router.get('/checkTokenValid', (req, res) => {
 // 重新设置密码
 router.post('/updatePassword', (req, res) => {
   const { username, password } = req.body;
-  const searchUserInfo = `select soulUserInfo.soulUsername, forgetPwToken.token, forgetPwToken.expireTime from soulUserInfo, forgetPwToken where binary soulUserInfo.soulEmail = forgetPwToken.email`;
+  const searchUserInfo = `select soul_user_info.soul_username, forget_pw_token.token, forget_pw_token.expire_time from soul_user_info, forget_pw_token where binary soul_user_info.soul_email = forget_pw_token.email`;
   query(searchUserInfo)
     .then((result) => {
       if (!result || result.length === 0) {
@@ -651,12 +655,12 @@ router.post('/updatePassword', (req, res) => {
           msg: 'no valid link or link expired',
         });
       } else {
-        if (username === result[0].soulUsername && Number(result[0].expireTime) >= dayjs(new Date()).valueOf()) {
+        if (username === result[0].soul_username && Number(result[0].expire_time) >= dayjs(new Date()).valueOf()) {
           // 链接没有失效
           bcrypt
             .hash(password, BCRYPT_SALT_ROUNDS)
             .then((hashedPassword) => {
-              const updatePassword = `update soulUserInfo, forgetPwToken set soulUserInfo.soulUsername = '${username}', soulUserInfo.soulPassword = '${hashedPassword}', forgetPwToken.token = '', forgetPwToken.expireTime = '' where binary soulUserInfo.soulEmail = forgetPwToken.email`;
+              const updatePassword = `update soul_user_info, forget_pw_token set soul_user_info.soul_username = '${username}', soul_user_info.soul_password = '${hashedPassword}', forget_pw_token.token = '', forget_pw_token.expire_time = '' where binary soul_user_info.soul_email = forget_pw_token.email`;
               return query(updatePassword);
             })
             .then(() => {
@@ -696,7 +700,7 @@ router.post('/sendLoginVerifyCode', (req, res) => {
     });
   } else {
     console.log('Email: ', email);
-    const searchEmail = `select * from soulUserInfo where binary soulEmail = '${email}'`;
+    const searchEmail = `select * from soul_user_info where binary soul_email = '${email}'`;
     query(searchEmail)
       .then((user) => {
         if (!user || user.length === 0) {
@@ -707,14 +711,14 @@ router.post('/sendLoginVerifyCode', (req, res) => {
           });
           return breakPromise();
         } else {
-          const checkEmail = `select * from loginVerifyCode where binary email = '${email}'`;
+          const checkEmail = `select * from login_verify_code where binary email = '${email}'`;
           return query(checkEmail);
         }
       })
       .then((result) => {
-        const verifyCode = md5(uuidv4()).slice(0, 6).toLowerCase(); // 生成一个6位数的验证码
-        const verifyCodeMd5 = md5(md5(email + md5(verifyCode))); // 使用md5再次加密
-        const expireTime = (dayjs(new Date()).valueOf() + 60000).toString(); // 60s过期时间
+        const verify_code = md5(uuidv4()).slice(0, 6).toLowerCase(); // 生成一个6位数的验证码
+        const verify_codeMd5 = md5(md5(email + md5(verify_code))); // 使用md5再次加密
+        const expire_time = (dayjs(new Date()).valueOf() + 60000).toString(); // 60s过期时间
 
         const mailOptions = {
           from: `${process.env.EMAIL_ADDRESS}`,
@@ -723,7 +727,7 @@ router.post('/sendLoginVerifyCode', (req, res) => {
           html: `<div>
                 <h1>Your login verification code is:</h1>
                 <br/>
-                <h2>${verifyCode}</h2>
+                <h2>${verify_code}</h2>
                 <br/>
                 <div>Please use your login verification code within 60 seconds, otherwise it will be invalid</div>
               </div>`,
@@ -734,9 +738,9 @@ router.post('/sendLoginVerifyCode', (req, res) => {
         if (!result || result.length === 0) {
           // 新增验证码
           bcrypt
-            .hash(verifyCodeMd5, BCRYPT_SALT_ROUNDS)
+            .hash(verify_codeMd5, BCRYPT_SALT_ROUNDS)
             .then((hashedVerifyCode) => {
-              const insertVerifyCode = `insert into loginVerifyCode (email, verifyCode, expireTime) values ('${email}', '${hashedVerifyCode}', '${expireTime}')`;
+              const insertVerifyCode = `insert into login_verify_code (email, verify_code, expire_time) values ('${email}', '${hashedVerifyCode}', '${expire_time}')`;
               return query(insertVerifyCode);
             })
             .then(() => {
@@ -761,9 +765,9 @@ router.post('/sendLoginVerifyCode', (req, res) => {
         } else {
           // 更新验证码
           bcrypt
-            .hash(verifyCodeMd5, BCRYPT_SALT_ROUNDS)
+            .hash(verify_codeMd5, BCRYPT_SALT_ROUNDS)
             .then((hashedVerifyCode) => {
-              const updateVerifyCode = `update loginVerifyCode set verifyCode = '${hashedVerifyCode}', expireTime = '${expireTime}' where binary email = '${email}'`;
+              const updateVerifyCode = `update login_verify_code set verify_code = '${hashedVerifyCode}', expire_time = '${expire_time}' where binary email = '${email}'`;
               return query(updateVerifyCode);
             })
             .then(() => {
@@ -819,7 +823,7 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
             msg: info.message,
           });
           break;
-        case 'verifyCode do not match':
+        case 'verify_code do not match':
           res.status(200).json({
             code: noMatch,
             data: {},
@@ -836,40 +840,40 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
     } else {
       req.logIn(user, async () => {
         try {
-          const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = user;
-          let { soulAvatar } = user;
+          const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth } = user;
+          let { soul_avatar } = user;
 
-          if (soulAvatar) {
-            const oldIPAddress = matchUrls(soulAvatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
+          if (soul_avatar) {
+            const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
             const newIPAddress = getIPAddress(os.networkInterfaces());
 
             if (oldIPAddress !== newIPAddress) {
               // 如果IP地址发生了改变，要修改头像链接的IP地址
-              soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
-              const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+              soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
+              const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
               await query(updateAvatar);
             }
           }
 
-          // if (!isNullOrUndefined(soulAvatar)) {
-          //   const oldIPAddress = soulAvatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+          // if (!isNullOrUndefined(soul_avatar)) {
+          //   const oldIPAddress = soul_avatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
           //   const newIPAddress = getIPAddress(os.networkInterfaces());
 
           //   if (oldIPAddress !== newIPAddress) {
           //     // 如果IP地址发生了改变，要修改头像链接的IP地址
-          //     soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
-          //     const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+          //     soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
+          //     const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
           //     await query(updateAvatar);
           //   }
           // }
 
           const userInfo = {
-            username: soulUsername,
-            uid: soulUuid,
-            signature: soulSignature,
-            birth: soulBirth,
-            email: soulEmail,
-            avatar: soulAvatar,
+            username: soul_username,
+            uid: soul_uuid,
+            signature: soul_signature,
+            birth: soul_birth,
+            email: soul_email,
+            avatar: soul_avatar,
           };
           const token = await setToken(userInfo);
           res.cookie('uuid', userInfo.uid);
@@ -896,7 +900,7 @@ router.get('/init', async function (req, res) {
   try {
     // @ts-ignore
     const { uid } = req.user;
-    const getUserInfo = `select soulUsername, soulUuid, soulEmail, soulSignature, soulBirth, soulAvatar from soulUserInfo where soulUuid = '${uid}'`;
+    const getUserInfo = `select soul_username, soul_uuid, soul_email, soul_signature, soul_birth, soul_avatar from soul_user_info where soul_uuid = '${uid}'`;
     const userInfo = await query(getUserInfo);
     if (!userInfo.length) {
       return res.status(400).json({
@@ -908,32 +912,32 @@ router.get('/init', async function (req, res) {
     if (userInfo.length > 1) {
       throw new Error('invalid uuid');
     }
-    const { soulUsername, soulUuid, soulEmail, soulSignature, soulBirth } = userInfo[0];
-    let { soulAvatar } = userInfo[0];
+    const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth } = userInfo[0];
+    let { soul_avatar } = userInfo[0];
 
-    if (soulAvatar) {
-      const oldIPAddress = matchUrls(soulAvatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
+    if (soul_avatar) {
+      const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
       const newIPAddress = getIPAddress(os.networkInterfaces());
 
       if (oldIPAddress !== newIPAddress) {
         // 如果IP地址发生了改变，要修改头像链接的IP地址
-        soulAvatar = soulAvatar.replace(oldIPAddress, newIPAddress);
-        const updateAvatar = `update soulUserInfo set soulAvatar = '${soulAvatar}' where soulUuid = '${soulUuid}'`;
+        soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
+        const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
         await query(updateAvatar);
       }
     }
 
-    res.cookie('uuid', soulUuid);
+    res.cookie('uuid', soul_uuid);
     return res.status(200).json({
       code: 0,
       data: {
         userInfo: {
-          username: soulUsername,
-          uid: soulUuid,
-          email: soulEmail,
-          birth: soulBirth,
-          signature: soulSignature,
-          avatar: soulAvatar,
+          username: soul_username,
+          uid: soul_uuid,
+          email: soul_email,
+          birth: soul_birth,
+          signature: soul_signature,
+          avatar: soul_avatar,
         },
       },
       msg: 'init success',

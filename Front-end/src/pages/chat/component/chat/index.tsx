@@ -13,7 +13,14 @@ import defaultAvatar from '@/assets/image/default-avatar.png';
 import robotAvatar from '@/assets/image/robot.png';
 import { GetHistoryMsgReq, GetHistoryMsgRes, MsgInfo } from '@/interface/chat/getHistoryMsg';
 import { apiGet, apiPost } from '@/utils/request';
-import { EXIT_GROUP, GET_GROUP_MEMBERS, GET_HISTORY_MSG, READ_UNREAD_MSG, ROBOT_CHAT } from '@/constants/urls';
+import {
+  EXIT_GROUP,
+  GET_GROUP_MEMBERS,
+  GET_HISTORY_MSG,
+  GET_SESSION_INFO,
+  READ_UNREAD_MSG,
+  ROBOT_CHAT,
+} from '@/constants/urls';
 import { ReadUnreadMsgReq } from '@/interface/chat/readUnreadMsg';
 import { useChat } from '../../state';
 import { debounce } from 'lodash';
@@ -24,7 +31,8 @@ import { GroupMemberCard } from '../groupMemberCard';
 import { addGroupMember } from '../openGroupChatModal/addMembers';
 import Cookie from 'js-cookie';
 import { ExitGroupReq } from '@/interface/chat/exitGroup';
-import { SELECT_SESSION } from '@/redux/actions/action_types';
+import { SELECT_SESSION, UPDATE_SESSION_INFO } from '@/redux/actions/action_types';
+import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
 import './index.less';
 
 const { confirm } = Modal;
@@ -32,6 +40,8 @@ const { confirm } = Modal;
 interface ChatRoomProps extends FormComponentProps {
   dispatch(action: Action): void;
   getGroupsList(): Promise<any>;
+  getSessionsList(): Promise<any>;
+  updateUnreadMsg(): Promise<any>;
   socket: SocketState;
   userInfo: UserInfoState;
   selectSession: SelectSessionState;
@@ -42,7 +52,17 @@ interface FormValues {
   msg: string;
 }
 
-function ChatRoom({ selectSession, form, socket, userInfo, friendsList, dispatch, getGroupsList }: ChatRoomProps) {
+function ChatRoom({
+  selectSession,
+  form,
+  socket,
+  userInfo,
+  friendsList,
+  dispatch,
+  getGroupsList,
+  getSessionsList,
+  updateUnreadMsg,
+}: ChatRoomProps) {
   const { getFieldDecorator, resetFields, validateFields } = form;
   const { sessionMsg, setSessionMsg } = useChat();
   const [readMessage, setReadMessage] = useState<MsgInfo[]>([]); // 已读信息
@@ -51,6 +71,25 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList, dispatch
   const [visible, setVisible] = useState(false); // drawer 显示与否
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>();
+
+  // 更新会话信息
+  async function updateSessionInfo(sessionId: string, type: 'private' | 'room') {
+    const reqData: GetSessionInfoReq = {
+      sessionId: sessionId,
+      type: type,
+    };
+
+    const {
+      data: { sessionInfo },
+    }: GetSessionInfoRes = await apiGet(GET_SESSION_INFO, reqData);
+
+    if (sessionInfo) {
+      dispatch({
+        type: UPDATE_SESSION_INFO,
+        payload: sessionInfo,
+      });
+    }
+  }
 
   // 发送机器人聊天信息
   async function sendRobotMsg(sendMsgBody: SendMessageBody) {
@@ -61,6 +100,8 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList, dispatch
       const {
         data: { message },
       }: RobotChatRes = await apiPost(ROBOT_CHAT, reqData);
+
+      updateSessionInfo('0', 'private');
 
       if (message) {
         setSessionMsg(message);
@@ -105,8 +146,8 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList, dispatch
           payload: null,
         });
 
-        // TODO: 拉取会话信息
         getGroupsList(); // 拉取群聊信息
+        getSessionsList(); // 拉取会话信息
       }
     } catch (e) {
       console.error(e);
@@ -217,9 +258,10 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList, dispatch
     try {
       if (selectSession) {
         setLoading(true);
-        const { sessionId } = selectSession;
+        const { sessionId, type } = selectSession;
         const reqData: GetHistoryMsgReq = {
           sessionId,
+          type,
         };
 
         const {
@@ -286,7 +328,7 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList, dispatch
   }
 
   // 点击未读信息
-  const handleClickUnreadMsg = useCallback(async () => {
+  async function handleClickUnreadMsg() {
     if (selectSession) {
       const { sessionId, type } = selectSession;
       const reqData: ReadUnreadMsgReq = {
@@ -296,10 +338,10 @@ function ChatRoom({ selectSession, form, socket, userInfo, friendsList, dispatch
 
       await apiPost(READ_UNREAD_MSG, reqData);
 
-      // 重新拉取一次数据
-      getHistoryMsg();
+      await getHistoryMsg(); // 更新历史信息
+      await updateUnreadMsg(); // 更新未读信息
     }
-  }, [getHistoryMsg, selectSession]);
+  }
 
   // 拼接接收到的信息
   const receiveMsg = useCallback(() => {
