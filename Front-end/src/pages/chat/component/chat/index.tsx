@@ -237,11 +237,6 @@ function ChatRoom({
             }
           }
           resetFields(['msg']);
-          setTimeout(() => {
-            if (ref.current) {
-              ref.current.scrollTop = ref.current.scrollHeight;
-            }
-          }, 0);
         }
       }
     });
@@ -360,6 +355,12 @@ function ChatRoom({
   useEffect(() => {
     receiveMsg();
   }, [receiveMsg]);
+
+  useEffect(() => {
+    if (readMessage && ref.current) {
+      ref.current.scrollTop = ref.current.scrollHeight; // 容器滚动到最底部
+    }
+  }, [readMessage]);
 
   return (
     selectSession && (
