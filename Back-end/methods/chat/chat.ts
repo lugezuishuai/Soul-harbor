@@ -19,7 +19,7 @@ export function createSocketIo(server: HttpServer) {
     },
   });
 
-  io.of('/chat').on('connection', (socket: Socket) => {
+  io.on('connection', (socket: Socket) => {
     let uuid = '';
     if (socket.request.headers.cookie && cookie.parse(socket.request.headers.cookie)) {
       uuid = cookie.parse(socket.request.headers.cookie).uuid;
@@ -132,7 +132,7 @@ export function createSocketIo(server: HttpServer) {
           // 如果用户不在线
           sendMessage.type = 'offline';
         } else {
-          io.of('/chat').to(socketId).emit('receive message', sendMessage); // 发送给对方
+          io.to(socketId).emit('receive message', sendMessage); // 发送给对方
         }
 
         socket.emit('send message success', sendMessage); // 发送给自己
@@ -195,7 +195,7 @@ export function createSocketIo(server: HttpServer) {
           private_chat: 1,
         };
 
-        io.of('/chat').to(receiver_id).emit('receive message', sendMessage); // 发送给该房间的所有在线用户
+        io.to(receiver_id).emit('receive message', sendMessage); // 发送给该房间的所有在线用户
 
         const insertMessage = sendMessage.sender_avatar
           ? `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}', 1)`

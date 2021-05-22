@@ -239,7 +239,14 @@ function ChatPage(props: ChatPageProps) {
         </div>
       );
     } else if (!sessionsList || !sessionsList.length) {
-      return <div className="chat-page__left-content" />;
+      return (
+        <div className="chat-page__left-session">
+          <Button type="primary" className="chat-page__left-btn" onClick={launchGroupChat}>
+            <Icon className="chat-page__left-btn-icon" component={GroupChat as any} />
+            <div className="chat-page__left-btn-text">发起群聊</div>
+          </Button>
+        </div>
+      );
     } else {
       return (
         <>

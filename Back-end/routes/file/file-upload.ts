@@ -4,7 +4,7 @@ import path from 'path';
 import multiparty from 'multiparty';
 
 const router = express.Router();
-const UPLOAD_DIR = path.resolve(__dirname, '../../target');
+const UPLOAD_DIR = path.resolve(__dirname, '../../public/file');
 const extractExt = (filename: string) => filename.slice(filename.lastIndexOf('.'), filename.length); // 提取后缀名
 
 // 将可写流转化成可读流

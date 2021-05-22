@@ -59,7 +59,7 @@ function SignUp(props: Props) {
       .then((res: LoginResponse) => {
         message.success('登录成功');
         const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
-        const socket = io(`${process.env.SERVICE_URL || 'http://localhost:5000'}/chat`, { forceNew: true });
+        const socket = io(`${process.env.SERVICE_URL || 'http://localhost:5000'}`, { forceNew: true });
         socket.emit('login', uid);
 
         res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });

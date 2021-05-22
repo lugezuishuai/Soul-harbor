@@ -269,6 +269,9 @@ function ChatRoom({
           for (const msg of message) {
             if (msg.type === 'online') {
               readHisMsg.push(msg);
+            } else if (msg.receiver_id === selectSession.sessionId) {
+              // 自己发送给别人别人未读对于自己也是已读信息
+              readHisMsg.push(msg);
             } else {
               unreadHisMsg.push(msg);
             }

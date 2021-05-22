@@ -75,7 +75,7 @@ export default function (state = initialChatState, action: Action): ChatState {
     }
     case UPDATE_SESSION_INFO: {
       let newSessionsList: SessionInfo[];
-      if (state.sessionsList) {
+      if (state.sessionsList && state.sessionsList.length > 0) {
         newSessionsList = [...state.sessionsList];
 
         for (let i = 0; i < newSessionsList.length; i++) {
