@@ -3,7 +3,7 @@ export interface LoginRequest {
   username?: string;
   password?: string;
   email?: string;
-  verifyCode?: string;
+  verify_code?: string;
 }
 
 export interface UserInfo {

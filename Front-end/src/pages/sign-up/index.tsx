@@ -47,7 +47,7 @@ function SignUp(props: Props) {
     const reqData = emailLogin
       ? {
           ...values,
-          verifyCode: values.verifyCode ? md5(md5(values.email + md5(values.verifyCode.toLowerCase()))) : '',
+          verify_code: values.verify_code ? md5(md5(values.email + md5(values.verify_code.toLowerCase()))) : '',
         }
       : {
           ...values,
@@ -103,7 +103,7 @@ function SignUp(props: Props) {
       username: values.username,
       password: md5(md5(values.username + md5(values.passwordAgain))), // 采用md5(md5(username + md5(password)))形式加密
       email: values.email,
-      verifyCode: md5(md5(values.email + md5(values.verifyCode.toLowerCase()))),
+      verify_code: md5(md5(values.email + md5(values.verify_code.toLowerCase()))),
       createTime: dayjs(nowDate).format('YYYY-MM-DD'),
     };
     setLoading(true);

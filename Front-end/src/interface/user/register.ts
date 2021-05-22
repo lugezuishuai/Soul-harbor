@@ -3,7 +3,7 @@ export interface RegisterRequest {
   username: string;
   password: string;
   email: string;
-  verifyCode: string;
+  verify_code: string;
   createTime: string;
 }
 

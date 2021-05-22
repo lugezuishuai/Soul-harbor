@@ -271,11 +271,10 @@ router.post('/register', urlencodedParser, (req, res) => {
       }
     } else {
       req.logIn(user, (error) => {
-        const { email, createTime } = req.body;
+        const { email } = req.body;
         const data = {
           username: user.soul_username,
           email,
-          createTime,
         };
         console.log('Data: ', data);
         const searchUsername = `select * from soul_user_info where binary soul_username = '${data.username}'`;
@@ -283,7 +282,7 @@ router.post('/register', urlencodedParser, (req, res) => {
         query(searchUsername)
           .then((user) => {
             console.log('User: ', user);
-            const updateUser = `update soul_user_info set soul_email = '${data.email}', soul_create_time = '${data.createTime}' where soul_username = '${data.username}'`;
+            const updateUser = `update soul_user_info set soul_email = '${data.email}' where soul_username = '${data.username}'`;
             return query(updateUser);
           })
           .then(() => {

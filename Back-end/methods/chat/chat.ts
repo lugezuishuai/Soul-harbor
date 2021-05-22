@@ -8,12 +8,14 @@ import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
 import { UserInfo, SessionInfo, MsgInfo, MessageBody, RoomInfo } from '../../type/type';
 import cookie from 'cookie';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env' });
 
 export function createSocketIo(server: HttpServer) {
-  const corsOrigin = `http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:5000`;
+  const corsOrigin = `http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:${process.env.FRONT_END_PORT || 5000}`;
   const io = new Server(server, {
     cors: {
-      origin: `http://localhost:5000`, // 后续这里还要修改
+      origin: corsOrigin,
     },
   });
 

@@ -98,7 +98,7 @@ axios.interceptors.response.use(
       const errorData = error?.response?.data;
       const errorMsg = error?.response?.data?.msg;
       if (errorStatus && errorStatus !== 401) {
-        handleErrorMsg(errorMsg || '');
+        handleErrorMsg(errorMsg || '请求出错，请重新尝试');
       }
 
       if (errorStatus) {

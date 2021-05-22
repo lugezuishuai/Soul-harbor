@@ -29,7 +29,9 @@ createSocketIo(server); // 创建socketIo
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
+server.listen(port, () => {
+  console.log(`listening on ${port}`);
+});
 server.on('error', onError);
 server.on('listening', onListening);
 

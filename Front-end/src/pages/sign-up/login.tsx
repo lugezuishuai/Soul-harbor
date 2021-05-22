@@ -116,7 +116,7 @@ export function Login(props: Props) {
         {screen.isLittleScreen ? (
           <>
             {renderFormItemHeader()}
-            {getFieldDecorator('verifyCode', {
+            {getFieldDecorator('verify_code', {
               rules: [
                 {
                   required: true,
@@ -134,7 +134,7 @@ export function Login(props: Props) {
           <>
             <div className={prefix('form-item-text')}>验证码：</div>
             <div className={prefix('form-item-verify')}>
-              {getFieldDecorator('verifyCode', {
+              {getFieldDecorator('verify_code', {
                 rules: [
                   {
                     required: true,

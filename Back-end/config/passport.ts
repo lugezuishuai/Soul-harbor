@@ -19,7 +19,7 @@ passport.use(
       session: false,
     },
     (req, username, password, done) => {
-      const { email, verify_code } = req.body;
+      const { email, verify_code, createTime } = req.body;
 
       const searchUsernameAndEmail = `select * from soul_user_info where binary soul_username = '${username}' or binary soul_email = '${email}'`;
 
@@ -51,7 +51,7 @@ passport.use(
                       // 验证码尚未过期，生成密码
                       const uuid = uuidv4(); // 生成随机的uuid
                       bcrypt.hash(password, BCRYPT_SALT_ROUNDS).then((hashedPassword) => {
-                        const createUser = `insert into soul_user_info (soul_username, soul_password, soul_email, soul_uuid) values ('${username}', '${hashedPassword}', '${email}', '${uuid}')`;
+                        const createUser = `insert into soul_user_info (soul_username, soul_password, soul_email, soul_uuid, soul_create_time) values ('${username}', '${hashedPassword}', '${email}', '${uuid}', '${createTime}')`;
                         const searchNewUser = `select * from soul_user_info where binary soul_username = '${username}' and soul_password = '${hashedPassword}'`;
                         query(createUser)
                           .then(() => {
