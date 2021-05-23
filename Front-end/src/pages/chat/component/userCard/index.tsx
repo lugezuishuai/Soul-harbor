@@ -2,7 +2,7 @@ import React from 'react';
 import { SearchMemberInfo } from '@/interface/chat/searchMember';
 import { Avatar, Modal, message } from 'antd';
 import defaultAvatar from '@/assets/image/default-avatar.png';
-import { FriendListState, SelectSession } from '@/redux/reducers/state';
+import { FriendListState, SelectSession, SocketState } from '@/redux/reducers/state';
 import { apiPost } from '@/utils/request';
 import { AddFriendRequest } from '@/interface/chat/addFriend';
 import { ADD_FRIEND } from '@/constants/urls';
@@ -10,19 +10,22 @@ import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
 import { Skeleton } from '@/components/skeleton';
 import classnames from 'classnames';
+import Cookies from 'js-cookie';
 import './index.less';
 
 const { confirm } = Modal;
 const { Block, Avatar: AvatarSkeleton } = Skeleton;
 
 interface UserCardProps {
+  dispatch(action: Action): void;
   userData: SearchMemberInfo;
   friendsList: FriendListState;
   getFriendsList(): void;
-  dispatch(action: Action): void;
+  socket: SocketState;
+  username: string;
 }
 
-export function UserCard({ userData, friendsList, getFriendsList, dispatch }: UserCardProps) {
+export function UserCard({ userData, friendsList, getFriendsList, dispatch, socket, username }: UserCardProps) {
   const { userInfo, online } = userData;
 
   // 添加好友
@@ -44,6 +47,10 @@ export function UserCard({ userData, friendsList, getFriendsList, dispatch }: Us
         type: SELECT_SESSION,
         payload: selectSession,
       });
+
+      if (socket) {
+        socket.emit('update friend', Cookies.get('uuid') || '', userInfo?.uid || '', username, 'add');
+      }
 
       getFriendsList(); // 重新拉取一次好友列表
     } catch (e) {

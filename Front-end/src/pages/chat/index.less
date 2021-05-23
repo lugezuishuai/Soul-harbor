@@ -11,6 +11,7 @@
     &__left {
       height: 100%;
       width: 300px;
+      min-width: 300px;
       border-right: 1px solid @N300;
       background: @N100;
       &-container {
@@ -38,7 +39,7 @@
       }
       &-session {
         box-sizing: border-box;
-        height: 100%;
+        height: calc(100% - 12px);
         width: 100%;
         background: @N100;
       }

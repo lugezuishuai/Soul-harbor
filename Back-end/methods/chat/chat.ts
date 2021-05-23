@@ -12,7 +12,9 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
 export function createSocketIo(server: HttpServer) {
-  const corsOrigin = `http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:${process.env.FRONT_END_PORT || 5000}`;
+  const corsOrigin = `http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:${
+    process.env.FRONT_END_PORT || 5000
+  }`;
   const io = new Server(server, {
     cors: {
       origin: corsOrigin,
@@ -151,6 +153,24 @@ export function createSocketIo(server: HttpServer) {
         roomIds.forEach((room_id) => {
           socket.join(room_id);
         });
+      }
+    });
+
+    // 更新好友
+    socket.on('update friend', async (uuid: string, friend_id: string, username: string, type: 'add' | 'delete') => {
+      try {
+        const socketId = await redisGet(`socket_${friend_id.slice(0, 8)}`);
+
+        if (!isNullOrUndefined(socketId)) {
+          // 用户在线
+          if (type === 'add') {
+            io.to(socketId).emit('add friend', { msg: `您被 ${username} 添加为好友`, uuid });
+          } else {
+            io.to(socketId).emit('delete friend', { msg: `您被 ${username} 删除好友`, uuid });
+          }
+        }
+      } catch (e) {
+        console.error(e);
       }
     });
 

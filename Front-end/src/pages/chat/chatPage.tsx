@@ -21,11 +21,14 @@ import { apiGet } from '@/utils/request';
 import { GET_FRIENDS_LIST, GET_GROUPS_LIST, GET_SESSIONS_LIST, GET_SESSION_INFO } from '@/constants/urls';
 import {
   ACTIVE_SESSION,
+  DELETE_FRIEND_ACTION,
+  DELETE_SESSION_INFO,
   FRIENDS_LIST_FOLD,
   GET_FRIENDS_LIST_ACTION,
   GET_GROUPS_LIST_ACTION,
   GET_SESSIONS_LIST_ACTION,
   GROUPS_LIST_FOLD,
+  SELECT_SESSION,
   UPDATE_SESSION_INFO,
 } from '@/redux/actions/action_types';
 import { GetSessionsListRes } from '@/interface/chat/getSessionsList';
@@ -33,7 +36,7 @@ import { MsgInfo } from '@/interface/chat/getHistoryMsg';
 import { FriendCard, FriendCardSkeleton } from './component/friendCard';
 import { SessionCard, SessionCardSkeleton } from './component/sessionCard';
 import GroupChat from '@/assets/icon/group_chat.svg';
-import { Icon, Button, Modal } from 'antd';
+import { Icon, Button, Modal, message } from 'antd';
 import { openGroupChatModal } from './component/openGroupChatModal';
 import ArrowDown from '@/assets/icon/arrow_down.svg';
 import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
@@ -58,6 +61,11 @@ interface ChatPageProps {
   unreadChatMsgCount: number;
   friendsListFold: boolean;
   groupsListFold: boolean;
+}
+
+interface UpdateFriend {
+  msg: string;
+  uuid: string;
 }
 
 export interface ActiveSessionPayload {
@@ -154,6 +162,8 @@ function ChatPage(props: ChatPageProps) {
           getFriendsList={getFriendsList}
           friendsList={friendsList}
           dispatch={dispatch}
+          socket={socket}
+          username={userInfo?.username || ''}
         />
       ));
     }
@@ -209,7 +219,14 @@ function ChatPage(props: ChatPageProps) {
           </div>
           {!friendsListFold &&
             newFriendsList.map((friendInfo, index) => (
-              <FriendCard key={index} friendInfo={friendInfo} dispatch={dispatch} />
+              <FriendCard
+                key={index}
+                friendInfo={friendInfo}
+                dispatch={dispatch}
+                selectSession={selectSession}
+                socket={socket}
+                username={userInfo?.username || ''}
+              />
             ))}
           <div className="chat-page__left-fold" onClick={handleGroupsListFold}>
             <Icon
@@ -390,7 +407,36 @@ function ChatPage(props: ChatPageProps) {
         updateSessionInfo(selectSession.sessionId, selectSession.type);
       }
     });
-  }, [socket, selectSession, dispatch, updateSessionInfo]);
+
+    socket.on('add friend', (value: UpdateFriend) => {
+      const { msg } = value;
+      message.success(msg);
+
+      getGroupsList(); // 重新更新好友列表
+    });
+
+    socket.on('delete friend', (value: UpdateFriend) => {
+      const { msg, uuid } = value;
+      message.warn(msg);
+
+      if (selectSession) {
+        dispatch({
+          type: SELECT_SESSION,
+          payload: null,
+        });
+      }
+
+      dispatch({
+        type: DELETE_FRIEND_ACTION,
+        payload: uuid,
+      });
+
+      dispatch({
+        type: DELETE_SESSION_INFO,
+        payload: uuid,
+      });
+    });
+  }, [socket, selectSession, dispatch, updateSessionInfo, getGroupsList]);
 
   // 加入房间
   const joinRoom = useCallback(() => {

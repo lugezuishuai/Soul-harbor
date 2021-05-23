@@ -1,6 +1,8 @@
 @import '~@/variable.less';
 :global {
   .chat-friend-card {
+    position: relative;
+    z-index: 1;
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -20,7 +22,8 @@
       margin-right: 20px;
     }
     &-name {
-      width: calc(100% - 36px - 20px);
+      user-select: none;
+      width: 180px;
       font-size: 14px;
       font-weight: 500;
       line-height: 20px;
@@ -28,6 +31,16 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    &-delete {
+      position: absolute;
+      z-index: 2;
+      font-size: 20px;
+      top: 22px;
+      right: 12px;
+      &:hover {
+        cursor: pointer;
+      }
     }
     &-skeleton {
       box-sizing: border-box;

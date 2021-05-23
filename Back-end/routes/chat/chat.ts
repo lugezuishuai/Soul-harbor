@@ -2,7 +2,7 @@ import express from 'express';
 import { ChatSearchRes, MessageBody, MsgInfo, ResUserInfo, RoomInfo, SessionInfo, UserInfo } from '../../type/type';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
 import query from '../../utils/query';
-import { batchGetSessions, redisGet, redisSet } from '../../utils/redis';
+import { batchGetSessions, redisDel, redisGet, redisSet } from '../../utils/redis';
 import { UnSuccessCodeType } from './code-type';
 import dayjs from 'dayjs';
 import axios from 'axios';
@@ -304,6 +304,61 @@ router.post('/addFriend', async (req, res) => {
         code: 0,
         data: {},
         msg: 'add friend success',
+      });
+    }
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
+// 删除好友
+router.post('/deleteFriend', async (req, res) => {
+  try {
+    const { uuid } = req.cookies;
+    const { friendId } = req.body;
+
+    const searchFriend = `select * from tb_friend where user_id = '${uuid}' and friend_id = '${friendId}'`;
+    const searchOtherFriend = `select * from tb_friend where user_id = '${friendId}' and friend_id = '${uuid}'`;
+
+    const result: any[] = await Promise.all([query(searchFriend), query(searchOtherFriend)]);
+
+    if (result.length !== 2) {
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'client error',
+      });
+    } else if (result[0].length !== 1 || result[1].length !== 1) {
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'client error',
+      });
+    } else {
+      // 验证通过，两人互为好友
+      const deleteFriend = `delete from tb_friend where (user_id = '${uuid}' or user_id = '${friendId}') and (friend_id = '${uuid}' or friend_id = '${friendId}')`;
+      await query(deleteFriend);
+
+      const ownSession = await redisGet(`session_${uuid}_${friendId}`);
+      const otherSession = await redisGet(`session_${friendId}_${uuid}`);
+
+      if (ownSession) {
+        redisDel(`session_${uuid}_${friendId}`);
+      }
+
+      if (otherSession) {
+        redisDel(`session_${friendId}_${uuid}`);
+      }
+
+      return res.status(200).json({
+        code: 0,
+        data: {},
+        msg: 'success',
       });
     }
   } catch (e) {

@@ -12,10 +12,13 @@ import {
   GROUPS_LIST_FOLD,
   GET_GROUPS_LIST_ACTION,
   UPDATE_SESSION_INFO,
+  DELETE_SESSION_INFO,
+  DELETE_FRIEND_ACTION,
 } from '../actions/action_types';
 import { initialChatState, ChatState } from './state';
 import { Action } from '../actions';
 import { SessionInfo } from '@/interface/chat/getSessionsList';
+import { FriendInfo } from '@/interface/chat/getFriendsList';
 
 export default function (state = initialChatState, action: Action): ChatState {
   switch (action.type) {
@@ -93,6 +96,32 @@ export default function (state = initialChatState, action: Action): ChatState {
       return {
         ...state,
         sessionsList: newSessionsList,
+      };
+    }
+    case DELETE_SESSION_INFO: {
+      let newSessionsList: SessionInfo[] = [];
+      if (state.sessionsList && state.sessionsList.length > 0) {
+        newSessionsList = [...state.sessionsList];
+        const index = newSessionsList.findIndex((sessionInfo) => sessionInfo.sessionId === action.payload);
+        newSessionsList.splice(index, 1);
+      }
+
+      return {
+        ...state,
+        sessionsList: newSessionsList,
+      };
+    }
+    case DELETE_FRIEND_ACTION: {
+      let newFriendsList: FriendInfo[] = [];
+      if (state.friendsList && state.friendsList.length > 0) {
+        newFriendsList = [...state.friendsList];
+        const index = newFriendsList.findIndex((friendInfo) => friendInfo.friend_id === action.payload);
+        newFriendsList.splice(index, 1);
+      }
+
+      return {
+        ...state,
+        friendsList: newFriendsList,
       };
     }
     case UNREAD_MESSAGE_COUNT:
