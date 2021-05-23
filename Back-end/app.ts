@@ -15,6 +15,8 @@ import userRouter from './routes/user'; // 用户相关
 import fileRouter from './routes/file'; // 文件相关
 import chatRouter from './routes/chat'; // 聊天相关
 import employeeRouter from './routes/employee';
+import { getIPAddress } from './utils/getIPAddress';
+import os from 'os';
 import './config/passport';
 
 const { sliceFileUpload } = fileRouter;
@@ -28,7 +30,10 @@ app.use(cors()); // 配置全部跨域
 
 // 配置响应头
 app.all('*', function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
+  res.header(
+    'Access-Control-Allow-Origin',
+    `http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:${process.env.FRONT_END_PORT || 5000}`
+  );
   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'content-type,Authorization,X-Requested-With');
   // res.header("X-Powered-By", ' 3.2.1');
