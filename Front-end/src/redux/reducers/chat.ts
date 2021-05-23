@@ -81,14 +81,14 @@ export default function (state = initialChatState, action: Action): ChatState {
       if (state.sessionsList && state.sessionsList.length > 0) {
         newSessionsList = [...state.sessionsList];
 
-        for (let i = 0; i < newSessionsList.length; i++) {
-          if (newSessionsList[i].sessionId === action.payload.sessionId) {
-            newSessionsList[i] = action.payload;
-            break;
-          }
-        }
+        const index = newSessionsList.findIndex((sessionInfo) => sessionInfo.sessionId === action.payload.sessionId);
 
-        newSessionsList = newSessionsList.sort((a, b) => b.latestTime - a.latestTime); // 按照latestTime降序排列
+        if (index > -1) {
+          newSessionsList[index] = action.payload;
+          newSessionsList = newSessionsList.sort((a, b) => b.latestTime - a.latestTime); // 按照latestTime降序排列
+        } else {
+          newSessionsList.unshift(action.payload);
+        }
       } else {
         newSessionsList = [action.payload];
       }
