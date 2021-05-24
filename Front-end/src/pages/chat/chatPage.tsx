@@ -412,7 +412,7 @@ function ChatPage(props: ChatPageProps) {
       const { msg } = value;
       message.success(msg);
 
-      getGroupsList(); // 重新更新好友列表
+      getFriendsList(); // 重新更新好友列表
     });
 
     socket.on('delete friend', (value: UpdateFriend) => {
