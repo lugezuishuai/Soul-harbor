@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./dist/bin/server.js",
+    "start": "pm2 start ./dist/bin/server.js --name soul-harbor",
+    "restart": "pm2 restart soul-harbor",
+    "stop": "pm2 stop soul-harbor",
     "watch": "nodemon ./dist/bin/server.js",
     "watchDev": "nodemon -e ts,tsx --exec ts-node ./bin/server.ts",
     "build-ts": "tsc",
