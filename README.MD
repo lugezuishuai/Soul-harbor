@@ -14,7 +14,13 @@
 
 构建后端dist文件夹：`npm run build`
 
-开启后端服务：`npm run start`
+使用pm2开启后端服务：`npm run start`
+
+使用pm2停止后端服务：`npm run stop`
+
+使用pm2重启后端服务：`npm run restart`
+
+使用pm2杀掉后端服务进程：`npm run delete`
 
 开启后端本地监听：`npm run watch`
 

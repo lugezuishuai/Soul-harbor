@@ -6,6 +6,7 @@
     "start": "pm2 start ./dist/bin/server.js --name soul-harbor",
     "restart": "pm2 restart soul-harbor",
     "stop": "pm2 stop soul-harbor",
+    "delete": "pm2 delete soul-harbor",
     "watch": "nodemon ./dist/bin/server.js",
     "watchDev": "nodemon -e ts,tsx --exec ts-node ./bin/server.ts",
     "build-ts": "tsc",
