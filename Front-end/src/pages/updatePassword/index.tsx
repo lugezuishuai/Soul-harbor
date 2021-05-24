@@ -25,11 +25,6 @@ interface FormData {
   newPasswordAgain: string;
 }
 
-const inputProps = {
-  autoComplete: 'on',
-  allowClear: true,
-};
-
 function ForgetPw(props: ForgetPwProps) {
   const { form, history } = props;
   const { getFieldDecorator, getFieldValue, validateFields } = form;
@@ -108,7 +103,7 @@ function ForgetPw(props: ForgetPwProps) {
                     },
                   },
                 ],
-              })(<Input.Password className={prefix('form-item-input')} placeholder="新的密码" {...inputProps} />)}
+              })(<Input.Password className={prefix('form-item-input')} placeholder="新的密码" />)}
             </Form.Item>
             <Form.Item className={prefix('form-item')}>
               <div className={prefix('form-item-text')}>确认密码：</div>
@@ -124,7 +119,7 @@ function ForgetPw(props: ForgetPwProps) {
                     },
                   },
                 ],
-              })(<Input.Password className={prefix('form-item-input')} placeholder="确认密码" {...inputProps} />)}
+              })(<Input.Password className={prefix('form-item-input')} placeholder="确认密码" />)}
             </Form.Item>
           </Form>
           <div className={prefix('footer')}>

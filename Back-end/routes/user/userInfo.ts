@@ -528,9 +528,9 @@ router.post('/forgetPassword', (req, res) => {
           html: `<div>
                 <h1>The link to reset your password is:</h1>
                 <br/>
-                <a href="http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:${
+                <a href="${process.env.SERVICE_URL || 'http://localhost'}:${
             process.env.FRONT_END_PORT || 5000
-          }/reset/${token}" target="_blank">http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:${
+          }/reset/${token}" target="_blank">${process.env.SERVICE_URL || 'http://localhost'}:${
             process.env.FRONT_END_PORT || 5000
           }/reset/${token}</a>
                 <br/>
