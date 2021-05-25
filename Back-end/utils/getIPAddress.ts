@@ -1,6 +1,6 @@
 import os from 'os';
 
-//获取本机ip地址
+//获取本机私有ip地址
 export function getIPAddress(interfaces: NodeJS.Dict<os.NetworkInterfaceInfo[]>) {
   for (const devName in interfaces) {
     const iface = interfaces[devName];

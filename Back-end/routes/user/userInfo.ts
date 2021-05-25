@@ -24,6 +24,8 @@ import { matchUrls } from '../../utils/matchUrl';
 import { batchSetSessionsAvatar } from '../../utils/redis';
 import { getDirectories } from '../../utils/getDirectories';
 import { listFile } from '../../utils/listFile';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env' });
 
 const { alreadyExit, noMatch, expiredOrUnValid, badAccount, invalidUuid } = UnSuccessCodeType;
 
@@ -69,7 +71,7 @@ router.post('/avatar-upload', async (req, res) => {
         const { userId } = req.body;
         const { mimetype, originalname } = file;
         const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
-        const hostIP = getIPAddress(os.networkInterfaces()); // 获取主机IP地址
+        const hostIP = process.env.SERVICE_URL || getIPAddress(os.networkInterfaces()); // 获取主机IP地址
         const port = process.env.PORT || '4001'; // 获取当前的端口号
 
         const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
@@ -339,7 +341,7 @@ router.post('/login', urlencodedParser, (req, res) => {
 
           if (soul_avatar) {
             const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-            const newIPAddress = getIPAddress(os.networkInterfaces());
+            const newIPAddress = process.env.SERVICE_URL || getIPAddress(os.networkInterfaces());
 
             if (oldIPAddress !== newIPAddress) {
               // 如果IP地址发生了改变，要修改头像链接的IP地址
@@ -848,7 +850,7 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
 
           if (soul_avatar) {
             const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-            const newIPAddress = getIPAddress(os.networkInterfaces());
+            const newIPAddress = process.env.SERVICE_URL || getIPAddress(os.networkInterfaces());
 
             if (oldIPAddress !== newIPAddress) {
               // 如果IP地址发生了改变，要修改头像链接的IP地址
@@ -920,7 +922,7 @@ router.get('/init', async function (req, res) {
 
     if (soul_avatar) {
       const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-      const newIPAddress = getIPAddress(os.networkInterfaces());
+      const newIPAddress = process.env.SERVICE_URL || getIPAddress(os.networkInterfaces());
 
       if (oldIPAddress !== newIPAddress) {
         // 如果IP地址发生了改变，要修改头像链接的IP地址

@@ -17,7 +17,10 @@ import chatRouter from './routes/chat'; // 聊天相关
 import employeeRouter from './routes/employee';
 import { getIPAddress } from './utils/getIPAddress';
 import os from 'os';
+import dotenv from 'dotenv';
 import './config/passport';
+
+dotenv.config({ path: '.env' });
 
 const { sliceFileUpload } = fileRouter;
 const { userInfo } = userRouter;
@@ -32,7 +35,7 @@ app.use(cors()); // 配置全部跨域
 app.all('*', function (req, res, next) {
   res.header(
     'Access-Control-Allow-Origin',
-    `http://${getIPAddress(os.networkInterfaces()) || 'localhost'}:${process.env.FRONT_END_PORT || 5000}`
+    `http://${process.env.SERVICE_URL || getIPAddress(os.networkInterfaces())}:${process.env.FRONT_END_PORT || 5000}`
   );
   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'content-type,Authorization,X-Requested-With');

@@ -8,8 +8,10 @@ import app from '../app';
 import debug from 'debug';
 debug('ts-node:server');
 import http from 'http';
+import dotenv from 'dotenv';
 import { createSocketIo } from '../methods/chat/chat';
 import { batchDelSockets } from '../utils/redis';
+dotenv.config({ path: '.env' });
 
 /**
  * Get port from environment and store in Express.
