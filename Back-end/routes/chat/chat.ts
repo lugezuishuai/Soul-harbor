@@ -484,6 +484,7 @@ router.get('/getSessionInfo', async (req, res) => {
 // 机器人聊天
 router.post('/robotChat', async (req, res) => {
   try {
+    const prevTime = dayjs().unix();
     const { messageBody }: RobotChatReq = req.body;
     const { sender_id, sender_avatar, receiver_id, message, message_id, time } = messageBody;
 
@@ -531,20 +532,21 @@ router.post('/robotChat', async (req, res) => {
 
     const { content }: RobotChatRes = data;
 
-    const nowTime = dayjs().unix();
+    const nextTime = dayjs().unix();
+    const nowTImeForClient = time + (nextTime - prevTime); // 客户端此时的时间
     // 机器人回复的信息
     const replyMessage: MsgInfo = {
       sender_id: '0',
       receiver_id: sender_id,
       message: content,
-      message_id: nowTime,
-      time: dayjs(nowTime * 1000).format('h:mm a'),
+      message_id: nowTImeForClient,
+      time: dayjs(nowTImeForClient * 1000).format('h:mm a'),
       type: 'online',
       sender_avatar: null,
       private_chat: 0,
     };
 
-    sessionInfo.latestTime = nowTime;
+    sessionInfo.latestTime = nowTImeForClient;
     sessionInfo.latestMessage = replyMessage.message;
 
     redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
