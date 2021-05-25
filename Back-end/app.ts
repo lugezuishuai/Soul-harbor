@@ -35,7 +35,7 @@ app.use(cors()); // 配置全部跨域
 app.all('*', function (req, res, next) {
   res.header(
     'Access-Control-Allow-Origin',
-    `http://${process.env.SERVICE_URL || getIPAddress(os.networkInterfaces())}:${process.env.FRONT_END_PORT || 5000}`
+    `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}:${process.env.FRONT_END_PORT || 5000}`
   );
   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'content-type,Authorization,X-Requested-With');

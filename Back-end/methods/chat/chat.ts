@@ -12,7 +12,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
 export function createSocketIo(server: HttpServer) {
-  const corsOrigin = `http://${process.env.SERVICE_URL || getIPAddress(os.networkInterfaces())}:${
+  const corsOrigin = `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}:${
     process.env.FRONT_END_PORT || 5000
   }`;
   const io = new Server(server, {
