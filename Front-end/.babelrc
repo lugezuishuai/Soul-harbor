@@ -22,6 +22,8 @@
       }
     ],
     ["@babel/plugin-syntax-dynamic-import"], // 支持import懒加载
-    ["@babel/plugin-proposal-class-properties", { "loose": true }] // 支持class的转译（loose为true时类属性将被编译为赋值表达式而不是 Object.defineProperty）
+    "@babel/plugin-transform-arrow-functions",  // 这个是箭头函数的处理
+    ["@babel/plugin-proposal-decorators", { "legacy": true }], // 这个是装饰器
+    ["@babel/plugin-proposal-class-properties", { "loose": false }] // 支持class的转译（loose为true时类属性将被编译为赋值表达式而不是 Object.defineProperty）
   ]
 }
