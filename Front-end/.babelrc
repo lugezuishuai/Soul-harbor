@@ -18,6 +18,7 @@
     [
       "import",{
         "libraryName": "antd",
+        "libraryDirectory": "lib",
         "style": true // 默认使用less，若使用css则改为'css'
       }
     ],
