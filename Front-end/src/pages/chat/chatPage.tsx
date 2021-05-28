@@ -3,6 +3,7 @@ import {
   ChatActiveMenuState,
   FriendListState,
   GroupsListState,
+  SelectSession,
   SelectSessionState,
   SessionsListState,
   SocketState,
@@ -42,6 +43,8 @@ import ArrowDown from '@/assets/icon/arrow_down.svg';
 import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
 import { RoomCard, RoomCardSkeleton } from './component/roomCard';
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import './index.less';
 
 const { confirm } = Modal;
@@ -74,6 +77,7 @@ export interface ActiveSessionPayload {
 }
 
 function ChatPage(props: ChatPageProps) {
+  const location = useLocation();
   const {
     userInfo,
     activeMenu,
@@ -446,6 +450,61 @@ function ChatPage(props: ChatPageProps) {
     }
   }, [groupsList, socket]);
 
+  // 初始化selectSession
+  const initSelectSession = useCallback(async () => {
+    const pathnameArr = location.pathname.split('/');
+    const sessionId = pathnameArr[pathnameArr.length - 1];
+
+    if (friendsList && groupsList) {
+      const promiseFriend = new Promise((resolve, reject) => {
+        if (!friendsList.length) {
+          reject();
+        }
+
+        const friendInfo = friendsList.find((item) => item.friend_id === sessionId);
+
+        if (friendInfo) {
+          const { friend_id, friend_username } = friendInfo;
+          const session: SelectSession = {
+            sessionId: friend_id,
+            name: friend_username,
+            type: 'private',
+          };
+          resolve(session);
+        } else {
+          reject();
+        }
+      });
+
+      const promiseGroup = new Promise((resolve, reject) => {
+        if (!groupsList.length) {
+          reject();
+        }
+
+        const groupInfo = groupsList.find((item) => item.room_id === sessionId);
+
+        if (groupInfo) {
+          const { room_id, room_name } = groupInfo;
+          const session: SelectSession = {
+            sessionId: room_id,
+            name: room_name,
+            type: 'room',
+          };
+          resolve(session);
+        } else {
+          reject();
+        }
+      });
+
+      const result = await Promise.any([promiseFriend, promiseGroup]);
+
+      dispatch({
+        type: SELECT_SESSION,
+        payload: result,
+      });
+    }
+  }, [location, friendsList, groupsList, dispatch]);
+
   useEffect(() => {
     joinRoom();
   }, [joinRoom]);
@@ -460,32 +519,46 @@ function ChatPage(props: ChatPageProps) {
     listenSocket();
   }, [listenSocket]);
 
+  useEffect(() => {
+    initSelectSession();
+  }, [initSelectSession]);
+
   return (
     <div className="chat-page">
-      <ChatNav
-        unreadChatMsgCount={unreadChatMsgCount}
-        userInfo={userInfo}
-        activeMenu={activeMenu}
-        dispatch={dispatch}
-      />
-      <div className="chat-page__left">
-        <WrapChatSearch isSearch={isSearch} dispatch={dispatch} />
-        <div className="chat-page__left-container">
-          {isChatMenu && renderSessionsList()}
-          {isFriendMenu && renderContactsList()}
-          {isSearch && renderSearchPage()}
+      <Router>
+        <ChatNav
+          unreadChatMsgCount={unreadChatMsgCount}
+          userInfo={userInfo}
+          activeMenu={activeMenu}
+          dispatch={dispatch}
+        />
+        <div className="chat-page__left">
+          <WrapChatSearch isSearch={isSearch} dispatch={dispatch} />
+          <div className="chat-page__left-container">
+            {isChatMenu && renderSessionsList()}
+            {isFriendMenu && renderContactsList()}
+            {isSearch && renderSearchPage()}
+          </div>
         </div>
-      </div>
-      <WrapChatRoom
-        userInfo={userInfo}
-        dispatch={dispatch}
-        selectSession={selectSession}
-        socket={socket}
-        friendsList={friendsList}
-        getGroupsList={getGroupsList}
-        getSessionsList={getSessionsList}
-        updateUnreadMsg={updateUnreadMsg}
-      />
+        {selectSession && (
+          <Route
+            path={`/chat/${selectSession?.sessionId}`}
+            exact
+            component={() => (
+              <WrapChatRoom
+                userInfo={userInfo}
+                dispatch={dispatch}
+                selectSession={selectSession}
+                socket={socket}
+                friendsList={friendsList}
+                getGroupsList={getGroupsList}
+                getSessionsList={getSessionsList}
+                updateUnreadMsg={updateUnreadMsg}
+              />
+            )}
+          />
+        )}
+      </Router>
     </div>
   );
 }
