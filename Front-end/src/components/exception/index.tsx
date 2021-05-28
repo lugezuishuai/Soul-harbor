@@ -31,7 +31,7 @@ export function Exception(props: ExceptionProps) {
   } = props;
 
   return (
-    <div className={classnames(className, 'exception')}>
+    <div className={classnames('exception', className)}>
       <div className="exception__hintMsg">
         <img className="exception__image" src={img} alt={title} />
         <div className="exception__content">
