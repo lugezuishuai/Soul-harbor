@@ -13,7 +13,6 @@ import { apiPost } from '@/utils/request';
 import { DeleteFriendReq } from '@/interface/chat/deleteFriend';
 import { DELETE_FRIEND } from '@/constants/urls';
 import Cookies from 'js-cookie';
-import { useHistory } from 'react-router-dom';
 import './index.less';
 
 const { Block, Avatar: AvatarSkeleton } = Skeleton;
@@ -28,7 +27,6 @@ interface FriendCardProps {
 }
 
 export function FriendCard({ friendInfo, dispatch, selectSession, socket, username }: FriendCardProps) {
-  const history = useHistory();
   const { friend_avatar, friend_id, friend_username } = friendInfo;
 
   function handleClick() {
@@ -42,8 +40,6 @@ export function FriendCard({ friendInfo, dispatch, selectSession, socket, userna
       type: SELECT_SESSION,
       payload: selectSession,
     });
-
-    history.push(`/chat/${friend_id}`);
   }
 
   async function deleteFriend() {

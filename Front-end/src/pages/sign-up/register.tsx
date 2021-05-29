@@ -92,7 +92,7 @@ export function Register(props: Props) {
           <Input
             className={prefix('form-item-input')}
             placeholder="用户名"
-            autoFocus={screen.isBigScreen}
+            autoFocus={screen.isHugeScreen}
             {...inputProps}
           />
         )}

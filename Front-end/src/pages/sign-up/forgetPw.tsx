@@ -84,7 +84,7 @@ export function ForgetPw(props: Props) {
           <Input
             className={prefix('form-item-input')}
             placeholder="邮箱"
-            autoFocus={screen.isBigScreen}
+            autoFocus={screen.isHugeScreen}
             {...inputProps}
           />
         )}

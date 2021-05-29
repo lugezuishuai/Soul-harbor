@@ -1,4 +1,4 @@
-import { FriendListState, SelectSession, SocketState, UserInfoState } from '@/redux/reducers/state';
+import { FriendListState, SelectSessionState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Action } from '@/redux/actions';
 import { Form, Input, Button, message, Icon, Spin, Drawer, Modal } from 'antd';
@@ -44,7 +44,7 @@ interface ChatRoomProps extends FormComponentProps {
   updateUnreadMsg(): Promise<any>;
   socket: SocketState;
   userInfo: UserInfoState;
-  selectSession: SelectSession;
+  selectSession: SelectSessionState;
   friendsList: FriendListState;
 }
 
@@ -353,7 +353,7 @@ function ChatRoom({
   useEffect(() => {
     getHistoryMsg();
     getGroupMembers();
-  }, [getHistoryMsg]);
+  }, [getHistoryMsg, getGroupMembers]);
 
   useEffect(() => {
     receiveMsg();
@@ -366,96 +366,98 @@ function ChatRoom({
   }, [readMessage]);
 
   return (
-    <div className="chat-room">
-      <div className="chat-room-header">
-        <div className="chat-room-header-username">{selectSession.name}</div>
-        {selectSession.type === 'room' && (
-          <Icon className="chat-room-header-icon" component={ChatMenu as any} onClick={handleClickMenu} />
-        )}
-      </div>
-      <div className="chat-room-container">
-        {selectSession.type === 'room' && (
-          <Drawer
-            className="chat-room-drawer"
-            placement="right"
-            closable={false}
-            onClose={handleCloseDrawer}
-            visible={visible}
-            getContainer={false}
-          >
-            <div className="chat-room-drawer-content">
-              <div className="chat-room-drawer-content-label">群聊名称</div>
-              <div className="chat-room-drawer-content-text">{selectSession.name}</div>
-              <div className="chat-room-drawer-content-label">群成员</div>
-              <div className="chat-room-drawer-content-member">
-                <div className="chat-room-drawer-content-member-add" onClick={handleAddMember}>
-                  <Icon className="chat-room-drawer-content-member-add-icon" component={AddMember as any} />
-                  <div className="chat-room-drawer-content-member-add-text">添加成员</div>
+    selectSession && (
+      <div className="chat-room">
+        <div className="chat-room-header">
+          <div className="chat-room-header-username">{selectSession.name}</div>
+          {selectSession.type === 'room' && (
+            <Icon className="chat-room-header-icon" component={ChatMenu as any} onClick={handleClickMenu} />
+          )}
+        </div>
+        <div className="chat-room-container">
+          {selectSession.type === 'room' && (
+            <Drawer
+              className="chat-room-drawer"
+              placement="right"
+              closable={false}
+              onClose={handleCloseDrawer}
+              visible={visible}
+              getContainer={false}
+            >
+              <div className="chat-room-drawer-content">
+                <div className="chat-room-drawer-content-label">群聊名称</div>
+                <div className="chat-room-drawer-content-text">{selectSession.name}</div>
+                <div className="chat-room-drawer-content-label">群成员</div>
+                <div className="chat-room-drawer-content-member">
+                  <div className="chat-room-drawer-content-member-add" onClick={handleAddMember}>
+                    <Icon className="chat-room-drawer-content-member-add-icon" component={AddMember as any} />
+                    <div className="chat-room-drawer-content-member-add-text">添加成员</div>
+                  </div>
+                  {membersList.length > 0 &&
+                    membersList.map((memberInfo, index) => (
+                      <GroupMemberCard
+                        key={index}
+                        memberInfo={memberInfo}
+                        role={getRole()}
+                        getGroupMembers={getGroupMembers}
+                        room_id={selectSession.sessionId}
+                        membersList={membersList}
+                      />
+                    ))}
                 </div>
-                {membersList.length > 0 &&
-                  membersList.map((memberInfo, index) => (
-                    <GroupMemberCard
-                      key={index}
-                      memberInfo={memberInfo}
-                      role={getRole()}
-                      getGroupMembers={getGroupMembers}
-                      room_id={selectSession.sessionId}
-                      membersList={membersList}
-                    />
-                  ))}
               </div>
-            </div>
-            <Button type="danger" className="chat-room-drawer-btn" onClick={handleExitGroup}>
-              退出群聊
-            </Button>
-          </Drawer>
-        )}
-        <div className="chat-room-content" ref={ref as any}>
-          <Spin spinning={loading}>
-            {readMessage.map((msg, index) => {
-              const type: 'send' | 'receive' = msg.sender_id === Cookies.get('uuid') ? 'send' : 'receive';
-              return (
-                <Message
-                  key={index}
-                  avatar={
-                    selectSession.sessionId === '0' && type === 'receive'
-                      ? robotAvatar
-                      : msg.sender_avatar || defaultAvatar
-                  }
-                  type={type}
-                  message={msg.message}
-                  time={msg.time}
-                />
-              );
-            })}
-            {unreadMessage.length > 0 && (
-              <div className="chat-room-content-unread" onClick={handleClickUnreadMsg}>
-                <Icon className="chat-room-content-unread__icon" component={Down as any} />
-                <div className="chat-room-content-unread__text">{`${unreadMessage.length}条未读信息`}</div>
-              </div>
-            )}
-          </Spin>
-        </div>
-        <div className="chat-room-send">
-          <Form className="chat-room-send__form">
-            <Form.Item>
-              {getFieldDecorator('msg')(
-                <Input
-                  className="chat-room-send__input"
-                  placeholder="按Enter或”发送“发送信息"
-                  autoComplete="off"
-                  allowClear={false}
-                  onKeyPress={handleKeyPress}
-                />
+              <Button type="danger" className="chat-room-drawer-btn" onClick={handleExitGroup}>
+                退出群聊
+              </Button>
+            </Drawer>
+          )}
+          <div className="chat-room-content" ref={ref as any}>
+            <Spin spinning={loading}>
+              {readMessage.map((msg, index) => {
+                const type: 'send' | 'receive' = msg.sender_id === Cookies.get('uuid') ? 'send' : 'receive';
+                return (
+                  <Message
+                    key={index}
+                    avatar={
+                      selectSession.sessionId === '0' && type === 'receive'
+                        ? robotAvatar
+                        : msg.sender_avatar || defaultAvatar
+                    }
+                    type={type}
+                    message={msg.message}
+                    time={msg.time}
+                  />
+                );
+              })}
+              {unreadMessage.length > 0 && (
+                <div className="chat-room-content-unread" onClick={handleClickUnreadMsg}>
+                  <Icon className="chat-room-content-unread__icon" component={Down as any} />
+                  <div className="chat-room-content-unread__text">{`${unreadMessage.length}条未读信息`}</div>
+                </div>
               )}
-            </Form.Item>
-          </Form>
-          <Button type="primary" className="chat-room-send__btn" onClick={handleSendMsg}>
-            发送
-          </Button>
+            </Spin>
+          </div>
+          <div className="chat-room-send">
+            <Form className="chat-room-send__form">
+              <Form.Item>
+                {getFieldDecorator('msg')(
+                  <Input
+                    className="chat-room-send__input"
+                    placeholder="按Enter或”发送“发送信息"
+                    autoComplete="off"
+                    allowClear={false}
+                    onKeyPress={handleKeyPress}
+                  />
+                )}
+              </Form.Item>
+            </Form>
+            <Button type="primary" className="chat-room-send__btn" onClick={handleSendMsg}>
+              发送
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    )
   );
 }
 

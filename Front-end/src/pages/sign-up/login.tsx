@@ -107,7 +107,7 @@ export function Login(props: Props) {
           <Input
             className={prefix('form-item-input')}
             placeholder="邮箱"
-            autoFocus={screen.isBigScreen}
+            autoFocus={screen.isHugeScreen}
             {...inputProps}
           />
         )}
@@ -182,7 +182,7 @@ export function Login(props: Props) {
           <Input
             className={prefix('form-item-input')}
             placeholder="用户名"
-            autoFocus={screen.isBigScreen}
+            autoFocus={screen.isHugeScreen}
             {...inputProps}
           />
         )}
