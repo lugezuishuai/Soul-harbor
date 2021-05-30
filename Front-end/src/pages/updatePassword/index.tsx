@@ -13,6 +13,7 @@ import backHome from '@/assets/icon/back_home.svg';
 import backHomeMobile from '@/assets/icon/back_home_mobile.svg';
 import md5 from 'md5';
 import { apiGet, apiPost } from '@/utils/request';
+import { useLocation } from 'react-router-dom';
 import './index.less';
 
 interface ForgetPwProps {
@@ -26,6 +27,7 @@ interface FormData {
 }
 
 function ForgetPw(props: ForgetPwProps) {
+  const location = useLocation();
   const { form, history } = props;
   const { getFieldDecorator, getFieldValue, validateFields } = form;
   const [username, setUsername] = useState<string | null>(null);
@@ -39,9 +41,12 @@ function ForgetPw(props: ForgetPwProps) {
     e.preventDefault();
     validateFields((errors: Record<string, any>, values: FormData) => {
       if (!errors && values) {
+        const pathnameArr = location.pathname.split('/');
+        const token = pathnameArr[pathnameArr.length - 1];
         const reqData: UpdatePasswordReq = {
           username: username || '',
           password: md5(md5(username + md5(values.newPasswordAgain))),
+          token,
         };
         setBtnLoading(true);
         apiPost(UPDATEPASSWORD, reqData)
@@ -57,8 +62,8 @@ function ForgetPw(props: ForgetPwProps) {
   };
 
   useEffect(() => {
-    const pathArr = window.location.href.split('/');
-    const token = pathArr[pathArr.length - 1];
+    const pathnameArr = location.pathname.split('/');
+    const token = pathnameArr[pathnameArr.length - 1];
     const reqData: CheckTokenValidRequest = {
       resetPasswordToken: token,
     };
@@ -70,7 +75,7 @@ function ForgetPw(props: ForgetPwProps) {
         setIsLinkValid(false);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [location]);
 
   const renderContent = () => {
     if (username && isLinkValid) {
