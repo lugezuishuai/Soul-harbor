@@ -495,7 +495,8 @@ router.post('/sendRegisterVerifyCode', (req, res) => {
 
 // 忘记密码
 router.post('/forgetPassword', (req, res) => {
-  const ipArr = req.connection.remoteAddress?.split(':');
+  const clientAddress =
+    req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.ip || '';
   const { email } = req.body;
   if (!email) {
     res.status(400).json({
@@ -538,7 +539,7 @@ router.post('/forgetPassword', (req, res) => {
                 <br/>
                 <h2>Note: the IP address to send the link is:</h2>
                 <br/>
-                <h3>${ipArr && ipArr[ipArr.length - 1]}</h3>
+                <h3>${clientAddress}</h3>
                 <br/>
                 <div>This link is valid for 5 minutes. Please enter this link within 5 minutes to reset your password</div>
               </div>`,
