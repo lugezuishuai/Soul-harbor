@@ -2,7 +2,7 @@ import React from 'react';
 import { Skeleton } from '@/components/skeleton';
 import classnames from 'classnames';
 import { FriendInfo } from '@/interface/chat/getFriendsList';
-import { Avatar, Icon, Modal } from 'antd';
+import { Avatar, Icon, message, Modal } from 'antd';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import { SelectSession, SelectSessionState, SocketState } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
@@ -72,6 +72,8 @@ export function FriendCard({ friendInfo, dispatch, selectSession, socket, userna
       if (socket) {
         socket.emit('update friend', Cookies.get('uuid') || '', friend_id, username, 'delete');
       }
+
+      message.success('删除成功');
     } catch (e) {
       console.error(e);
     }
