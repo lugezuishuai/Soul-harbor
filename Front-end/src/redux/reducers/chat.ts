@@ -14,6 +14,7 @@ import {
   UPDATE_SESSION_INFO,
   DELETE_SESSION_INFO,
   DELETE_FRIEND_ACTION,
+  ACTIVE_MSG,
 } from '../actions/action_types';
 import { initialChatState, ChatState } from './state';
 import { Action } from '../actions';
@@ -143,6 +144,11 @@ export default function (state = initialChatState, action: Action): ChatState {
       return {
         ...state,
         groupsList: action.payload,
+      };
+    case ACTIVE_MSG:
+      return {
+        ...state,
+        activeMsg: action.payload,
       };
     default:
       return state;

@@ -1,5 +1,6 @@
 import { Action } from '@/redux/actions';
 import {
+  ActiveMsgState,
   ChatActiveMenuState,
   FriendListState,
   GroupsListState,
@@ -21,6 +22,7 @@ import { FriendInfo, GetFriendsListRes } from '@/interface/chat/getFriendsList';
 import { apiGet } from '@/utils/request';
 import { GET_FRIENDS_LIST, GET_GROUPS_LIST, GET_SESSIONS_LIST, GET_SESSION_INFO } from '@/constants/urls';
 import {
+  ACTIVE_MSG,
   ACTIVE_SESSION,
   DELETE_FRIEND_ACTION,
   DELETE_SESSION_INFO,
@@ -44,6 +46,7 @@ import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
 import { RoomCard, RoomCardSkeleton } from './component/roomCard';
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
 import { useHistory, useLocation } from 'react-router-dom';
+import { ActiveMsg } from './component/activeMsg';
 import './index.less';
 
 const { confirm } = Modal;
@@ -60,6 +63,7 @@ interface ChatPageProps {
   sessionsList: SessionsListState;
   selectSession: SelectSessionState;
   activeSession: string[];
+  activeMsg: ActiveMsgState;
   unreadChatMsgCount: number;
   friendsListFold: boolean;
   groupsListFold: boolean;
@@ -89,6 +93,7 @@ function ChatPage(props: ChatPageProps) {
     sessionsList,
     selectSession,
     activeSession,
+    activeMsg,
     unreadChatMsgCount,
     friendsListFold,
     groupsListFold,
@@ -386,6 +391,10 @@ function ChatPage(props: ChatPageProps) {
             type: ACTIVE_SESSION,
             payload,
           });
+          dispatch({
+            type: ACTIVE_MSG,
+            payload: msg,
+          });
         }
       } else {
         // 群聊
@@ -401,6 +410,10 @@ function ChatPage(props: ChatPageProps) {
           dispatch({
             type: ACTIVE_SESSION,
             payload,
+          });
+          dispatch({
+            type: ACTIVE_MSG,
+            payload: msg,
           });
         }
       }
@@ -531,6 +544,19 @@ function ChatPage(props: ChatPageProps) {
     initSelectSession();
   }, [initSelectSession]);
 
+  useEffect(() => {
+    if (activeMsg) {
+      const timer = setTimeout(() => {
+        dispatch({
+          type: ACTIVE_MSG,
+          payload: null,
+        });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [activeMsg, dispatch]);
+
   return (
     <div className="chat-page">
       <ChatNav
@@ -557,6 +583,7 @@ function ChatPage(props: ChatPageProps) {
         getSessionsList={getSessionsList}
         updateUnreadMsg={updateUnreadMsg}
       />
+      {activeMsg && <ActiveMsg msg={activeMsg} friendsList={friendsList} groupsList={groupsList} dispatch={dispatch} />}
     </div>
   );
 }
@@ -573,6 +600,7 @@ export const WrapChatPage = connect(
       sessionsList,
       selectSession,
       activeSession,
+      activeMsg,
       unreadChatMsgCount,
       friendsListFold,
       groupsListFold,
@@ -587,6 +615,7 @@ export const WrapChatPage = connect(
     sessionsList,
     selectSession,
     activeSession,
+    activeMsg,
     unreadChatMsgCount,
     friendsListFold,
     groupsListFold,
