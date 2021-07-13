@@ -6,6 +6,8 @@
 
 ./Front-end: 前端相关文件
 
+Windows 用户请移步到windows分支（做了一些Windows系统的兼容）
+
 <font size = 6>**使用**</font>
 
 <font size = 4>**后端**</font>

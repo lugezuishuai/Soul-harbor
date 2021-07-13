@@ -127,11 +127,7 @@ function Home(props: HomeProps) {
                   <WrapScrollToTop>
                     <Switch>
                       <Route path="/home" exact component={Content} />
-                      <Route
-                        path="/chat"
-                        exact
-                        component={() => <WrapChatInfoPage updateUnreadMsg={updateUnreadMsg} />}
-                      />
+                      <Route path="/chat" component={() => <WrapChatInfoPage updateUnreadMsg={updateUnreadMsg} />} />
                       <Route path="/news" exact component={UploadFile} />
                       <Route path="/blog" exact component={Employee} />
                       <Route path="/user/:id" exact component={WrapUserInfo} />

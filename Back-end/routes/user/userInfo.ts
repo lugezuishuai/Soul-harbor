@@ -272,7 +272,7 @@ router.post('/register', urlencodedParser, (req, res) => {
           });
       }
     } else {
-      req.logIn(user, (error) => {
+      req.logIn(user, () => {
         const { email } = req.body;
         const data = {
           username: user.soul_username,
@@ -495,7 +495,8 @@ router.post('/sendRegisterVerifyCode', (req, res) => {
 
 // 忘记密码
 router.post('/forgetPassword', (req, res) => {
-  const ipArr = req.connection.remoteAddress?.split(':');
+  const clientAddress =
+    req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.ip || '';
   const { email } = req.body;
   if (!email) {
     res.status(400).json({
@@ -538,7 +539,7 @@ router.post('/forgetPassword', (req, res) => {
                 <br/>
                 <h2>Note: the IP address to send the link is:</h2>
                 <br/>
-                <h3>${ipArr && ipArr[ipArr.length - 1]}</h3>
+                <h3>${clientAddress}</h3>
                 <br/>
                 <div>This link is valid for 5 minutes. Please enter this link within 5 minutes to reset your password</div>
               </div>`,
@@ -648,50 +649,48 @@ router.get('/checkTokenValid', (req, res) => {
 });
 
 // 重新设置密码
-router.post('/updatePassword', (req, res) => {
-  const { username, password } = req.body;
-  const searchUserInfo = `select soul_user_info.soul_username, forget_pw_token.token, forget_pw_token.expire_time from soul_user_info, forget_pw_token where binary soul_user_info.soul_email = forget_pw_token.email`;
-  query(searchUserInfo)
-    .then((result) => {
-      if (!result || result.length === 0) {
-        res.status(200).json({
+router.post('/updatePassword', async (req, res) => {
+  try {
+    const { username, password, token } = req.body;
+    const searchUserInfo = `select soul_user_info.soul_username, soul_user_info.soul_email, forget_pw_token.expire_time from soul_user_info, forget_pw_token where binary soul_user_info.soul_email = forget_pw_token.email and binary forget_pw_token.token = '${token}'`;
+    const result = await query(searchUserInfo);
+
+    if (!result || result.length !== 1) {
+      return res.status(200).json({
+        code: expiredOrUnValid,
+        data: {},
+        msg: 'no valid link or link expired',
+      });
+    } else {
+      const { soul_username, expire_time, soul_email } = result[0];
+      if (username === soul_username && Number(expire_time) >= dayjs(new Date()).valueOf()) {
+        // 链接没有失效
+        const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+        const updatePassword = `update soul_user_info set soul_username = '${username}', soul_password = '${hashedPassword}' where binary soul_email = '${soul_email}'`;
+        await query(updatePassword);
+
+        return res.status(200).json({
+          code: 0,
+          data: {},
+          msg: 'update password success',
+        });
+      } else {
+        // 链接已经失效
+        return res.status(200).json({
           code: expiredOrUnValid,
           data: {},
           msg: 'no valid link or link expired',
         });
-      } else {
-        if (username === result[0].soul_username && Number(result[0].expire_time) >= dayjs(new Date()).valueOf()) {
-          // 链接没有失效
-          bcrypt
-            .hash(password, BCRYPT_SALT_ROUNDS)
-            .then((hashedPassword) => {
-              const updatePassword = `update soul_user_info, forget_pw_token set soul_user_info.soul_username = '${username}', soul_user_info.soul_password = '${hashedPassword}', forget_pw_token.token = '', forget_pw_token.expire_time = '' where binary soul_user_info.soul_email = forget_pw_token.email`;
-              return query(updatePassword);
-            })
-            .then(() => {
-              res.status(200).json({
-                code: 0,
-                data: {},
-                msg: 'update password success',
-              });
-            });
-        } else {
-          res.status(200).json({
-            code: expiredOrUnValid,
-            data: {},
-            msg: 'no valid link or link expired',
-          });
-        }
       }
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(500).json({
-        code: 1,
-        data: {},
-        msg: e.message.toString(),
-      });
+    }
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
     });
+  }
 });
 
 // 发送登录验证码

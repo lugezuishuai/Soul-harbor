@@ -33,6 +33,7 @@ import Cookie from 'js-cookie';
 import { ExitGroupReq } from '@/interface/chat/exitGroup';
 import { SELECT_SESSION, UPDATE_SESSION_INFO } from '@/redux/actions/action_types';
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
+import { useHistory } from 'react-router-dom';
 import './index.less';
 
 const { confirm } = Modal;
@@ -63,6 +64,7 @@ function ChatRoom({
   getSessionsList,
   updateUnreadMsg,
 }: ChatRoomProps) {
+  const history = useHistory();
   const { getFieldDecorator, resetFields, validateFields } = form;
   const { sessionMsg, setSessionMsg } = useChat();
   const [readMessage, setReadMessage] = useState<MsgInfo[]>([]); // 已读信息
@@ -141,6 +143,7 @@ function ChatRoom({
         await apiPost(EXIT_GROUP, reqData);
         message.success('退出成功');
 
+        history.push('/chat');
         dispatch({
           type: SELECT_SESSION,
           payload: null,
@@ -353,7 +356,7 @@ function ChatRoom({
   useEffect(() => {
     getHistoryMsg();
     getGroupMembers();
-  }, [getHistoryMsg]);
+  }, [getHistoryMsg, getGroupMembers]);
 
   useEffect(() => {
     receiveMsg();

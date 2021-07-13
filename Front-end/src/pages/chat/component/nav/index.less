@@ -8,6 +8,10 @@
     background: @N300;
     display: flex;
     flex-flow: column;
+    @media screen and (max-width: 1200px) {
+      width: 64px;
+      min-width: 64px;
+    }
     &-unread {
       pointer-events: none;
       user-select: none;
@@ -23,6 +27,9 @@
       background: red;
       color: #fff;
       font-size: 12px;
+      @media screen and (max-width: 1200px) {
+        left: 40px;
+      }
     }
     &-avatar {
       width: 48px;

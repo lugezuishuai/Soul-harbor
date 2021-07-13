@@ -52,6 +52,9 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        @media screen and (max-width: 1200px) {
+          width: 106px;
+        }
       }
       &-time {
         color: @N500;
@@ -75,6 +78,9 @@
       border-radius: 4px;
       background: #fff;
       margin-bottom: 12px;
+      @media screen and (max-width: 1200px) {
+        width: 232px;
+      }
       &:last-child {
         margin-bottom: 0;
       }
@@ -96,10 +102,16 @@
         &-name {
           width: 120px;
           height: 100%;
+          @media screen and (max-width: 1200px) {
+            width: 90px;
+          }
         }
         &-time {
           width: 40px;
           height: 100%;
+          @media screen and (max-width: 1200px) {
+            width: 26px;
+          }
         }
         &-msg {
           width: 100%;

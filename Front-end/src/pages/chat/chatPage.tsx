@@ -1,15 +1,17 @@
 import { Action } from '@/redux/actions';
 import {
+  ActiveMsgState,
   ChatActiveMenuState,
   FriendListState,
   GroupsListState,
+  SelectSession,
   SelectSessionState,
   SessionsListState,
   SocketState,
   State,
   UserInfoState,
 } from '@/redux/reducers/state';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { ChatNav } from './component/nav';
 import { NoSearchResult, WrapChatSearch } from './component/search';
@@ -20,6 +22,7 @@ import { FriendInfo, GetFriendsListRes } from '@/interface/chat/getFriendsList';
 import { apiGet } from '@/utils/request';
 import { GET_FRIENDS_LIST, GET_GROUPS_LIST, GET_SESSIONS_LIST, GET_SESSION_INFO } from '@/constants/urls';
 import {
+  ACTIVE_MSG,
   ACTIVE_SESSION,
   DELETE_FRIEND_ACTION,
   DELETE_SESSION_INFO,
@@ -42,6 +45,8 @@ import ArrowDown from '@/assets/icon/arrow_down.svg';
 import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
 import { RoomCard, RoomCardSkeleton } from './component/roomCard';
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
+import { useHistory, useLocation } from 'react-router-dom';
+import { ActiveMsg } from './component/activeMsg';
 import './index.less';
 
 const { confirm } = Modal;
@@ -58,6 +63,7 @@ interface ChatPageProps {
   sessionsList: SessionsListState;
   selectSession: SelectSessionState;
   activeSession: string[];
+  activeMsg: ActiveMsgState;
   unreadChatMsgCount: number;
   friendsListFold: boolean;
   groupsListFold: boolean;
@@ -74,6 +80,8 @@ export interface ActiveSessionPayload {
 }
 
 function ChatPage(props: ChatPageProps) {
+  const locationRef = useRef(useLocation());
+  const historyRef = useRef(useHistory());
   const {
     userInfo,
     activeMenu,
@@ -85,6 +93,7 @@ function ChatPage(props: ChatPageProps) {
     sessionsList,
     selectSession,
     activeSession,
+    activeMsg,
     unreadChatMsgCount,
     friendsListFold,
     groupsListFold,
@@ -382,6 +391,10 @@ function ChatPage(props: ChatPageProps) {
             type: ACTIVE_SESSION,
             payload,
           });
+          dispatch({
+            type: ACTIVE_MSG,
+            payload: msg,
+          });
         }
       } else {
         // 群聊
@@ -397,6 +410,10 @@ function ChatPage(props: ChatPageProps) {
           dispatch({
             type: ACTIVE_SESSION,
             payload,
+          });
+          dispatch({
+            type: ACTIVE_MSG,
+            payload: msg,
           });
         }
       }
@@ -446,6 +463,69 @@ function ChatPage(props: ChatPageProps) {
     }
   }, [groupsList, socket]);
 
+  // 初始化selectSession
+  const initSelectSession = useCallback(async () => {
+    const pathnameArr = locationRef.current.pathname.split('/');
+    const sessionId = pathnameArr[pathnameArr.length - 1];
+
+    if (selectSession) {
+      historyRef.current.push(`/chat/${selectSession.sessionId}`);
+    } else {
+      if (sessionId === 'chat' || sessionId === '') {
+        return;
+      }
+
+      if (friendsList && groupsList) {
+        const promiseFriend = new Promise((resolve, reject) => {
+          if (!friendsList.length) {
+            reject();
+          }
+
+          const friendInfo = friendsList.find((item) => item.friend_id === sessionId);
+
+          if (friendInfo) {
+            const { friend_id, friend_username } = friendInfo;
+            const session: SelectSession = {
+              sessionId: friend_id,
+              name: friend_username,
+              type: 'private',
+            };
+            resolve(session);
+          } else {
+            reject();
+          }
+        });
+
+        const promiseGroup = new Promise((resolve, reject) => {
+          if (!groupsList.length) {
+            reject();
+          }
+
+          const groupInfo = groupsList.find((item) => item.room_id === sessionId);
+
+          if (groupInfo) {
+            const { room_id, room_name } = groupInfo;
+            const session: SelectSession = {
+              sessionId: room_id,
+              name: room_name,
+              type: 'room',
+            };
+            resolve(session);
+          } else {
+            reject();
+          }
+        });
+
+        const result = await Promise.any([promiseFriend, promiseGroup]);
+
+        dispatch({
+          type: SELECT_SESSION,
+          payload: result,
+        });
+      }
+    }
+  }, [friendsList, groupsList, dispatch, selectSession]);
+
   useEffect(() => {
     joinRoom();
   }, [joinRoom]);
@@ -459,6 +539,23 @@ function ChatPage(props: ChatPageProps) {
   useEffect(() => {
     listenSocket();
   }, [listenSocket]);
+
+  useEffect(() => {
+    initSelectSession();
+  }, [initSelectSession]);
+
+  useEffect(() => {
+    if (activeMsg) {
+      const timer = setTimeout(() => {
+        dispatch({
+          type: ACTIVE_MSG,
+          payload: null,
+        });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [activeMsg, dispatch]);
 
   return (
     <div className="chat-page">
@@ -486,6 +583,7 @@ function ChatPage(props: ChatPageProps) {
         getSessionsList={getSessionsList}
         updateUnreadMsg={updateUnreadMsg}
       />
+      {activeMsg && <ActiveMsg msg={activeMsg} friendsList={friendsList} groupsList={groupsList} dispatch={dispatch} />}
     </div>
   );
 }
@@ -502,6 +600,7 @@ export const WrapChatPage = connect(
       sessionsList,
       selectSession,
       activeSession,
+      activeMsg,
       unreadChatMsgCount,
       friendsListFold,
       groupsListFold,
@@ -516,6 +615,7 @@ export const WrapChatPage = connect(
     sessionsList,
     selectSession,
     activeSession,
+    activeMsg,
     unreadChatMsgCount,
     friendsListFold,
     groupsListFold,

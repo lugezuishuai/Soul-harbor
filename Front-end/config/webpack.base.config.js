@@ -127,7 +127,7 @@ module.exports = {
       },
       {
         test: /\.less$/i,
-        include: /node_modules\/(antd|slick-carousel)/,
+        include: /node_modules/,
         use: [
           miniCssLoader,
           { loader: 'css-loader', options: { sourceMap, modules: false } },
@@ -137,7 +137,7 @@ module.exports = {
       },
       {
         test: /\.less$/i,
-        exclude: /node_modules\/(antd|slick-carousel)/,
+        exclude: /node_modules/,
         use: [
           miniCssLoader,
           { loader: 'css-loader', options: { sourceMap, modules: true, import: true } },

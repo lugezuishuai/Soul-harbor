@@ -1,16 +1,12 @@
 import mysql from 'mysql';
-import { employeeDbConfig, userInfoDbConfig } from '../config/db';
-
-type DbName = 'userInfo' | 'employee';
+import { mysqlDbConfig } from '../config/db';
 
 // 注意：连接池要放在最外面
-const userInfoPool = mysql.createPool(userInfoDbConfig);
-const employeePool = mysql.createPool(employeeDbConfig);
+const soulHarborPool = mysql.createPool(mysqlDbConfig);
 
-export default function query(sql: string, dbName: DbName = 'userInfo', values?: any) {
-  const pool = dbName === 'userInfo' ? userInfoPool : employeePool;
+export default function query(sql: string, values?: any) {
   return new Promise<any>((resolve, reject) => {
-    pool.getConnection((error, connection) => {
+    soulHarborPool.getConnection((error, connection) => {
       if (error) {
         console.log('query connect error!', error);
       } else {

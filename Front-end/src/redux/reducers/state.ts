@@ -1,5 +1,6 @@
 import { FriendInfo } from '@/interface/chat/getFriendsList';
 import { RoomInfo } from '@/interface/chat/getGroupsList';
+import { MsgInfo } from '@/interface/chat/getHistoryMsg';
 import { SessionInfo } from '@/interface/chat/getSessionsList';
 import { UnreadMsg } from '@/interface/chat/getUnreadMsg';
 import { EmployeeResponse } from '@/interface/employee';
@@ -40,6 +41,7 @@ export interface SelectSession {
 }
 
 export type SelectSessionState = SelectSession | null;
+export type ActiveMsgState = MsgInfo | null;
 
 export type ChatState = {
   socket: SocketState;
@@ -52,6 +54,7 @@ export type ChatState = {
   unreadChatMsgCount: number;
   selectSession: SelectSessionState;
   activeSession: string[];
+  activeMsg: ActiveMsgState;
   friendsListFold: boolean;
   groupsListFold: boolean;
 };
@@ -90,6 +93,7 @@ export const initialChatState: ChatState = {
   unreadChatMsgCount: 0,
   selectSession: null,
   activeSession: [],
+  activeMsg: null,
   friendsListFold: false,
   groupsListFold: false,
 };
