@@ -272,7 +272,7 @@ router.post('/register', urlencodedParser, (req, res) => {
           });
       }
     } else {
-      req.logIn(user, (error) => {
+      req.logIn(user, () => {
         const { email } = req.body;
         const data = {
           username: user.soul_username,
