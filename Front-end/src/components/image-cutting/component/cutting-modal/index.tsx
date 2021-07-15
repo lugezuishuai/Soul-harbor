@@ -31,7 +31,7 @@ export function CuttingModal({ onCancel }: CuttingModalProps) {
     height: number;
   };
 
-  let canvasSize = {} as {
+  const canvasSize = {} as {
     width: number;
     height: number;
   };
