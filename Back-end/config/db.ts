@@ -9,7 +9,7 @@ export const mysqlDbConfig: PoolConfig = {
   port: Number(process.env.DBPORT) || 3306,
   user: process.env.DBUSER || 'jackson',
   password: process.env.DBPASSWORD || '000008053927',
-  database: process.env.DATABASE || 'soul-harbor',
+  database: process.env.DATABASE || 'soul_harbor',
 };
 
 // redis 相关

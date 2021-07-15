@@ -225,7 +225,13 @@ export const ImageEditor = forwardRef<RcRef, ImageEditorProps>((props, ref) => {
   useImperativeHandle(
     ref,
     () => ({
-      getImageDataURL: () => canvas.current?.toDataURL() as any,
+      getImageDataURL: () => {
+        if (!canvas.current) {
+          return '';
+        } else {
+          return canvas.current.toDataURL('image/png', 1);
+        }
+      },
     }),
     []
   );
