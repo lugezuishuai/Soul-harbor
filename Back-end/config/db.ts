@@ -16,5 +16,8 @@ export const mysqlDbConfig: PoolConfig = {
 export const redisConfig: ClientOpts = {
   host: process.env.DBHOST || 'localhost',
   port: Number(process.env.REDIS_PORT) || 6379,
-  password: process.env.REDIS_PASSWORD || '000008053927',
 };
+
+if (process.env.REDIS_PASSWORD) {
+  redisConfig.password = process.env.REDIS_PASSWORD;
+}

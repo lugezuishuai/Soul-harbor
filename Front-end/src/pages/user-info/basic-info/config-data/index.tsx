@@ -16,6 +16,7 @@ import { connect } from 'react-redux';
 import { Action } from '@/redux/actions';
 import { State } from '@/redux/reducers/state';
 import { UserInfo } from '@/interface/user/init';
+import { useOriginDirectly } from './useOriginDirectly';
 import './index.less';
 
 const { TextArea } = Input;
@@ -136,7 +137,14 @@ function ConfigData(props: ConfigDataProps) {
             <div className="config-data__container">
               {getFieldDecorator('avatar', {
                 initialValue: avatar || defaultAvatar,
-              })(<ImageUpload beforeUpload={checkAvatar} upload={handleUploadAvatar} render={renderAvatar} />)}
+              })(
+                <ImageUpload
+                  useOriginDirectly={useOriginDirectly}
+                  beforeUpload={checkAvatar}
+                  upload={handleUploadAvatar}
+                  render={renderAvatar}
+                />
+              )}
               <div className="config-data__hint">JPEG/PNG/SVG/BMP 格式、2M 以内、不低于 240*240px</div>
             </div>
           ) : (

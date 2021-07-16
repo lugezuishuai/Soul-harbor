@@ -12,6 +12,7 @@ export interface ImageUploadProps {
   onChange?: (value: string) => void;
   size?: number | { width: number; height: number }; // 预览图标的尺寸
   value?: string; // 预览图标的src
+  useOriginDirectly?: (file: RcFile) => boolean | Promise<boolean>; // 满足某些条件直接上传
   beforeUpload?: (file: RcFile, files: RcFile[]) => boolean | Promise<void>; // 校验函数
   accept?: string;
   disabled?: boolean;
@@ -22,6 +23,10 @@ export interface ImageUploadProps {
   render?: (value?: string) => ReactNode;
 }
 
+function alwaysTrue() {
+  return true;
+}
+
 export function ImageUpload(props: PropsWithChildren<ImageUploadProps>) {
   const {
     onChange = noop,
@@ -29,7 +34,8 @@ export function ImageUpload(props: PropsWithChildren<ImageUploadProps>) {
     size = 64,
     value,
     upload,
-    beforeUpload = noop,
+    beforeUpload = alwaysTrue,
+    useOriginDirectly = noop,
     accept = 'image/png, image/jpeg, image/svg+xml, image/bmp',
     disabled = false,
     defaultImage = defaultIcon,
@@ -38,16 +44,16 @@ export function ImageUpload(props: PropsWithChildren<ImageUploadProps>) {
   } = props;
 
   const [loading, setLoading] = useState(false);
-  const height = typeof size == 'object' ? size.height : size;
-  const width = typeof size == 'object' ? size.width : size;
+  const height = typeof size === 'object' ? size.height : size;
+  const width = typeof size === 'object' ? size.width : size;
 
   // 上传图片
   async function handleRequest(options: any) {
     const { onSuccess, onError } = options;
     try {
-      const file = await convertFile(options.file);
+      const file = (await useOriginDirectly(options.file)) ? options.file : await convertFile(options.file);
       setLoading(true);
-      const url = await upload(file as File);
+      const url = await upload(file);
       // 调用antd成功事件
       onSuccess({ url });
       onChange(url);
