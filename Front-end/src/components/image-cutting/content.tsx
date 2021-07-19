@@ -12,11 +12,14 @@ import { getPixelRatio } from './utils/getPixelRatio';
 import { getSelectRectInfo } from './utils/handleSelectRectInfo';
 import { SelectPosition } from './type';
 import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
+import { useSyncCallback } from '@/utils/hook/useSyncCallback';
 import './index.less';
 
 interface CuttingModalProps {
   onCancel(): void;
   acceptFileType?: string;
+  minScale?: number;
+  maxScale?: number;
 }
 
 interface InitSize {
@@ -48,9 +51,12 @@ export interface ImageInfo {
 export function CuttingModal({
   onCancel,
   acceptFileType = 'image/gif,image/jpeg,image/jpg,image/png,image/svg',
+  minScale = 1,
+  maxScale = 2,
 }: CuttingModalProps) {
   const [dataUrl, setDataUrl] = useState<string>(); // 截取图片的base64
   const [canChangeSelect, setCanChangeSelect] = useState(false); // 选择框是否可以改变
+  const [scale, setScale] = useState(1); // 图片初始缩放比例
 
   const resetSelect = useRef(false); // 重置图片的标志
   const openGray = useRef(false); // 是否开启灰度
@@ -80,6 +86,9 @@ export function CuttingModal({
   }); // 所框选的矩形的坐标和宽高信息
   const initMousePosition = useRef<InitMousePosition | null>(null);
   const canvasSize = useRef<CanvasSize | null>(null);
+
+  const isZoomInDisabled = !imageInfo.current.img || Math.abs(scale - maxScale) < 0.01;
+  const isZoomOUtDisabled = !imageInfo.current.img || Math.abs(scale - minScale) < 0.01;
 
   /**
    * 计算canvas-size
@@ -135,8 +144,8 @@ export function CuttingModal({
       ctx.current.translate(-canvasWidth / 2, -canvasHeight / 2); // 旋转完之后平移会原来的位置，这样就可以做到一中心店为轴旋转
 
       if (imgSize?.width && imgSize.height && img) {
-        const scaleImgWidth = imgScale * imgSize.width;
-        const scaleImgHeight = imgScale * imgSize.height;
+        const scaleImgWidth = imgScale * imgSize.width * scale;
+        const scaleImgHeight = imgScale * imgSize.height * scale;
 
         ctx.current.drawImage(
           img,
@@ -325,6 +334,34 @@ export function CuttingModal({
   }
 
   /**
+   * 将canvas里的图片转化为dataUrl
+   */
+  async function imgToDataUrl() {
+    if (dataUrl) {
+      window.URL.revokeObjectURL(dataUrl);
+    }
+
+    const { imgSize, imgScale, img } = imageInfo.current;
+    if (imgSize && img && canvasSize.current) {
+      const blob = await getImageData({
+        imgSize,
+        rotate: rotate.current,
+        img,
+        canvasSize: canvasSize.current,
+        imgScale: imgScale,
+        scale,
+        selectPosition: selectPosition.current,
+        openGray: openGray.current,
+      });
+
+      if (blob) {
+        const newDataUrl = window.URL.createObjectURL(blob);
+        setDataUrl(newDataUrl);
+      }
+    }
+  }
+
+  /**
    * 鼠标抬起事件
    */
   const handleMouseUp = useCallback(async () => {
@@ -342,33 +379,15 @@ export function CuttingModal({
       }
 
       if (canChangeSelect) {
-        dataUrl && window.URL.revokeObjectURL(dataUrl);
         setCanChangeSelect(false);
-
-        const { imgSize, imgScale, img } = imageInfo.current;
-        if (imgSize && img && canvasSize.current) {
-          const blob = await getImageData({
-            imgSize,
-            rotate: rotate.current,
-            img,
-            canvasSize: canvasSize.current,
-            imgScale,
-            selectPosition: selectPosition.current,
-            openGray: openGray.current,
-          });
-
-          if (blob) {
-            const newDataUrl = window.URL.createObjectURL(blob);
-            setDataUrl(newDataUrl);
-          }
-        }
+        await imgToDataUrl();
       }
 
       tempCursorIndex.current = null;
     } catch (e) {
       console.error(e);
     }
-  }, [canChangeSelect, dataUrl]);
+  }, [canChangeSelect, dataUrl, scale]);
 
   /**
    * canvas绘制图片初始化
@@ -440,7 +459,7 @@ export function CuttingModal({
   /**
    * 旋转
    */
-  function handleRotate() {
+  async function handleRotate() {
     if (!imageInfo.current.img) {
       return;
     }
@@ -448,7 +467,15 @@ export function CuttingModal({
     rotate.current = rotate.current === 270 ? 0 : rotate.current + 90;
     calcCanvasSize();
     drawImage();
+    await imgToDataUrl();
   }
+
+  // 使用useSyncCallback这个hook可以在useState改变值之后立刻获取到最新的值
+  const scaleSyncCallback = useSyncCallback(async () => {
+    calcCanvasSize();
+    drawImage();
+    await imgToDataUrl();
+  });
 
   /**
    * 缩放
@@ -459,16 +486,14 @@ export function CuttingModal({
       return;
     }
 
-    const _status = status ? 1 : -1;
-    imageInfo.current.imgScale += 0.1 * _status;
-    calcCanvasSize();
-    drawImage();
+    status ? setScale((s) => Math.min(maxScale, s + 0.1)) : setScale((s) => Math.max(minScale, s - 0.1));
+    scaleSyncCallback();
   }
 
   /**
    * 灰度
    */
-  function handleGrayScale() {
+  async function handleGrayScale() {
     if (!imageInfo.current.img) {
       return;
     }
@@ -480,8 +505,17 @@ export function CuttingModal({
       const { width: canvasWidth, height: canvasHeight } = canvasSize.current;
       ctx.current.clearRect(0, 0, canvasWidth, canvasHeight);
       drawImage();
+      await imgToDataUrl();
     }
   }
+
+  const resetSyncCallback = useSyncCallback(() => {
+    const { img } = imageInfo.current;
+    img && initImageCanvas(img);
+    calcCanvasSize();
+    drawImage();
+    initDataUrl();
+  });
 
   /**
    * 重置
@@ -493,11 +527,14 @@ export function CuttingModal({
 
     rotate.current = 0;
     openGray.current = false;
-    const { img } = imageInfo.current;
-    img && initImageCanvas(img);
-    calcCanvasSize();
-    drawImage();
-    initDataUrl();
+    selectPosition.current = {
+      x: 0,
+      y: 0,
+      w: 0,
+      h: 0,
+    };
+    setScale(1);
+    resetSyncCallback();
   }
 
   useEffect(() => {
@@ -539,23 +576,53 @@ export function CuttingModal({
             选择图片
           </Button>
           <div>
-            <Button type="primary" className="image-cutting-content__btn" ghost onClick={() => handleScale(true)}>
+            <Button
+              type="primary"
+              className="image-cutting-content__btn"
+              ghost
+              disabled={isZoomInDisabled}
+              onClick={() => handleScale(true)}
+            >
               放大
             </Button>
-            <Button type="primary" className="image-cutting-content__btn" ghost onClick={() => handleScale(false)}>
+            <Button
+              type="primary"
+              className="image-cutting-content__btn"
+              ghost
+              disabled={isZoomOUtDisabled}
+              onClick={() => handleScale(false)}
+            >
               缩小
             </Button>
           </div>
-          <Button type="primary" className="image-cutting-content__btn" ghost onClick={handleRotate}>
+          <Button
+            type="primary"
+            className="image-cutting-content__btn"
+            ghost
+            disabled={!imageInfo.current.img}
+            onClick={handleRotate}
+          >
             旋转
           </Button>
-          <Button type="primary" className="image-cutting-content__btn" ghost onClick={handleGrayScale}>
+          <Button
+            type="primary"
+            className="image-cutting-content__btn"
+            ghost
+            disabled={!imageInfo.current.img}
+            onClick={handleGrayScale}
+          >
             灰度
           </Button>
-          <Button type="primary" className="image-cutting-content__btn" ghost onClick={handleReset}>
+          <Button
+            type="primary"
+            className="image-cutting-content__btn"
+            ghost
+            disabled={!imageInfo.current.img}
+            onClick={handleReset}
+          >
             重置
           </Button>
-          <Button type="primary" className="image-cutting-content__btn">
+          <Button type="primary" className="image-cutting-content__btn" disabled={!imageInfo.current.img}>
             <a href={dataUrl} download="canvas.png">
               下载
             </a>

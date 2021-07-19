@@ -22,6 +22,7 @@ export interface GetDataOptions {
     height: number;
   };
   imgScale: number;
+  scale: number;
   openGray: boolean;
   selectPosition: SelectPosition;
 }

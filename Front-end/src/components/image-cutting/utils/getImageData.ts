@@ -3,10 +3,19 @@ import { getGrayScaleData } from './getGrayScaleData';
 
 /**
  *
- * @param param0 选中的图片的信息
+ * @param 选中的图片的信息
  * @returns 选择框中图片的base64
  */
-export function getImageData({ imgSize, rotate, img, canvasSize, imgScale, selectPosition, openGray }: GetDataOptions) {
+export function getImageData({
+  imgSize,
+  rotate,
+  img,
+  canvasSize,
+  imgScale,
+  scale,
+  selectPosition,
+  openGray,
+}: GetDataOptions) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
@@ -37,10 +46,10 @@ export function getImageData({ imgSize, rotate, img, canvasSize, imgScale, selec
     [imgWidth, imgHeight] = [imgHeight, imgWidth];
   }
 
-  const putX = (imgWidth - canvasWidth / imgScale) / 2 + selectPosition.x / imgScale;
-  const putY = (imgHeight - canvasHeight / imgScale) / 2 + selectPosition.y / imgScale;
-  const putW = selectPosition.w / imgScale;
-  const putH = selectPosition.h / imgScale;
+  const putX = (imgWidth - canvasWidth / (imgScale * scale)) / 2 + selectPosition.x / (imgScale * scale);
+  const putY = (imgHeight - canvasHeight / (imgScale * scale)) / 2 + selectPosition.y / (imgScale * scale);
+  const putW = selectPosition.w ? selectPosition.w / (imgScale * scale) : imgWidth / scale;
+  const putH = selectPosition.h ? selectPosition.h / (imgScale * scale) : imgHeight / scale;
 
   if (!putW || !putH) {
     return '';
