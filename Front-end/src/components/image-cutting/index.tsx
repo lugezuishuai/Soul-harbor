@@ -25,8 +25,9 @@ export async function imageCutting() {
         onCancel: () => hide(),
       },
       centered: true,
-      closable: true,
+      closable: false,
       footer: null,
+      destroyOnClose: true,
     },
     'modal'
   );

@@ -10,6 +10,8 @@ import { getImageData } from './utils/getImageData';
 import { getMousePosition } from './utils/getMousePosition';
 import { getPixelRatio } from './utils/getPixelRatio';
 import { getSelectRectInfo } from './utils/handleSelectRectInfo';
+import { SelectPosition } from './type';
+import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
 import './index.less';
 
 interface CuttingModalProps {
@@ -26,13 +28,6 @@ interface InitSize {
 interface CanvasSize {
   width: number;
   height: number;
-}
-
-interface SelectPosition {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
 }
 
 interface InitMousePosition {
@@ -54,12 +49,12 @@ export function CuttingModal({
   onCancel,
   acceptFileType = 'image/gif,image/jpeg,image/jpg,image/png,image/svg',
 }: CuttingModalProps) {
-  const [dataUrl, setDataUrl] = useState<string>();
-  const [canChangeSelect, setCanChangeSelect] = useState(false);
-  const [resetSelect, setResetSelect] = useState(false);
-  const [openGray, setOpenGray] = useState(false); // 是否开启灰度图
-  const [ratio, setRatio] = useState(1); // 物理像素与CSS像素之比
+  const [dataUrl, setDataUrl] = useState<string>(); // 截取图片的base64
+  const [canChangeSelect, setCanChangeSelect] = useState(false); // 选择框是否可以改变
 
+  const resetSelect = useRef(false); // 重置图片的标志
+  const openGray = useRef(false); // 是否开启灰度
+  const ratio = useRef(1); // 物理像素与CSS像素之比
   const rotate = useRef(0); // 图片旋转角度
   const cursorIndex = useRef<number | null>(null); // 鼠标的表示方式
   const tempCursorIndex = useRef<number | null>(null);
@@ -108,10 +103,10 @@ export function CuttingModal({
 
     canvasRef.current.style.width = `${canvasWidth}px`;
     canvasRef.current.style.height = `${canvasHeight}px`;
-    canvasRef.current.width = canvasWidth * ratio;
-    canvasRef.current.height = canvasHeight * ratio;
+    canvasRef.current.width = canvasWidth * ratio.current;
+    canvasRef.current.height = canvasHeight * ratio.current;
 
-    ctx.current && ctx.current.scale(ratio, ratio);
+    ctx.current && ctx.current.scale(ratio.current, ratio.current);
 
     canvasSize.current = {
       width: canvasWidth,
@@ -151,8 +146,8 @@ export function CuttingModal({
           scaleImgHeight
         );
 
-        if (openGray) {
-          const imgData = ctx.current.getImageData(0, 0, canvasWidth * ratio, canvasHeight * ratio);
+        if (openGray.current) {
+          const imgData = ctx.current.getImageData(0, 0, canvasWidth * ratio.current, canvasHeight * ratio.current);
           getGrayScaleData(imgData);
           ctx.current.putImageData(imgData, 0, 0); // 将经过灰度处理的图像绘制到位图上
         }
@@ -242,10 +237,15 @@ export function CuttingModal({
    * @param e
    */
   function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
-    if (cursorIndex.current === 9) {
-      setResetSelect(true);
+    if (!imageInfo.current.img) {
+      return;
     }
-    setCanChangeSelect(true);
+
+    if (cursorIndex.current === 9) {
+      resetSelect.current = true;
+    }
+
+    !canChangeSelect && setCanChangeSelect(true);
     const { offsetX, offsetY } = e.nativeEvent;
     initMousePosition.current = {
       x: offsetX,
@@ -258,13 +258,13 @@ export function CuttingModal({
    * @param e
    */
   function handleMouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
-    if (!ctx || !canvasRef.current) {
+    if (!ctx.current || !canvasRef.current || !imageInfo.current.img) {
       return;
     }
 
     const { offsetX, offsetY } = e.nativeEvent;
-    const pathX = offsetX * ratio;
-    const pathY = offsetY * ratio;
+    const pathX = offsetX * ratio.current;
+    const pathY = offsetY * ratio.current;
 
     let cursor = 'crosshair'; // 交叉指针
     cursorIndex.current = 9;
@@ -286,7 +286,7 @@ export function CuttingModal({
 
     if (initMousePosition.current) {
       const { x: initX, y: initY } = initMousePosition.current;
-      if (resetSelect) {
+      if (resetSelect.current) {
         selectPosition.current = {
           x: initX,
           y: initY,
@@ -294,7 +294,7 @@ export function CuttingModal({
           h: 4,
         };
         tempCursorIndex.current = 2;
-        setResetSelect(false);
+        resetSelect.current = false;
       }
 
       const distanceX = initX ? offsetX - initX : offsetX;
@@ -318,7 +318,7 @@ export function CuttingModal({
         y: offsetY,
       };
 
-      if (!tempCursorIndex.current) {
+      if (isNullOrUndefined(tempCursorIndex.current)) {
         tempCursorIndex.current = cursorIndex.current;
       }
     }
@@ -328,39 +328,47 @@ export function CuttingModal({
    * 鼠标抬起事件
    */
   const handleMouseUp = useCallback(async () => {
-    if (selectPosition.current.w < 0 || selectPosition.current.h < 0) {
-      // 为了应对将选中框矩形移动到原点对称的位置
-      selectPosition.current = getAnewXY(selectPosition.current);
-
-      const { x, y, w, h } = selectPosition.current;
-      mousePosition.current = getMousePosition(x, y, w, h);
-    }
-
-    if (canChangeSelect) {
-      if (dataUrl) {
-        window.URL.revokeObjectURL(dataUrl);
+    try {
+      if (!imageInfo.current.img) {
+        return;
       }
 
-      const { imgSize, imgScale, img } = imageInfo.current;
-      if (imgSize && img && canvasSize.current) {
-        const blob = getImageData({
-          imgSize,
-          rotate: rotate.current,
-          img,
-          canvasSize: canvasSize.current,
-          imgScale,
-          selectPosition: selectPosition.current,
-          openGray,
-        });
+      if (selectPosition.current.w < 0 || selectPosition.current.h < 0) {
+        // 为了应对将选中框矩形移动到原点对称的位置
+        selectPosition.current = getAnewXY(selectPosition.current);
 
-        const newDataUrl = window.URL.createObjectURL(blob);
-        setDataUrl(newDataUrl);
+        const { x, y, w, h } = selectPosition.current;
+        mousePosition.current = getMousePosition(x, y, w, h);
       }
-    }
 
-    setCanChangeSelect(false);
-    tempCursorIndex.current = null;
-  }, []);
+      if (canChangeSelect) {
+        dataUrl && window.URL.revokeObjectURL(dataUrl);
+        setCanChangeSelect(false);
+
+        const { imgSize, imgScale, img } = imageInfo.current;
+        if (imgSize && img && canvasSize.current) {
+          const blob = await getImageData({
+            imgSize,
+            rotate: rotate.current,
+            img,
+            canvasSize: canvasSize.current,
+            imgScale,
+            selectPosition: selectPosition.current,
+            openGray: openGray.current,
+          });
+
+          if (blob) {
+            const newDataUrl = window.URL.createObjectURL(blob);
+            setDataUrl(newDataUrl);
+          }
+        }
+      }
+
+      tempCursorIndex.current = null;
+    } catch (e) {
+      console.error(e);
+    }
+  }, [canChangeSelect, dataUrl]);
 
   /**
    * canvas绘制图片初始化
@@ -376,15 +384,11 @@ export function CuttingModal({
       height: imgHeight,
     };
 
-    if (imgWidth <= initSize.width && imgHeight <= initSize.height) {
-      return;
-    }
-
     let imgScale: number;
-    if (imgProportion > initSize.proportion) {
-      imgScale = initSize.width / imgWidth;
+    if (imgWidth <= initSize.width && imgHeight <= initSize.height) {
+      imgScale = 1;
     } else {
-      imgScale = initSize.height / imgHeight;
+      imgScale = imgProportion > initSize.proportion ? initSize.width / imgWidth : initSize.height / imgHeight;
     }
 
     imageInfo.current = {
@@ -392,6 +396,15 @@ export function CuttingModal({
       imgScale,
       imgSize,
     };
+  }
+
+  /**
+   * 获取初始的dataUrl
+   */
+  function initDataUrl() {
+    if (canvasRef.current) {
+      setDataUrl(canvasRef.current.toDataURL('image/png'));
+    }
   }
 
   /**
@@ -411,6 +424,7 @@ export function CuttingModal({
           initImageCanvas(img);
           calcCanvasSize();
           drawImage();
+          initDataUrl();
         };
         img.src = createURL.current;
         imageInfo.current = {
@@ -427,6 +441,10 @@ export function CuttingModal({
    * 旋转
    */
   function handleRotate() {
+    if (!imageInfo.current.img) {
+      return;
+    }
+
     rotate.current = rotate.current === 270 ? 0 : rotate.current + 90;
     calcCanvasSize();
     drawImage();
@@ -437,14 +455,25 @@ export function CuttingModal({
    * @param status true: 放大，false: 缩小
    */
   function handleScale(status: boolean) {
+    if (!imageInfo.current.img) {
+      return;
+    }
+
     const _status = status ? 1 : -1;
     imageInfo.current.imgScale += 0.1 * _status;
     calcCanvasSize();
     drawImage();
   }
 
+  /**
+   * 灰度
+   */
   function handleGrayScale() {
-    setOpenGray(!openGray);
+    if (!imageInfo.current.img) {
+      return;
+    }
+
+    openGray.current = !openGray.current;
     mousePosition.current = [];
 
     if (ctx.current && canvasSize.current) {
@@ -458,20 +487,24 @@ export function CuttingModal({
    * 重置
    */
   function handleReset() {
+    if (!imageInfo.current.img) {
+      return;
+    }
+
     rotate.current = 0;
-    setOpenGray(false);
+    openGray.current = false;
     const { img } = imageInfo.current;
     img && initImageCanvas(img);
     calcCanvasSize();
     drawImage();
-    setDataUrl('');
+    initDataUrl();
   }
 
   useEffect(() => {
     try {
       if (canvasRef.current && !ctx.current) {
         ctx.current = canvasRef.current.getContext('2d') as CanvasRenderingContext2D;
-        setRatio(getPixelRatio(ctx.current));
+        ratio.current = getPixelRatio(ctx.current);
       }
     } catch (e) {
       console.error(e);
@@ -495,8 +528,15 @@ export function CuttingModal({
         </div>
         <div className="image-cutting-content__operation">
           <div className="image-cutting-content__image">{dataUrl && <img src={dataUrl} alt="canvas" />}</div>
-          <Button type="primary" className="image-cutting-content__btn">
-            <input className="image-cutting-content__input" ref={inputRef} type="file" onChange={handleChooseImg} accept={acceptFileType} />
+          <Button type="primary" className="image-cutting-content__btn" style={{ width: 100, borderRadius: 4 }}>
+            <input
+              className="image-cutting-content__input"
+              ref={inputRef}
+              type="file"
+              onChange={handleChooseImg}
+              accept={acceptFileType}
+            />
+            选择图片
           </Button>
           <div>
             <Button type="primary" className="image-cutting-content__btn" ghost onClick={() => handleScale(true)}>

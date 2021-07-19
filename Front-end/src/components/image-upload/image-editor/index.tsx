@@ -131,7 +131,7 @@ export const ImageEditor = forwardRef<RcRef, ImageEditorProps>((props, ref) => {
    * 每次鼠标移动都更新canvas容器中点相对图片左上角的坐标
    * @param e 鼠标事件
    */
-  function handleMouseMove(e: any) {
+  const handleMouseMove = useCallback((e: any) => {
     if (!drag) return;
     const mousePositionX = e.targetTouches ? e.targetTouches[0].pageX : e.clientX;
     const mousePositionY = e.targetTouches ? e.targetTouches[0].pageY : e.clientY;
@@ -157,11 +157,11 @@ export const ImageEditor = forwardRef<RcRef, ImageEditorProps>((props, ref) => {
       };
       paintImage();
     }
-  }
+  }, [drag, scale]);
 
-  function handleMouseUp() {
+  const handleMouseUp = useCallback(() => {
     drag && setDrag(false);
-  }
+  }, [drag]);
 
   function handleMouseDown(e: any) {
     const mousePositionX = e.targetTouches ? e.targetTouches[0].pageX : e.clientX;

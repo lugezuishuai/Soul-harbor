@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import testImg from '@/assets/image/test.png';
 import { getImageInfo } from '@/utils/getImageInfo';
 import { dataURLtoFile } from '@/utils/dataUrlToFile';
+import { Button } from 'antd';
+import { imageCutting } from '@/components/image-cutting';
 import './index.less';
 
 const CANVAS_WIDTH = 240;
@@ -35,8 +37,8 @@ export default function Content() {
   }, [initImg]);
 
   return (
-    <div className="content_page">
-      <div className="content_page_div">首页数据放在此处</div>
+    <div className="content-page">
+      <div className="content-page__div">首页数据放在此处</div>
       <canvas
         className="image-editor-canvas"
         style={{ width: 240, height: 240 }}
@@ -45,6 +47,9 @@ export default function Content() {
         height={240}
         onClick={handleClick}
       />
+      <Button type="primary" onClick={imageCutting} className="content-page__btn">
+        尝试一下
+      </Button>
     </div>
   );
 }
