@@ -97,49 +97,52 @@ export const Carousel = forwardRef<RcRef, Props>((props, ref) => {
           : `translate3d(0, ${distance + offset}px, 0)`;
       }
     },
-    [active, containerStyle]
+    [active, containerStyle.height, containerStyle.width, isHorizontal, length, speed]
   );
 
-  const handleChangeActive = (index: number | null, arrow: 'next' | 'prev' | 'null') => {
-    // 当在动画进行时，不允许切换
-    if (status === 2) return;
-    // 切换前先把动画参数打开
-    if (contentRef.current?.style) {
-      contentRef.current.style.transitionProperty = 'all';
-    }
-    // 修改状态为进行时
-    setStatus(2);
-    if (arrow === 'null' && index) {
-      setSelect(index - 1);
-      setActive(index);
-    } else if (arrow === 'next') {
-      setSelect((select) => (select === length - 1 ? 0 : select + 1));
-      setActive((active) => (active === length + 1 ? 1 : active + 1));
-    } else {
-      setSelect((select) => (select === 0 ? length - 1 : select - 1));
-      setActive((active) => (active === 0 ? length : active - 1));
-    }
-    // setActive(index);
-  };
+  const handleChangeActive = useCallback(
+    (index: number | null, arrow: 'next' | 'prev' | 'null') => {
+      // 当在动画进行时，不允许切换
+      if (status === 2) return;
+      // 切换前先把动画参数打开
+      if (contentRef.current?.style) {
+        contentRef.current.style.transitionProperty = 'all';
+      }
+      // 修改状态为进行时
+      setStatus(2);
+      if (arrow === 'null' && index) {
+        setSelect(index - 1);
+        setActive(index);
+      } else if (arrow === 'next') {
+        setSelect((select) => (select === length - 1 ? 0 : select + 1));
+        setActive((active) => (active === length + 1 ? 1 : active + 1));
+      } else {
+        setSelect((select) => (select === 0 ? length - 1 : select - 1));
+        setActive((active) => (active === 0 ? length : active - 1));
+      }
+      // setActive(index);
+    },
+    [length, status]
+  );
 
   const handlePointClick = (index: number) => {
     index !== active - 1 && handleChangeActive(index + 1, 'null');
   };
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     handleChangeActive(null, 'prev');
-  };
+  }, [handleChangeActive]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     handleChangeActive(null, 'next');
-  };
+  }, [handleChangeActive]);
 
   const play = useCallback(() => {
     if (timer.current) {
       clearInterval(timer as any);
     }
     timer.current = !pause && setInterval(handleNext, interval);
-  }, [interval, children, handleNext]);
+  }, [pause, handleNext, interval]);
 
   const handleMouseEnter = () => {
     style !== 'point' && style !== 'none' && setShowArrow(true);
@@ -154,7 +157,7 @@ export const Carousel = forwardRef<RcRef, Props>((props, ref) => {
   useEffect(() => {
     autoPlay && children.length > 1 && play();
     return () => clearInterval(timer.current);
-  }, [play]);
+  }, [autoPlay, children.length, play]);
 
   useEffect(() => {
     // 增加移动端手势滑动(有点bug，还需要调整，暂时不需要)
@@ -197,13 +200,23 @@ export const Carousel = forwardRef<RcRef, Props>((props, ref) => {
         };
       });
     }
-  }, [active, status, setTransition]);
+  }, [
+    active,
+    status,
+    setTransition,
+    gesture,
+    isHorizontal,
+    containerStyle.width,
+    containerStyle.height,
+    handleNext,
+    handlePrev,
+  ]);
 
   useEffect(setTransition, [active, setTransition]);
 
   useEffect(() => {
     callback && callback(select);
-  }, [select]);
+  }, [callback, select]);
 
   useEffect(
     () =>

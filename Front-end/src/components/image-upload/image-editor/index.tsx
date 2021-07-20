@@ -83,7 +83,7 @@ export const ImageEditor = forwardRef<RcRef, ImageEditorProps>((props, ref) => {
   /**
    * 返回图片的canvas左上角相对图片左上角的归一化坐标
    */
-  function getCroppingRect() {
+  const getCroppingRect = useCallback(() => {
     const { xOriginalScale, yOriginalScale, x, y } = imgState.current;
     const XScale = xOriginalScale / scale;
     const YScale = yOriginalScale / scale;
@@ -108,9 +108,9 @@ export const ImageEditor = forwardRef<RcRef, ImageEditorProps>((props, ref) => {
       x: Math.max(xMin, Math.min(croppingRectX, xMax)),
       y: Math.max(yMin, Math.min(croppingRectY, yMax)),
     };
-  }
+  }, [scale]);
 
-  function paintImage() {
+  const paintImage = useCallback(() => {
     if (imgState.current.resource && canvas.current) {
       const context = canvas.current.getContext('2d');
       if (context) {
@@ -125,39 +125,42 @@ export const ImageEditor = forwardRef<RcRef, ImageEditorProps>((props, ref) => {
         context.drawImage(imgState.current.resource, x, y, widthS, heightS);
       }
     }
-  }
+  }, [getCroppingRect, height, opacity, scale, width]);
 
   /**
    * 每次鼠标移动都更新canvas容器中点相对图片左上角的坐标
    * @param e 鼠标事件
    */
-  const handleMouseMove = useCallback((e: any) => {
-    if (!drag) return;
-    const mousePositionX = e.targetTouches ? e.targetTouches[0].pageX : e.clientX;
-    const mousePositionY = e.targetTouches ? e.targetTouches[0].pageY : e.clientY;
+  const handleMouseMove = useCallback(
+    (e: any) => {
+      if (!drag) return;
+      const mousePositionX = e.targetTouches ? e.targetTouches[0].pageX : e.clientX;
+      const mousePositionY = e.targetTouches ? e.targetTouches[0].pageY : e.clientY;
 
-    if (imgState.current.mx && imgState.current.my) {
-      const mxDiff = (imgState.current.mx - mousePositionX) * ratio; // 鼠标全局移动的x,y方向上的距离
-      const myDiff = (imgState.current.my - mousePositionY) * ratio;
+      if (imgState.current.mx && imgState.current.my) {
+        const mxDiff = (imgState.current.mx - mousePositionX) * ratio; // 鼠标全局移动的x,y方向上的距离
+        const myDiff = (imgState.current.my - mousePositionY) * ratio;
 
-      const { x: leftUpX, y: leftUpY } = getCroppingRect();
+        const { x: leftUpX, y: leftUpY } = getCroppingRect();
 
-      const { xOriginalScale, yOriginalScale, newHeight, newWidth } = imgState.current;
+        const { xOriginalScale, yOriginalScale, newHeight, newWidth } = imgState.current;
 
-      const relativeWidth = xOriginalScale / scale;
-      const relativeHeight = yOriginalScale / scale;
+        const relativeWidth = xOriginalScale / scale;
+        const relativeHeight = yOriginalScale / scale;
 
-      // canvas的中点坐标
-      imgState.current = {
-        ...imgState.current,
-        x: leftUpX + mxDiff / (newWidth * scale) + relativeWidth / 2,
-        y: leftUpY + myDiff / (newHeight * scale) + relativeHeight / 2,
-        mx: mousePositionX,
-        my: mousePositionY,
-      };
-      paintImage();
-    }
-  }, [drag, scale]);
+        // canvas的中点坐标
+        imgState.current = {
+          ...imgState.current,
+          x: leftUpX + mxDiff / (newWidth * scale) + relativeWidth / 2,
+          y: leftUpY + myDiff / (newHeight * scale) + relativeHeight / 2,
+          mx: mousePositionX,
+          my: mousePositionY,
+        };
+        paintImage();
+      }
+    },
+    [drag, getCroppingRect, paintImage, ratio, scale]
+  );
 
   const handleMouseUp = useCallback(() => {
     drag && setDrag(false);
@@ -170,13 +173,13 @@ export const ImageEditor = forwardRef<RcRef, ImageEditorProps>((props, ref) => {
     imgState.current = { ...imgState.current, mx: mousePositionX, my: mousePositionY };
   }
 
-  const handleZoomIn = useCallback(() => {
+  function handleZoomIn() {
     setScale((s) => Math.min(maxScale, s + 0.2));
-  }, []);
+  }
 
-  const handleZoomOut = useCallback(() => {
+  function handleZoomOut() {
     setScale((s) => Math.max(minScale, s - 0.2));
-  }, []);
+  }
 
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
@@ -216,16 +219,16 @@ export const ImageEditor = forwardRef<RcRef, ImageEditorProps>((props, ref) => {
         paintImage();
       })
       .catch((e) => handleImageError(e));
-  }, [img]);
+  }, [canvasXYRatio, canvasYXRatio, height, img, paintImage, width]);
 
   useEffect(() => {
     paintImage();
-  }, [drag, scale]);
+  }, [drag, paintImage, scale]);
 
   useImperativeHandle(
     ref,
     () => ({
-      getImageDataURL: () => canvas.current?.toDataURL('image/png', 1) as any,
+      getImageDataURL: () => canvas.current?.toDataURL('image/png') as any,
     }),
     []
   );

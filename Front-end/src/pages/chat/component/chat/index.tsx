@@ -351,7 +351,7 @@ function ChatRoom({
       setReadMessage(newReadMsg);
       setSessionMsg(null); // 清空sessionMsg
     }
-  }, [sessionMsg]);
+  }, [readMessage, sessionMsg, setSessionMsg]);
 
   useEffect(() => {
     getHistoryMsg();

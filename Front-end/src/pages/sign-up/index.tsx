@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import { Form, Modal, Button, message, Icon, Menu } from 'antd';
 import close from '@/assets/icon/close.svg';
 import closeMobile from '@/assets/icon/close_mobile.svg';
@@ -16,6 +16,7 @@ import Cookies from 'js-cookie';
 import { Action } from '@/redux/actions';
 import { apiPost } from '@/utils/request';
 import io from 'socket.io-client';
+import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
 import './index.less';
 
 export type MenuItemType = 'login' | 'register' | 'forgetPw';
@@ -43,94 +44,106 @@ function SignUp(props: Props) {
   const [emailLogin, setEmailLogin] = useState(false); // 登录方式, 默认是用户名登录
   const { validateFields, resetFields } = form;
 
-  const handleLogin = (values: LoginRequest) => {
-    const reqData = emailLogin
-      ? {
-          ...values,
-          verify_code: values.verify_code ? md5(md5(values.email + md5(values.verify_code.toLowerCase()))) : '',
-        }
-      : {
-          ...values,
-          password: values.password ? md5(md5(values.username + md5(values.password))) : '',
-        };
-    setLoading(true);
-    const LOGINURL = emailLogin ? EMAILLOGIN_URL : USERNAMELOGIN_URL;
-    apiPost(LOGINURL, reqData)
-      .then((res: LoginResponse) => {
-        message.success('登录成功');
-        const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
-        const socket = io(`${process.env.SERVICE_URL || 'http://localhost:5000'}`, { forceNew: true });
-        socket.emit('login', uid);
+  const handleLogin = useCallback(
+    (values: LoginRequest) => {
+      const reqData = emailLogin
+        ? {
+            ...values,
+            verify_code: values.verify_code ? md5(md5(values.email + md5(values.verify_code.toLowerCase()))) : '',
+          }
+        : {
+            ...values,
+            password: values.password ? md5(md5(values.username + md5(values.password))) : '',
+          };
+      setLoading(true);
+      const LOGINURL = emailLogin ? EMAILLOGIN_URL : USERNAMELOGIN_URL;
+      apiPost(LOGINURL, reqData)
+        .then((res: LoginResponse) => {
+          message.success('登录成功');
+          const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
+          const socket = io(`${process.env.SERVICE_URL || 'http://localhost:5000'}`, { forceNew: true });
+          socket.emit('login', uid);
 
-        res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });
-        // 建立socket连接
-        dispatch({
-          type: 'INSERT_SOCKET',
-          payload: socket,
+          res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });
+          // 建立socket连接
+          dispatch({
+            type: 'INSERT_SOCKET',
+            payload: socket,
+          });
+          dispatch({
+            type: 'GET_USERINFO',
+            payload: {
+              ...res.data.userInfo,
+              uid,
+            },
+          });
+          dispatch({
+            type: 'CHANGE_LOGIN_STATE',
+            payload: true,
+          });
+          setLoading(false);
+          hide();
+        })
+        .catch((e) => {
+          console.error(e);
+          setLoading(false);
         });
-        dispatch({
-          type: 'GET_USERINFO',
-          payload: {
-            ...res.data.userInfo,
-            uid,
-          },
-        });
-        dispatch({
-          type: 'CHANGE_LOGIN_STATE',
-          payload: true,
-        });
-        setLoading(false);
-        hide();
-      })
-      .catch((e) => {
-        console.error(e);
-        setLoading(false);
-      });
-  };
+    },
+    [dispatch, emailLogin, hide]
+  );
 
-  const changeMenu = (value: MenuItemType, clear = true) => {
-    if (clear) {
-      resetFields();
-      setSelectMenu(value);
-    } else {
-      setSelectMenu(value);
-    }
-  };
-
-  const handleRegister = (values: Register) => {
-    const nowDate = new Date();
-    const reqData: RegisterRequest = {
-      username: values.username,
-      password: md5(md5(values.username + md5(values.passwordAgain))), // 采用md5(md5(username + md5(password)))形式加密
-      email: values.email,
-      verify_code: md5(md5(values.email + md5(values.verify_code.toLowerCase()))),
-      createTime: dayjs(nowDate).format('YYYY-MM-DD'),
-    };
-    setLoading(true);
-    apiPost(REGISTER_URL, reqData)
-      .then(() => {
-        message.success('注册成功');
-        setLoading(false);
-        setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 且不要清空表单
-      })
-      .catch((e) => {
-        console.error(e);
-        setLoading(false);
-      });
-  };
-
-  const handleOk = (e: any) => {
-    e.preventDefault();
-    validateFields((errors: Record<string, any>, values) => {
-      if (!errors && values) {
-        if (selectMenu === 'login') {
-          handleLogin(values);
-        } else if (selectMenu === 'register') {
-          handleRegister(values);
-        }
+  const changeMenu = useCallback(
+    (value: MenuItemType, clear = true) => {
+      if (clear) {
+        resetFields();
+        setSelectMenu(value);
+      } else {
+        setSelectMenu(value);
       }
-    });
-  };
+    },
+    [resetFields]
+  );
+
+  const handleRegister = useCallback(
+    (values: Register) => {
+      const nowDate = new Date();
+      const reqData: RegisterRequest = {
+        username: values.username,
+        password: md5(md5(values.username + md5(values.passwordAgain))), // 采用md5(md5(username + md5(password)))形式加密
+        email: values.email,
+        verify_code: md5(md5(values.email + md5(values.verify_code.toLowerCase()))),
+        createTime: dayjs(nowDate).format('YYYY-MM-DD'),
+      };
+      setLoading(true);
+      apiPost(REGISTER_URL, reqData)
+        .then(() => {
+          message.success('注册成功');
+          setLoading(false);
+          setTimeout(() => changeMenu('login', false), 0); // 跳转到登录界面, 且不要清空表单
+        })
+        .catch((e) => {
+          console.error(e);
+          setLoading(false);
+        });
+    },
+    [changeMenu]
+  );
+
+  const handleOk = useCallback(
+    (e: any) => {
+      e.preventDefault();
+      validateFields((errors: Record<string, any>, values) => {
+        if (!errors && values) {
+          if (selectMenu === 'login') {
+            handleLogin(values);
+          } else if (selectMenu === 'register') {
+            handleRegister(values);
+          }
+        }
+      });
+    },
+    [validateFields, selectMenu, handleLogin, handleRegister]
+  );
 
   // 忘记密码配置
   const handleClickForgetPw = () => {
@@ -170,6 +183,20 @@ function SignUp(props: Props) {
         return <div />;
     }
   };
+
+  const handleKeyPress = useCallback(
+    (e: any) => {
+      const { key } = e;
+      try {
+        if (!isNullOrUndefined(key) && key === 'Enter') {
+          handleOk(e);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    [handleOk]
+  );
 
   const PCFooter: ReactNode = (
     <div className={selectMenu === 'login' ? prefix('footer-login') : prefix('footer')}>
@@ -211,6 +238,13 @@ function SignUp(props: Props) {
       </Button>
     </div>
   );
+
+  useEffect(() => {
+    window.addEventListener('keypress', handleKeyPress);
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   return (
     <Modal

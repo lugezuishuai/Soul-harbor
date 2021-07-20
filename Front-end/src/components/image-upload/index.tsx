@@ -51,6 +51,7 @@ export function ImageUpload(props: PropsWithChildren<ImageUploadProps>) {
   async function handleRequest(options: any) {
     const { onSuccess, onError } = options;
     try {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const file = (await useOriginDirectly(options.file)) ? options.file : await convertFile(options.file);
       setLoading(true);
       const url = await upload(file);

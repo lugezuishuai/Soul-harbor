@@ -336,7 +336,7 @@ export function CuttingModal({
   /**
    * 将canvas里的图片转化为dataUrl
    */
-  async function imgToDataUrl() {
+  const imgToDataUrl = useCallback(async () => {
     if (dataUrl) {
       window.URL.revokeObjectURL(dataUrl);
     }
@@ -359,7 +359,7 @@ export function CuttingModal({
         setDataUrl(newDataUrl);
       }
     }
-  }
+  }, [dataUrl, scale]);
 
   /**
    * 鼠标抬起事件
@@ -387,7 +387,7 @@ export function CuttingModal({
     } catch (e) {
       console.error(e);
     }
-  }, [canChangeSelect, dataUrl, scale]);
+  }, [canChangeSelect, imgToDataUrl]);
 
   /**
    * canvas绘制图片初始化
@@ -457,6 +457,18 @@ export function CuttingModal({
   }
 
   /**
+   * 重置selectPosition
+   */
+  function resetSelectPosition() {
+    selectPosition.current = {
+      x: 0,
+      y: 0,
+      w: 0,
+      h: 0,
+    };
+  }
+
+  /**
    * 旋转
    */
   async function handleRotate() {
@@ -465,6 +477,7 @@ export function CuttingModal({
     }
 
     rotate.current = rotate.current === 270 ? 0 : rotate.current + 90;
+    resetSelectPosition();
     calcCanvasSize();
     drawImage();
     await imgToDataUrl();
@@ -472,6 +485,7 @@ export function CuttingModal({
 
   // 使用useSyncCallback这个hook可以在useState改变值之后立刻获取到最新的值
   const scaleSyncCallback = useSyncCallback(async () => {
+    resetSelectPosition();
     calcCanvasSize();
     drawImage();
     await imgToDataUrl();
@@ -504,6 +518,7 @@ export function CuttingModal({
     if (ctx.current && canvasSize.current) {
       const { width: canvasWidth, height: canvasHeight } = canvasSize.current;
       ctx.current.clearRect(0, 0, canvasWidth, canvasHeight);
+      resetSelectPosition();
       drawImage();
       await imgToDataUrl();
     }
@@ -512,6 +527,7 @@ export function CuttingModal({
   const resetSyncCallback = useSyncCallback(() => {
     const { img } = imageInfo.current;
     img && initImageCanvas(img);
+    resetSelectPosition();
     calcCanvasSize();
     drawImage();
     initDataUrl();
@@ -527,12 +543,6 @@ export function CuttingModal({
 
     rotate.current = 0;
     openGray.current = false;
-    selectPosition.current = {
-      x: 0,
-      y: 0,
-      w: 0,
-      h: 0,
-    };
     setScale(1);
     resetSyncCallback();
   }
@@ -559,7 +569,12 @@ export function CuttingModal({
     <>
       <div className="image-cutting-content">
         <div className="image-cutting-content__canvas">
-          <canvas ref={canvasRef} onMouseMove={handleMouseMove} onMouseDown={handleMouseDown}>
+          <canvas
+            ref={canvasRef}
+            onMouseMove={handleMouseMove}
+            onMouseDown={handleMouseDown}
+            style={{ width: 500, height: 500 }} // 因为less中使用px2rem会照成精度丢失的问题
+          >
             浏览器不支持canvas
           </canvas>
         </div>
