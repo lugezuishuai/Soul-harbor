@@ -1,49 +1,19 @@
-import React, { useCallback, useEffect } from 'react';
-import { ConfigProvider } from 'antd';
-import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
-import zh_CN from 'antd/lib/locale-provider/zh_CN';
-import Employee from '@/pages/employee';
-import UploadFile from '@/pages/upload';
-import Content from '@/pages/home/content';
-import UserInfo from '@/pages/user-info';
-import Header from './header';
-import Footer from './footer';
-import ResetPw from '@/pages/updatePassword';
-import NotFound from '@/pages/not-found';
-import NoPermission from '@/pages/no-permission';
-import Error from '@/pages/error-page';
-import { WrapWithLogin } from '@/components/with-login';
-import { WrapScrollToTop } from './scroll-to-top';
-import { apiGet } from '@/utils/request';
-import { GET_UNREAD_MSG, XSRFINIT } from '@/constants/urls';
-import { WrapChatPage } from '@/pages/chat';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Action } from '@/redux/actions';
 import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
-import { State } from '@/redux/reducers/state';
+import { apiGet } from '@/utils/request';
+import { GET_UNREAD_MSG, XSRFINIT } from '@/constants/urls';
 import { GetUnreadMsgRes } from '@/interface/chat/getUnreadMsg';
 import { UNREAD_MESSAGE_COUNT } from '@/redux/actions/action_types';
+import { RouteType } from '@/config/types/route-type';
+import Header from '@/pages/home/header';
+import { Footer } from '@/pages/home/footer';
+import { WrapScrollToTop } from './scroll-to-top';
+import { renderRoutes } from '@/utils/routers/renderRoutes';
+import { State } from '@/redux/reducers/state';
+import { NoPermission } from '../no-permission';
 import './index.less';
-
-interface WrapChatInfoPageProps {
-  updateUnreadMsg(): Promise<any>;
-}
-
-function WrapUserInfo() {
-  return (
-    <WrapWithLogin noLoginPlaceholder={<NoPermission className="wrap-exception" />}>
-      <UserInfo />
-    </WrapWithLogin>
-  );
-}
-
-function WrapChatInfoPage({ updateUnreadMsg }: WrapChatInfoPageProps) {
-  return (
-    <WrapWithLogin noLoginPlaceholder={<NoPermission className="wrap-exception" />}>
-      <WrapChatPage updateUnreadMsg={updateUnreadMsg} />
-    </WrapWithLogin>
-  );
-}
 
 interface HomeProps {
   dispatch(action: Action): void;
@@ -51,10 +21,12 @@ interface HomeProps {
   userInfo: UserInfoState;
   login: LoginState;
   socket: SocketState;
+  route: RouteType;
 }
 
 function Home(props: HomeProps) {
-  const { userInfo, selectMenu, login, socket, dispatch } = props;
+  const { userInfo, selectMenu, login, socket, dispatch, route } = props;
+  const [authed, setAuthed] = useState<string[]>([]); // 当前用户所拥有的权限
 
   // 初始化xsrf
   const initXsrf = useCallback(async () => {
@@ -108,44 +80,28 @@ function Home(props: HomeProps) {
     updateUnreadMsg();
   }, [updateUnreadMsg]);
 
+  useEffect(() => {
+    login && setAuthed(['login']);
+  }, [login]);
+
   return (
-    <ConfigProvider locale={zh_CN} prefixCls="ant">
-      <div className="home-global">
-        <Router>
-          <Switch>
-            <Route path="/exception/403" exact component={NoPermission} />
-            <Route path="/exception/404" exact component={NotFound} />
-            <Route path="/exception/500" exact component={Error} />
-            <Route path="/reset/:token" exact component={ResetPw} />
-            <Route path="/">
-              <div className="home-global__header">
-                <Header dispatch={dispatch} selectMenu={selectMenu} userInfo={userInfo} login={login} socket={socket} />
-                <div className="home-global__divide" />
-              </div>
-              <div className="home-global__container">
-                <div className="home-global__content">
-                  <WrapScrollToTop>
-                    <Switch>
-                      <Route path="/home" exact component={Content} />
-                      <Route path="/chat" component={() => <WrapChatInfoPage updateUnreadMsg={updateUnreadMsg} />} />
-                      <Route path="/news" exact component={UploadFile} />
-                      <Route path="/blog" exact component={Employee} />
-                      <Route path="/user/:id" exact component={WrapUserInfo} />
-                      <Redirect to="/home" />
-                    </Switch>
-                  </WrapScrollToTop>
-                </div>
-                <Footer />
-              </div>
-            </Route>
-          </Switch>
-        </Router>
+    <>
+      <div className="home__header">
+        <Header dispatch={dispatch} selectMenu={selectMenu} userInfo={userInfo} login={login} socket={socket} />
+        <div className="home__divide" />
       </div>
-    </ConfigProvider>
+      <div className="home__container">
+        <div className="home__content">
+          <WrapScrollToTop>{route.routes?.length && renderRoutes(route.routes, authed)}</WrapScrollToTop>
+        </div>
+        <Footer />
+      </div>
+    </>
   );
 }
 
-export default connect(
+export const WrapNoPermission = <NoPermission className="wrap-exception" />;
+export const WrapHome = connect(
   ({ header: { selectMenu }, user: { userInfo, login }, chat: { socket, unreadChatMessage } }: State) => ({
     selectMenu,
     userInfo,

@@ -1,7 +1,7 @@
 import React from 'react';
 import './index.less';
 
-export default function Footer() {
+export function Footer() {
   return (
     <div className="home_footer">
       <div className="home_footer_text">
