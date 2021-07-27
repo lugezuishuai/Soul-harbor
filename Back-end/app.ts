@@ -85,7 +85,7 @@ app.use(function (req, res, next) {
 });
 
 // error handler(错误处理中间件)
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
   // set locals, only providing error in development
   if (err.name === 'UnauthorizedError') {
     // 返回401状态码

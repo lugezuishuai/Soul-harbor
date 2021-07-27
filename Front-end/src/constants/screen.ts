@@ -3,6 +3,7 @@ const isSmallScreen = window.outerWidth > 480 && window.outerWidth <= 800;
 const isMiddleScreen = window.outerWidth > 800 && window.outerWidth <= 1024;
 const isBigScreen = window.outerWidth > 1024 && window.outerWidth <= 1200;
 const isHugeScreen = window.outerWidth > 1200;
+const isMobile = window.outerWidth < 1024;
 
 export const screen = {
   isLittleScreen,
@@ -10,4 +11,5 @@ export const screen = {
   isMiddleScreen,
   isBigScreen,
   isHugeScreen,
+  isMobile,
 };

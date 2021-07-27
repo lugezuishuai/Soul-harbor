@@ -1,4 +1,4 @@
-import { ChatActiveMenuState, UserInfoState } from '@/redux/reducers/state';
+import { UserInfoState } from '@/redux/reducers/state';
 import React, { useCallback } from 'react';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import { Avatar, Icon } from 'antd';
@@ -12,7 +12,7 @@ import './index.less';
 
 interface ChatNavProps {
   userInfo: UserInfoState;
-  activeMenu: ChatActiveMenuState;
+  activeMenu: string;
   unreadChatMsgCount: number;
   dispatch(action: Action): void;
 }
@@ -21,7 +21,7 @@ export function ChatNav({ userInfo, activeMenu, unreadChatMsgCount, dispatch }: 
   const avatar = userInfo?.avatar || defaultAvatar;
 
   const handleChangeMenu = useCallback(
-    (type: ChatActiveMenuState) => {
+    (type: string) => {
       if (type !== activeMenu) {
         dispatch({
           type: CHANGE_ACTIVE_MENU,
@@ -40,13 +40,13 @@ export function ChatNav({ userInfo, activeMenu, unreadChatMsgCount, dispatch }: 
       )}
       <Icon
         className="chat-nav-icon"
-        component={activeMenu === 'chat' ? (ChatAct as any) : (Chat as any)}
-        onClick={() => handleChangeMenu('chat')}
+        component={activeMenu === 'sessions' ? (ChatAct as any) : (Chat as any)}
+        onClick={() => handleChangeMenu('sessions')}
       />
       <Icon
         className="chat-nav-icon"
-        component={activeMenu === 'friend' ? (FriendAct as any) : (Friend as any)}
-        onClick={() => handleChangeMenu('friend')}
+        component={activeMenu === 'contracts' ? (FriendAct as any) : (Friend as any)}
+        onClick={() => handleChangeMenu('contracts')}
       />
     </div>
   );

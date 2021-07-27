@@ -14,7 +14,6 @@ export type EmployeeState = {
 export type UserInfoState = UserInfo | null;
 export type LoginState = boolean | null;
 export type SocketState = Socket<DefaultEventsMap, DefaultEventsMap> | null;
-export type ChatActiveMenuState = 'chat' | 'friend';
 
 export type UserState = {
   userInfo: UserInfoState;
@@ -45,7 +44,7 @@ export type ActiveMsgState = MsgInfo | null;
 
 export type ChatState = {
   socket: SocketState;
-  activeMenu: ChatActiveMenuState;
+  activeMenu: string;
   isSearch: boolean;
   friendsList: FriendListState;
   sessionsList: SessionsListState;
@@ -84,7 +83,7 @@ export const initialHeaderState: HeaderState = {
 
 export const initialChatState: ChatState = {
   socket: null, // socket
-  activeMenu: 'chat',
+  activeMenu: 'sessions',
   isSearch: false,
   friendsList: null,
   sessionsList: null,

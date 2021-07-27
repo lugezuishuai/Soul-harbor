@@ -51,9 +51,9 @@ function Operation(props: OperationProps): any {
       });
       dispatch({
         type: 'CHANGE_SELECT_MENU',
-        payload: 'home',
+        payload: '',
       });
-      history.push({ pathname: '/home' });
+      history.push({ pathname: '/' });
     } catch (e) {
       console.error(e);
     }

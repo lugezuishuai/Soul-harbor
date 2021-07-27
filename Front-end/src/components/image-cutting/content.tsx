@@ -568,13 +568,8 @@ export function CuttingModal({
   return (
     <>
       <div className="image-cutting-content">
-        <div className="image-cutting-content__canvas">
-          <canvas
-            ref={canvasRef}
-            onMouseMove={handleMouseMove}
-            onMouseDown={handleMouseDown}
-            style={{ width: 500, height: 500 }} // 因为less中使用px2rem会照成精度丢失的问题
-          >
+        <div className="image-cutting-content__canvas" style={{ width: 500, height: 500 }}>
+          <canvas ref={canvasRef} onMouseMove={handleMouseMove} onMouseDown={handleMouseDown}>
             浏览器不支持canvas
           </canvas>
         </div>

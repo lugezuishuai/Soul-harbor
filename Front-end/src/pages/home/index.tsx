@@ -13,6 +13,7 @@ import { WrapScrollToTop } from './scroll-to-top';
 import { renderRoutes } from '@/utils/routers/renderRoutes';
 import { State } from '@/redux/reducers/state';
 import { NoPermission } from '../no-permission';
+import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
 import './index.less';
 
 interface HomeProps {
@@ -81,7 +82,13 @@ function Home(props: HomeProps) {
   }, [updateUnreadMsg]);
 
   useEffect(() => {
-    login && setAuthed(['login']);
+    if (!isNullOrUndefined(login)) {
+      if (login) {
+        setAuthed(['login']);
+      } else {
+        setAuthed([]);
+      }
+    }
   }, [login]);
 
   return (
@@ -92,7 +99,9 @@ function Home(props: HomeProps) {
       </div>
       <div className="home__container">
         <div className="home__content">
-          <WrapScrollToTop>{route.routes?.length && renderRoutes(route.routes, authed)}</WrapScrollToTop>
+          <WrapScrollToTop>
+            {route.routes?.length && !isNullOrUndefined(login) && renderRoutes(route.routes, authed)}
+          </WrapScrollToTop>
         </div>
         <Footer />
       </div>

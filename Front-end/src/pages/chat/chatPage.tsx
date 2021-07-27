@@ -1,7 +1,6 @@
 import { Action } from '@/redux/actions';
 import {
   ActiveMsgState,
-  ChatActiveMenuState,
   FriendListState,
   GroupsListState,
   SelectSession,
@@ -45,17 +44,24 @@ import ArrowDown from '@/assets/icon/arrow_down.svg';
 import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
 import { RoomCard, RoomCardSkeleton } from './component/roomCard';
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
-import { useHistory, useLocation } from 'react-router-dom';
 import { ActiveMsg } from './component/activeMsg';
+import { WrapChatPageProps } from '.';
+import { screen } from '@/constants/screen';
+import { Switch, Redirect, Route, RouteComponentProps } from 'react-router-dom';
+import { ChatSessionsMobile } from './mobile/pages/sessions';
+import { ChatContractsMobile } from './mobile/pages/contracts';
+import { ConversationMobile } from './mobile/pages/conversation';
+import { ChatFooterMobile } from './mobile/components/chat-footer';
+import { AddFriendsMobile } from './mobile/pages/add-friend';
 import './index.less';
 
 const { confirm } = Modal;
 
-interface ChatPageProps {
+interface ChatPageProps extends WrapChatPageProps {
   dispatch(action: Action): void;
   updateUnreadMsg(): Promise<any>;
   userInfo: UserInfoState;
-  activeMenu: ChatActiveMenuState;
+  activeMenu: string;
   isSearch: boolean;
   socket: SocketState;
   friendsList: FriendListState;
@@ -80,9 +86,9 @@ export interface ActiveSessionPayload {
 }
 
 function ChatPage(props: ChatPageProps) {
-  const locationRef = useRef(useLocation());
-  const historyRef = useRef(useHistory());
   const {
+    history,
+    location,
     userInfo,
     activeMenu,
     dispatch,
@@ -99,8 +105,11 @@ function ChatPage(props: ChatPageProps) {
     groupsListFold,
     updateUnreadMsg,
   } = props;
-  const isChatMenu = activeMenu === 'chat' && !isSearch;
-  const isFriendMenu = activeMenu === 'friend' && !isSearch;
+  const isSessionsMenu = activeMenu === 'sessions' && !isSearch;
+  const isContractsMenu = activeMenu === 'contracts' && !isSearch;
+
+  const locationRef = useRef(location);
+  const historyRef = useRef(history);
 
   const {
     searchData,
@@ -305,7 +314,7 @@ function ChatPage(props: ChatPageProps) {
       console.error(e);
       setSessionsLoading(false);
     }
-  }, [dispatch]);
+  }, [dispatch, setSessionsLoading]);
 
   // 获取好友列表
   const getFriendsList = useCallback(async () => {
@@ -323,7 +332,7 @@ function ChatPage(props: ChatPageProps) {
       console.error(e);
       setFriendsLoading(false);
     }
-  }, [dispatch]);
+  }, [dispatch, setFriendsLoading]);
 
   // 获取群组列表
   const getGroupsList = useCallback(async () => {
@@ -341,7 +350,7 @@ function ChatPage(props: ChatPageProps) {
       console.error(e);
       setGroupsLoading(false);
     }
-  }, [dispatch]);
+  }, [dispatch, setGroupsLoading]);
 
   // 更新会话信息
   const updateSessionInfo = useCallback(
@@ -372,7 +381,7 @@ function ChatPage(props: ChatPageProps) {
     }
 
     // @ts-ignore
-    socket.removeAllListeners(); //一定要先移除原来的事件，否则会有重复的监听器
+    socket.removeAllListeners(); // 一定要先移除原来的事件，否则会有重复的监听器
     socket.on('receive message', (msg: MsgInfo) => {
       const { sender_id, receiver_id, private_chat } = msg;
 
@@ -453,7 +462,7 @@ function ChatPage(props: ChatPageProps) {
         payload: uuid,
       });
     });
-  }, [socket, selectSession, dispatch, updateSessionInfo, getGroupsList]);
+  }, [socket, updateSessionInfo, selectSession, setSessionMsg, dispatch, getFriendsList]);
 
   // 加入房间
   const joinRoom = useCallback(() => {
@@ -557,7 +566,32 @@ function ChatPage(props: ChatPageProps) {
     }
   }, [activeMsg, dispatch]);
 
-  return (
+  return screen.isMobile ? (
+    <div className="chat-page__mobile">
+      <Switch>
+        <Route
+          path="/chat/sessions"
+          exact
+          component={() => (
+            <ChatSessionsMobile
+              unreadChatMsgCount={unreadChatMsgCount}
+              sessionsList={sessionsList}
+              sessionsLoading={sessionsLoading}
+              dispatch={dispatch}
+              activeSession={activeSession}
+            />
+          )}
+        />
+        <Route path="/chat/contracts" exact component={ChatContractsMobile} />
+        <Route path="/chat/addFriends" exact component={AddFriendsMobile} />
+        <Route path="/chat/conversation/:id" exact component={ConversationMobile} />
+        <Redirect to={`/chat/${activeMenu}`} />
+      </Switch>
+      {(activeMenu === 'sessions' || activeMenu === 'contracts') && (
+        <ChatFooterMobile activeMenu={activeMenu} dispatch={dispatch} history={history} />
+      )}
+    </div>
+  ) : (
     <div className="chat-page">
       <ChatNav
         unreadChatMsgCount={unreadChatMsgCount}
@@ -568,8 +602,8 @@ function ChatPage(props: ChatPageProps) {
       <div className="chat-page__left">
         <WrapChatSearch isSearch={isSearch} dispatch={dispatch} />
         <div className="chat-page__left-container">
-          {isChatMenu && renderSessionsList()}
-          {isFriendMenu && renderContactsList()}
+          {isSessionsMenu && renderSessionsList()}
+          {isContractsMenu && renderContactsList()}
           {isSearch && renderSearchPage()}
         </div>
       </div>
