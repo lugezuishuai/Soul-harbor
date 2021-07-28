@@ -5,13 +5,9 @@ import './index.less';
 
 const { Block, Avatar: AvatarSkeleton } = Skeleton;
 
-interface SessionCardSkeletonMobileProps {
-  key: string | number;
-}
-
-export function SessionCardSkeletonMobile({ key }: SessionCardSkeletonMobileProps) {
+export function SessionCardSkeletonMobile() {
   return (
-    <Skeleton key={key} className={classnames('row-flex', 'session-card-skeleton__mobile')}>
+    <Skeleton className={classnames('row-flex', 'session-card-skeleton__mobile')}>
       <AvatarSkeleton className="session-card-skeleton__mobile-avatar" />
       <div className="session-card-skeleton__mobile-info">
         <div className="session-card-skeleton__mobile-info__top">

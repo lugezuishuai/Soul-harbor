@@ -1,3 +1,84 @@
+@import '~@/variable.less';
 :global {
-  
+  .add-friends__mobile {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    &__header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 64px;
+      background: @N200;
+      &__text {
+        user-select: none;
+        color: @N900;
+        font-size: 24px;
+        line-height: 64px;
+        font-weight: 500;
+      }
+      &__back {
+        position: absolute;
+        font-size: 24px;
+        left: 16px;
+        top: 20px;
+        bottom: 20px;
+      }
+    }
+    &__search {
+      box-sizing: border-box;
+      width: 100%;
+      height: 80px;
+      background: #fff;
+      border-bottom: 1px solid @N400;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &__form {
+        width: 90%;
+      }
+      &__icon {
+        font-size: 28px;
+        pointer-events: none;
+        @media screen and (max-width: 480px) {
+          font-size: 40px;
+        }
+      }
+      .ant-form-item {
+        line-height: 1;
+        margin-bottom: 0;
+      }
+      .ant-form-item-control {
+        line-height: 1;
+      }
+      .ant-input-affix-wrapper .ant-input-prefix {
+        left: 4px;
+      }
+    }
+    &__content {
+      width: 100%;
+      height: calc(100% - 80px - 64px);
+      overflow-x: hidden;
+      overflow-y: scroll;
+      background: @N100;
+    }
+  }
+  .no-search-result__mobile {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &__icon {
+      font-size: 36px;
+      margin-right: 12px;
+    }
+    &__text {
+      font-size: 24px;
+      line-height: 40px;
+      font-weight: 500;
+    }
+  }
 }

@@ -1,14 +1,14 @@
 import React from 'react';
-import { Link, RouteComponentProps } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Plus from '@/assets/icon/plus.svg';
 import AddFriends from '@/assets/icon/add-friends.svg';
 import CreateGroupChat from '@/assets/icon/create-group-chat.svg';
 import { Icon, Dropdown, Menu } from 'antd';
 import { SessionsListState } from '@/redux/reducers/state';
 import { SessionCardSkeletonMobile } from '../../components/session-card-skeleton';
-import './index.less';
 import { SessionCard } from '@/pages/chat/component/sessionCard';
 import { Action } from '@/redux/actions';
+import './index.less';
 
 interface ChatSessionsMobileProps {
   dispatch(action: Action): void;
@@ -25,10 +25,6 @@ export function ChatSessionsMobile({
   activeSession,
   dispatch,
 }: ChatSessionsMobileProps) {
-  function handleCreateGroupChat() {
-    console.log('发起群聊');
-  }
-
   function renderSessionsList() {
     const array = new Array(10).fill(0);
     if (sessionsLoading) {
@@ -62,10 +58,10 @@ export function ChatSessionsMobile({
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item key="createGroupChat">
-        <div onClick={handleCreateGroupChat}>
+        <Link to="/chat/launchGroupChat">
           <Icon component={CreateGroupChat as any} className="chat-sessions__mobile__menu__icon" />
           <span className="chat-sessions__mobile__menu__text">新建群聊</span>
-        </div>
+        </Link>
       </Menu.Item>
     </Menu>
   );

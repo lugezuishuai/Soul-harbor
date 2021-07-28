@@ -47,12 +47,13 @@ import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessio
 import { ActiveMsg } from './component/activeMsg';
 import { WrapChatPageProps } from '.';
 import { screen } from '@/constants/screen';
-import { Switch, Redirect, Route, RouteComponentProps } from 'react-router-dom';
+import { Switch, Redirect, Route, matchPath } from 'react-router-dom';
 import { ChatSessionsMobile } from './mobile/pages/sessions';
 import { ChatContractsMobile } from './mobile/pages/contracts';
 import { ConversationMobile } from './mobile/pages/conversation';
 import { ChatFooterMobile } from './mobile/components/chat-footer';
 import { AddFriendsMobile } from './mobile/pages/add-friend';
+import { LaunchGroupChat } from './mobile/pages/launch-group-chat';
 import './index.less';
 
 const { confirm } = Modal;
@@ -107,6 +108,9 @@ function ChatPage(props: ChatPageProps) {
   } = props;
   const isSessionsMenu = activeMenu === 'sessions' && !isSearch;
   const isContractsMenu = activeMenu === 'contracts' && !isSearch;
+  const showChatFooter =
+    matchPath(location.pathname, { path: '/chat/sessions', exact: true }) ||
+    matchPath(location.pathname, { path: '/chat/contracts', exact: true });
 
   const locationRef = useRef(location);
   const historyRef = useRef(history);
@@ -122,25 +126,6 @@ function ChatPage(props: ChatPageProps) {
     setSessionsLoading,
     setSessionMsg,
   } = useChat();
-
-  // 发起群聊
-  async function launchGroupChat() {
-    try {
-      if (friendsList && friendsList.length >= 2) {
-        await openGroupChatModal(friendsList, userInfo, getGroupsList);
-      } else {
-        confirm({
-          title: '注意',
-          content: '抱歉，发起群聊至少需要两名好友，您的好友数量不够',
-          centered: true,
-          okText: '确认',
-          cancelText: '取消',
-        });
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
 
   function handleFriendsListFold() {
     dispatch({
@@ -158,14 +143,12 @@ function ChatPage(props: ChatPageProps) {
 
   function renderSearchPage() {
     if (searchLoading) {
+      const array = new Array(10).fill(0);
       return (
         <div className="chat-page__left-content">
-          <UserCardSkeleton />
-          <UserCardSkeleton />
-          <UserCardSkeleton />
-          <UserCardSkeleton />
-          <UserCardSkeleton />
-          <UserCardSkeleton />
+          {array.map((o, i) => (
+            <UserCardSkeleton key={i} />
+          ))}
         </div>
       );
     } else if (!searchData) {
@@ -195,6 +178,7 @@ function ChatPage(props: ChatPageProps) {
     };
     const newFriendsList = friendsList ? [robotInfo, ...friendsList] : [robotInfo];
     if (friendsLoading || groupsLoading) {
+      const array = new Array(5).fill(0);
       return (
         <div className="chat-page__left-contracts">
           <div className="chat-page__left-fold" onClick={handleFriendsListFold}>
@@ -205,10 +189,9 @@ function ChatPage(props: ChatPageProps) {
             <div className="chat-page__left-fold-text">好友</div>
           </div>
           <div className="chat-page__left-contracts__item">
-            <FriendCardSkeleton />
-            <FriendCardSkeleton />
-            <FriendCardSkeleton />
-            <FriendCardSkeleton />
+            {array.map((o, i) => (
+              <FriendCardSkeleton key={i} />
+            ))}
           </div>
           <div className="chat-page__left-fold" onClick={handleGroupsListFold}>
             <Icon
@@ -218,10 +201,9 @@ function ChatPage(props: ChatPageProps) {
             <div className="chat-page__left-fold-text">群组</div>
           </div>
           <div className="chat-page__left-contracts__item">
-            <RoomCardSkeleton />
-            <RoomCardSkeleton />
-            <RoomCardSkeleton />
-            <RoomCardSkeleton />
+            {array.map((o, i) => (
+              <RoomCardSkeleton key={i} />
+            ))}
           </div>
         </div>
       );
@@ -263,14 +245,12 @@ function ChatPage(props: ChatPageProps) {
 
   function renderSessionsList() {
     if (sessionsLoading) {
+      const array = new Array(10).fill(0);
       return (
         <div className="chat-page__left-content">
-          <SessionCardSkeleton />
-          <SessionCardSkeleton />
-          <SessionCardSkeleton />
-          <SessionCardSkeleton />
-          <SessionCardSkeleton />
-          <SessionCardSkeleton />
+          {array.map((o, i) => (
+            <SessionCardSkeleton key={i} />
+          ))}
         </div>
       );
     } else if (!sessionsList || !sessionsList.length) {
@@ -373,6 +353,25 @@ function ChatPage(props: ChatPageProps) {
     },
     [dispatch]
   );
+
+  // 发起群聊
+  async function launchGroupChat() {
+    try {
+      if (friendsList && friendsList.length >= 2) {
+        await openGroupChatModal(friendsList, userInfo, getGroupsList);
+      } else {
+        confirm({
+          title: '注意',
+          content: '抱歉，发起群聊至少需要两名好友，您的好友数量不够',
+          centered: true,
+          okText: '确认',
+          cancelText: '取消',
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   // 监听socket
   const listenSocket = useCallback(() => {
@@ -569,26 +568,38 @@ function ChatPage(props: ChatPageProps) {
   return screen.isMobile ? (
     <div className="chat-page__mobile">
       <Switch>
-        <Route
-          path="/chat/sessions"
-          exact
-          component={() => (
-            <ChatSessionsMobile
-              unreadChatMsgCount={unreadChatMsgCount}
-              sessionsList={sessionsList}
-              sessionsLoading={sessionsLoading}
-              dispatch={dispatch}
-              activeSession={activeSession}
-            />
-          )}
-        />
-        <Route path="/chat/contracts" exact component={ChatContractsMobile} />
-        <Route path="/chat/addFriends" exact component={AddFriendsMobile} />
-        <Route path="/chat/conversation/:id" exact component={ConversationMobile} />
+        <Route path="/chat/sessions" exact>
+          <ChatSessionsMobile
+            dispatch={dispatch}
+            unreadChatMsgCount={unreadChatMsgCount}
+            sessionsList={sessionsList}
+            sessionsLoading={sessionsLoading}
+            activeSession={activeSession}
+          />
+        </Route>
+        <Route path="/chat/contracts" exact>
+          <ChatContractsMobile />
+        </Route>
+        <Route path="/chat/addFriends" exact>
+          <AddFriendsMobile
+            history={history}
+            dispatch={dispatch}
+            getFriendsList={getFriendsList}
+            friendsList={friendsList}
+            socket={socket}
+            username={userInfo?.username || ''}
+          />
+        </Route>
+        <Route path="/chat/launchGroupChat" exact>
+          <LaunchGroupChat />
+        </Route>
+        <Route path="/chat/conversation/:id" exact>
+          <ConversationMobile />
+        </Route>
         <Redirect to={`/chat/${activeMenu}`} />
       </Switch>
-      {(activeMenu === 'sessions' || activeMenu === 'contracts') && (
-        <ChatFooterMobile activeMenu={activeMenu} dispatch={dispatch} history={history} />
+      {showChatFooter && (
+        <ChatFooterMobile activeMenu={activeMenu} dispatch={dispatch} history={history} location={location} />
       )}
     </div>
   ) : (

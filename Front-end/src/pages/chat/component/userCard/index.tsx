@@ -11,10 +11,12 @@ import { SELECT_SESSION } from '@/redux/actions/action_types';
 import { Skeleton } from '@/components/skeleton';
 import classnames from 'classnames';
 import Cookies from 'js-cookie';
+import { screen } from '@/constants/screen';
 import './index.less';
 
 const { confirm } = Modal;
 const { Block, Avatar: AvatarSkeleton } = Skeleton;
+const isMobile = screen.isSmallScreen || screen.isLittleScreen;
 
 interface UserCardProps {
   dispatch(action: Action): void;
@@ -85,8 +87,19 @@ export function UserCard({ userData, friendsList, getFriendsList, dispatch, sock
 
   return (
     <div className="chat-user-card" onClick={handleClick}>
-      <div className="chat-user-card-online" style={{ backgroundColor: online ? '#1afa29' : '#BBBFC4' }} />
-      <Avatar className="chat-user-card-avatar" src={userInfo?.avatar || defaultAvatar} />
+      <div
+        className="chat-user-card-online"
+        style={
+          isMobile
+            ? { backgroundColor: online ? '#1afa29' : '#BBBFC4', width: 6, height: 6 }
+            : { backgroundColor: online ? '#1afa29' : '#BBBFC4' }
+        }
+      />
+      <Avatar
+        className="chat-user-card-avatar"
+        src={userInfo?.avatar || defaultAvatar}
+        style={isMobile ? { height: 24, width: 24 } : {}}
+      />
       <div className="chat-user-card-info">
         <div className="chat-user-card-info-text">{userInfo?.username}</div>
         <div className="chat-user-card-info-text">{userInfo?.email}</div>

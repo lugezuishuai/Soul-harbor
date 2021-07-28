@@ -10,6 +10,9 @@
     padding: 12px;
     background: @N100;
     border-bottom: 1px solid @N400;
+    @media screen and (max-width: 760px) {
+      height: 80px;
+    }
     &:hover {
       cursor: pointer;
     }
@@ -35,14 +38,27 @@
       pointer-events: none;
       width: calc(100% - 36px - 20px);
       overflow: hidden;
+      @media screen and (max-width: 760px) {
+        width: calc(100% - 40px - 20px);
+      }
       &-text {
         width: 100%;
         font-size: 14px;
+        height: 20px;
         line-height: 20px;
         color: @N650;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        @media screen and (max-width: 760px) {
+          font-size: 16px;
+          height: 24px;
+          line-height: 24px;
+          margin-bottom: 4px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
       }
     }
     &-skeleton {

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Icon, Input, Form } from 'antd';
 import NoResult from '@/assets/icon/no-result.svg';
 import Search from '@/assets/icon/search.svg';
@@ -45,12 +45,21 @@ function ChatSearch({ dispatch, isSearch, form }: ChatSearchProps) {
     }, 100);
   }
 
-  function handleChange(e: any) {
-    if (e?.target?.value) {
-      const search = e.target.value;
-      handleSearch(search);
-    }
-  }
+  const handleChange = useCallback(
+    (e: any) => {
+      if (e?.target?.value) {
+        const search = e.target.value;
+        handleSearch(search);
+      }
+    },
+    [handleSearch]
+  );
+
+  useEffect(() => {
+    console.log('组件挂载了');
+
+    return () => console.log('组件卸载了');
+  }, []);
 
   return (
     <div className="chat-search">
