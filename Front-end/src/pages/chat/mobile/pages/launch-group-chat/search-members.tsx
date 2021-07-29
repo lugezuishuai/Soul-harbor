@@ -1,13 +1,15 @@
 import React from 'react';
-import { Form, Input, Icon } from 'antd';
+import { Form, Icon, Input } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import Search from '@/assets/icon/search.svg';
-import { useChat } from '@/pages/chat/state';
 import './index.less';
 
-function SearchMobile({ form }: FormComponentProps) {
+interface SearchMemberProps extends FormComponentProps {
+  handleSearch(keyword: string): void;
+}
+
+function SearchMember({ form, handleSearch }: SearchMemberProps) {
   const { getFieldDecorator } = form;
-  const { handleSearch } = useChat();
 
   function handleChange(e: any) {
     if (e?.target?.value) {
@@ -17,14 +19,14 @@ function SearchMobile({ form }: FormComponentProps) {
   }
 
   return (
-    <div className="add-friends__mobile__search">
-      <Form className="add-friends__mobile__search__form">
+    <div className="launch-group-chat__search">
+      <Form className="launch-group-chat__search__form">
         <Form.Item>
           {getFieldDecorator('input')(
             <Input
-              prefix={<Icon component={Search as any} className="add-friends__mobile__search__icon" />}
+              prefix={<Icon component={Search as any} className="launch-group-chat__search__icon" />}
               style={{ height: 32 }}
-              placeholder="请输入用户名和邮箱"
+              placeholder="请输入您的好友的用户名"
               allowClear={true}
               onChange={handleChange}
             />
@@ -35,6 +37,6 @@ function SearchMobile({ form }: FormComponentProps) {
   );
 }
 
-export const WrapSearchMobile = Form.create({
-  name: 'search-mobile',
-})(SearchMobile);
+export const WrapSearchMember = Form.create<SearchMemberProps>({
+  name: 'search-member',
+})(SearchMember);

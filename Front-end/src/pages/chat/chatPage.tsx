@@ -591,7 +591,12 @@ function ChatPage(props: ChatPageProps) {
           />
         </Route>
         <Route path="/chat/launchGroupChat" exact>
-          <LaunchGroupChat />
+          <LaunchGroupChat
+            getGroupsList={getGroupsList}
+            friendsList={friendsList}
+            userInfo={userInfo}
+            history={history}
+          />
         </Route>
         <Route path="/chat/conversation/:id" exact>
           <ConversationMobile />

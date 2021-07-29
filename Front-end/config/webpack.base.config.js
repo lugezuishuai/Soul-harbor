@@ -7,6 +7,7 @@ const resolve = require('./helper/resolve');
 const webpack = require('webpack');
 const px2rem = require('postcss-px2rem-exclude');
 const dotenv = require('dotenv');
+const path = require('path');
 dotenv.config({ path: '.env' });
 
 const isEnvProduction = process.env.NODE_ENV === 'production';            // 是否是生产环境
@@ -143,6 +144,13 @@ module.exports = {
           { loader: 'css-loader', options: { sourceMap, modules: true, import: true } },
           postcssLoader,
           lessLoader,
+          { 
+            loader: 'style-resources-loader',
+            options: {
+              patterns: path.resolve(__dirname, '../src/variable.less'),
+              injector: 'append'
+            } 
+          }
         ]
       },
       {

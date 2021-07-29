@@ -1,0 +1,46 @@
+:global {
+  .select-member__mobile {
+    box-sizing: content-box;
+    display: flex;
+    width: 100%;
+    height: 64px;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid @N400;
+    &--active {
+      background: @N100;
+    }
+    &__status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: @N300;
+      margin-right: 12px;
+      border-radius: 50%;
+    }
+    &__check {
+      font-size: 24px;
+      color: #1afa29;
+    }
+    &__img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 16px;
+    }
+    &__username {
+      user-select: none;
+      font-size: 18px;
+      line-height: 28px;
+      font-weight: 500;
+      color: @N900;
+      height: 28px;
+      max-width: calc(100% - 116px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
