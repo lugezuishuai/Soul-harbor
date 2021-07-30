@@ -10,7 +10,7 @@ import {
   State,
   UserInfoState,
 } from '@/redux/reducers/state';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { ChatNav } from './component/nav';
 import { NoSearchResult, WrapChatSearch } from './component/search';
@@ -18,8 +18,14 @@ import { useChat } from './state';
 import { UserCard, UserCardSkeleton } from './component/userCard';
 import { WrapChatRoom } from './component/chat';
 import { FriendInfo, GetFriendsListRes } from '@/interface/chat/getFriendsList';
-import { apiGet } from '@/utils/request';
-import { GET_FRIENDS_LIST, GET_GROUPS_LIST, GET_SESSIONS_LIST, GET_SESSION_INFO } from '@/constants/urls';
+import { apiGet, apiPost } from '@/utils/request';
+import {
+  DELETE_FRIEND,
+  GET_FRIENDS_LIST,
+  GET_GROUPS_LIST,
+  GET_SESSIONS_LIST,
+  GET_SESSION_INFO,
+} from '@/constants/urls';
 import {
   ACTIVE_MSG,
   ACTIVE_SESSION,
@@ -35,14 +41,14 @@ import {
 } from '@/redux/actions/action_types';
 import { GetSessionsListRes } from '@/interface/chat/getSessionsList';
 import { MsgInfo } from '@/interface/chat/getHistoryMsg';
-import { FriendCard, FriendCardSkeleton } from './component/friendCard';
+import { FriendCard } from './component/friendCard';
 import { SessionCard, SessionCardSkeleton } from './component/sessionCard';
 import GroupChat from '@/assets/icon/group_chat.svg';
 import { Icon, Button, Modal, message } from 'antd';
 import { openGroupChatModal } from './component/openGroupChatModal';
 import ArrowDown from '@/assets/icon/arrow_down.svg';
 import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
-import { RoomCard, RoomCardSkeleton } from './component/roomCard';
+import { RoomCard } from './component/roomCard';
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
 import { ActiveMsg } from './component/activeMsg';
 import { WrapChatPageProps } from '.';
@@ -54,7 +60,11 @@ import { ConversationMobile } from './mobile/pages/conversation';
 import { ChatFooterMobile } from './mobile/components/chat-footer';
 import { AddFriendsMobile } from './mobile/pages/add-friend';
 import { LaunchGroupChat } from './mobile/pages/launch-group-chat';
+import { SearchContracts } from './mobile/pages/search-contracts';
+import { ContractCardSkeleton } from './component/contractCardSkeleton';
 import './index.less';
+import { DeleteFriendReq } from '@/interface/chat/deleteFriend';
+import Cookies from 'js-cookie';
 
 const { confirm } = Modal;
 
@@ -127,19 +137,19 @@ function ChatPage(props: ChatPageProps) {
     setSessionMsg,
   } = useChat();
 
-  function handleFriendsListFold() {
+  const handleFriendsListFold = useCallback(() => {
     dispatch({
       type: FRIENDS_LIST_FOLD,
       payload: !friendsListFold,
     });
-  }
+  }, [dispatch, friendsListFold]);
 
-  function handleGroupsListFold() {
+  const handleGroupsListFold = useCallback(() => {
     dispatch({
       type: GROUPS_LIST_FOLD,
       payload: !groupsListFold,
     });
-  }
+  }, [dispatch, groupsListFold]);
 
   function renderSearchPage() {
     if (searchLoading) {
@@ -170,6 +180,28 @@ function ChatPage(props: ChatPageProps) {
     }
   }
 
+  // 好友下拉tab
+  const FriendTab: ReactNode = (
+    <div className="chat-page__left-fold" onClick={handleFriendsListFold}>
+      <Icon
+        className={friendsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
+        component={ArrowDown as any}
+      />
+      <div className="chat-page__left-fold-text">好友</div>
+    </div>
+  );
+
+  // 群组下拉tab
+  const GroupTab: ReactNode = (
+    <div className="chat-page__left-fold" onClick={handleGroupsListFold}>
+      <Icon
+        className={groupsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
+        component={ArrowDown as any}
+      />
+      <div className="chat-page__left-fold-text">群组</div>
+    </div>
+  );
+
   function renderContactsList() {
     const robotInfo: FriendInfo = {
       friend_id: '0',
@@ -181,28 +213,16 @@ function ChatPage(props: ChatPageProps) {
       const array = new Array(5).fill(0);
       return (
         <div className="chat-page__left-contracts">
-          <div className="chat-page__left-fold" onClick={handleFriendsListFold}>
-            <Icon
-              className={friendsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
-              component={ArrowDown as any}
-            />
-            <div className="chat-page__left-fold-text">好友</div>
-          </div>
+          {FriendTab}
           <div className="chat-page__left-contracts__item">
             {array.map((o, i) => (
-              <FriendCardSkeleton key={i} />
+              <ContractCardSkeleton key={i} />
             ))}
           </div>
-          <div className="chat-page__left-fold" onClick={handleGroupsListFold}>
-            <Icon
-              className={groupsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
-              component={ArrowDown as any}
-            />
-            <div className="chat-page__left-fold-text">群组</div>
-          </div>
+          {GroupTab}
           <div className="chat-page__left-contracts__item">
             {array.map((o, i) => (
-              <RoomCardSkeleton key={i} />
+              <ContractCardSkeleton key={i} />
             ))}
           </div>
         </div>
@@ -210,34 +230,22 @@ function ChatPage(props: ChatPageProps) {
     } else {
       return (
         <>
-          <div className="chat-page__left-fold" onClick={handleFriendsListFold}>
-            <Icon
-              className={friendsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
-              component={ArrowDown as any}
-            />
-            <div className="chat-page__left-fold-text">好友</div>
-          </div>
+          {FriendTab}
           {!friendsListFold &&
-            newFriendsList.map((friendInfo, index) => (
+            newFriendsList.map((friendInfo) => (
               <FriendCard
-                key={index}
+                key={friendInfo.friend_id}
                 friendInfo={friendInfo}
                 dispatch={dispatch}
-                selectSession={selectSession}
-                socket={socket}
-                username={userInfo?.username || ''}
+                deleteFriend={deleteFriend}
               />
             ))}
-          <div className="chat-page__left-fold" onClick={handleGroupsListFold}>
-            <Icon
-              className={groupsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
-              component={ArrowDown as any}
-            />
-            <div className="chat-page__left-fold-text">群组</div>
-          </div>
+          {GroupTab}
           {!groupsListFold &&
-            groupsList &&
-            groupsList.map((groupInfo, index) => <RoomCard key={index} roomInfo={groupInfo} dispatch={dispatch} />)}
+            groupsList?.length &&
+            groupsList.map((groupInfo) => (
+              <RoomCard key={groupInfo.room_id} roomInfo={groupInfo} dispatch={dispatch} />
+            ))}
         </>
       );
     }
@@ -372,6 +380,47 @@ function ChatPage(props: ChatPageProps) {
       console.error(e);
     }
   }
+
+  // 删除好友
+  const deleteFriend = useCallback(
+    async (id: string) => {
+      try {
+        const reqData: DeleteFriendReq = {
+          friendId: id,
+        };
+
+        await apiPost(DELETE_FRIEND, reqData);
+        if (id === selectSession?.sessionId) {
+          dispatch({
+            type: SELECT_SESSION,
+            payload: null,
+          });
+        }
+
+        // 删除会话信息
+        dispatch({
+          type: DELETE_SESSION_INFO,
+          payload: id,
+        });
+
+        // 删除好友信息
+        dispatch({
+          type: DELETE_FRIEND_ACTION,
+          payload: id,
+        });
+
+        // 发送删除好友信息
+        if (socket) {
+          socket.emit('update friend', Cookies.get('uuid') || '', id, userInfo?.username || '', 'delete');
+        }
+
+        message.success('删除成功');
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    [dispatch, selectSession?.sessionId, socket, userInfo?.username]
+  );
 
   // 监听socket
   const listenSocket = useCallback(() => {
@@ -578,7 +627,21 @@ function ChatPage(props: ChatPageProps) {
           />
         </Route>
         <Route path="/chat/contracts" exact>
-          <ChatContractsMobile />
+          <ChatContractsMobile
+            friendsLoading={friendsLoading}
+            groupsLoading={groupsLoading}
+            friendsListFold={friendsListFold}
+            groupsListFold={groupsListFold}
+            friendsList={friendsList}
+            groupsList={groupsList}
+            handleFriendsListFold={handleFriendsListFold}
+            handleGroupsListFold={handleGroupsListFold}
+            dispatch={dispatch}
+            deleteFriend={deleteFriend}
+          />
+        </Route>
+        <Route path="/chat/contracts/search" exact>
+          <SearchContracts />
         </Route>
         <Route path="/chat/addFriends" exact>
           <AddFriendsMobile

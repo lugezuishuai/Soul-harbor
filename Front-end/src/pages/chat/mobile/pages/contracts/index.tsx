@@ -1,8 +1,174 @@
-import React from 'react';
+import React, { ReactNode, useState, useCallback } from 'react';
+import { Button, Drawer, Icon } from 'antd';
+import { Link } from 'react-router-dom';
+import ArrowDown from '@/assets/icon/arrow_down.svg';
+import WarnIcon from '@/assets/icon/warn-icon.svg';
+import { FriendInfo } from '@/interface/chat/getFriendsList';
+import { FriendListState, GroupsListState } from '@/redux/reducers/state';
+import { FriendCard } from '@/pages/chat/component/friendCard';
+import { RoomCard } from '@/pages/chat/component/roomCard';
+import { Action } from '@/redux/actions';
+import { ContractCardSkeletonMobile } from '../../components/contract-card-skeleton';
 import './index.less';
 
-export function ChatContractsMobile() {
+interface ChatContractsMobileProps {
+  friendsLoading: boolean;
+  groupsLoading: boolean;
+  friendsListFold: boolean;
+  groupsListFold: boolean;
+  friendsList: FriendListState;
+  groupsList: GroupsListState;
+  handleFriendsListFold(): void;
+  handleGroupsListFold(): void;
+  dispatch(action: Action): void;
+  deleteFriend(id: string): Promise<void>;
+}
+
+export function ChatContractsMobile({
+  friendsLoading,
+  groupsLoading,
+  friendsList,
+  groupsList,
+  friendsListFold,
+  groupsListFold,
+  handleFriendsListFold,
+  handleGroupsListFold,
+  dispatch,
+  deleteFriend,
+}: ChatContractsMobileProps) {
+  const [visible, setVisible] = useState(false); // drawer显示与否
+  const [deleteFriendInfo, setDeleteFriendInfo] = useState<FriendInfo | null>(null); // 要删除的好友信息
+  const [loading, setLoading] = useState(false); // 「确定」按钮loading
+
+  function handleCloseDrawer() {
+    setVisible(false);
+  }
+
+  const handleShowDrawer = useCallback((friendInfo: FriendInfo) => {
+    setVisible(true);
+    setDeleteFriendInfo(friendInfo);
+  }, []);
+
+  // 好友下拉tab
+  const FriendTab: ReactNode = (
+    <div className="chat-contracts__mobile__fold" onClick={handleFriendsListFold}>
+      <Icon
+        className={friendsListFold ? 'chat-contracts__mobile__fold-icon_down' : 'chat-contracts__mobile__fold-icon_up'}
+        component={ArrowDown as any}
+      />
+      <div className="chat-contracts__mobile__fold-text">好友</div>
+    </div>
+  );
+
+  // 群组下拉tab
+  const GroupTab: ReactNode = (
+    <div className="chat-contracts__mobile__fold" onClick={handleGroupsListFold}>
+      <Icon
+        className={groupsListFold ? 'chat-contracts__mobile__fold-icon_down' : 'chat-contracts__mobile__fold-icon_up'}
+        component={ArrowDown as any}
+      />
+      <div className="chat-contracts__mobile__fold-text">群组</div>
+    </div>
+  );
+
+  function renderContractsList() {
+    const robotInfo: FriendInfo = {
+      friend_id: '0',
+      friend_username: '机器人小X',
+      friend_avatar: null,
+    };
+    const newFriendsList = friendsList ? [robotInfo, ...friendsList] : [robotInfo];
+    if (friendsLoading || groupsLoading) {
+      const array = new Array(5).fill(0);
+      return (
+        <>
+          {FriendTab}
+          {array.map((o, i) => (
+            <ContractCardSkeletonMobile key={i} />
+          ))}
+          {GroupTab}
+          {array.map((o, i) => (
+            <ContractCardSkeletonMobile key={i} />
+          ))}
+        </>
+      );
+    } else {
+      return (
+        <>
+          {FriendTab}
+          {!friendsListFold &&
+            newFriendsList.map((friendInfo) => (
+              <FriendCard
+                key={friendInfo.friend_id}
+                handleShowDrawer={handleShowDrawer}
+                friendInfo={friendInfo}
+                dispatch={dispatch}
+                deleteFriend={deleteFriend}
+              />
+            ))}
+          {GroupTab}
+          {!groupsListFold &&
+            groupsList?.length &&
+            groupsList.map((groupInfo) => (
+              <RoomCard key={groupInfo.room_id} roomInfo={groupInfo} dispatch={dispatch} />
+            ))}
+        </>
+      );
+    }
+  }
+
+  async function handleConfirm() {
+    if (!deleteFriendInfo) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await deleteFriend(deleteFriendInfo.friend_id);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+      setVisible(false);
+    }
+  }
+
   return (
-    <div className="chat-contracts__mobile">这是contract</div>
-  )
+    <div className="chat-contracts__mobile">
+      <div className="chat-contracts__mobile__header">
+        <div className="chat-contracts__mobile__header__text">联系人</div>
+        <Link to="/chat/contracts/search" className="chat-contracts__mobile__header__link">
+          <Icon className="chat-contracts__mobile__header__icon" type="search" />
+        </Link>
+      </div>
+      <div className="chat-contracts__mobile__content">{renderContractsList()}</div>
+      <Drawer
+        className="chat-contracts__mobile__drawer"
+        placement="bottom"
+        closable={false}
+        onClose={handleCloseDrawer}
+        visible={visible && !!deleteFriendInfo}
+        getContainer={false}
+      >
+        <div className="chat-contracts__mobile__drawer__warn">
+          <Icon component={WarnIcon as any} className="chat-contracts__mobile__drawer__icon" />
+          <div className="chat-contracts__mobile__drawer__text">{`您确定要删除您的好友 ${
+            deleteFriendInfo?.friend_username || ''
+          } 吗？`}</div>
+        </div>
+        <Button
+          type="danger"
+          className="chat-contracts__mobile__drawer__btn"
+          loading={loading}
+          disabled={loading}
+          onClick={handleConfirm}
+        >
+          确认
+        </Button>
+        <Button className="chat-contracts__mobile__drawer__btn" onClick={handleCloseDrawer}>
+          取消
+        </Button>
+      </Drawer>
+    </div>
+  );
 }
