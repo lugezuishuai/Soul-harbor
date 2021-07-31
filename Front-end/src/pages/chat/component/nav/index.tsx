@@ -1,4 +1,4 @@
-import { UserInfoState } from '@/redux/reducers/state';
+import { ActiveMenuState, UserInfoState } from '@/redux/reducers/state';
 import React, { useCallback } from 'react';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import { Avatar, Icon } from 'antd';
@@ -12,7 +12,7 @@ import './index.less';
 
 interface ChatNavProps {
   userInfo: UserInfoState;
-  activeMenu: string;
+  activeMenu: ActiveMenuState;
   unreadChatMsgCount: number;
   dispatch(action: Action): void;
 }

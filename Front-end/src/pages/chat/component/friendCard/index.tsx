@@ -34,43 +34,6 @@ export function FriendCard({ friendInfo, dispatch, handleShowDrawer, deleteFrien
     });
   }
 
-  // async function deleteFriend() {
-  //   try {
-  //     const reqData: DeleteFriendReq = {
-  //       friendId: friend_id,
-  //     };
-
-  //     await apiPost(DELETE_FRIEND, reqData);
-  //     if (friend_id === selectSession?.sessionId) {
-  //       dispatch({
-  //         type: SELECT_SESSION,
-  //         payload: null,
-  //       });
-  //     }
-
-  //     // 删除会话信息
-  //     dispatch({
-  //       type: DELETE_SESSION_INFO,
-  //       payload: friend_id,
-  //     });
-
-  //     // 删除好友信息
-  //     dispatch({
-  //       type: DELETE_FRIEND_ACTION,
-  //       payload: friend_id,
-  //     });
-
-  //     // 发送删除好友信息
-  //     if (socket) {
-  //       socket.emit('update friend', Cookies.get('uuid') || '', friend_id, username, 'delete');
-  //     }
-
-  //     message.success('删除成功');
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }
-
   function handleDeleteFriend(e: any) {
     // 阻止点击事件冒泡
     e.stopPropagation();

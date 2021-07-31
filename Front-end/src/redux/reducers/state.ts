@@ -33,6 +33,8 @@ export type SessionsListState = SessionInfo[] | null;
 
 export type GroupsListState = RoomInfo[] | null;
 
+export type ActiveMenuState = 'sessions' | 'contracts';
+
 export interface SelectSession {
   type: 'private' | 'room';
   sessionId: string;
@@ -44,7 +46,7 @@ export type ActiveMsgState = MsgInfo | null;
 
 export type ChatState = {
   socket: SocketState;
-  activeMenu: string;
+  activeMenu: ActiveMenuState;
   isSearch: boolean;
   friendsList: FriendListState;
   sessionsList: SessionsListState;

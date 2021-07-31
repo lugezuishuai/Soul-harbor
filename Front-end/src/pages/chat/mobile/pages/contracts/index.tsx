@@ -1,14 +1,15 @@
 import React, { ReactNode, useState, useCallback } from 'react';
 import { Button, Drawer, Icon } from 'antd';
-import { Link } from 'react-router-dom';
 import ArrowDown from '@/assets/icon/arrow_down.svg';
-import WarnIcon from '@/assets/icon/warn-icon.svg';
+import Danger from '@/assets/icon/danger.svg';
 import { FriendInfo } from '@/interface/chat/getFriendsList';
 import { FriendListState, GroupsListState } from '@/redux/reducers/state';
 import { FriendCard } from '@/pages/chat/component/friendCard';
 import { RoomCard } from '@/pages/chat/component/roomCard';
 import { Action } from '@/redux/actions';
 import { ContractCardSkeletonMobile } from '../../components/contract-card-skeleton';
+import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
+import { px2rem } from '@/utils/px2rem';
 import './index.less';
 
 interface ChatContractsMobileProps {
@@ -39,10 +40,19 @@ export function ChatContractsMobile({
   const [visible, setVisible] = useState(false); // drawer显示与否
   const [deleteFriendInfo, setDeleteFriendInfo] = useState<FriendInfo | null>(null); // 要删除的好友信息
   const [loading, setLoading] = useState(false); // 「确定」按钮loading
+  const [showSearchContracts, setShowSearchContracts] = useState(false); // 是否展示搜索联系人界面
 
   function handleCloseDrawer() {
     setVisible(false);
   }
+
+  function handleShowSearchContracts() {
+    setShowSearchContracts(true);
+  }
+
+  const handleHideSearchContracts = useCallback(() => {
+    setShowSearchContracts(false);
+  }, []);
 
   const handleShowDrawer = useCallback((friendInfo: FriendInfo) => {
     setVisible(true);
@@ -137,38 +147,46 @@ export function ChatContractsMobile({
     <div className="chat-contracts__mobile">
       <div className="chat-contracts__mobile__header">
         <div className="chat-contracts__mobile__header__text">联系人</div>
-        <Link to="/chat/contracts/search" className="chat-contracts__mobile__header__link">
-          <Icon className="chat-contracts__mobile__header__icon" type="search" />
-        </Link>
+        <Icon className="chat-contracts__mobile__header__icon" type="search" onClick={handleShowSearchContracts} />
       </div>
       <div className="chat-contracts__mobile__content">{renderContractsList()}</div>
       <Drawer
-        className="chat-contracts__mobile__drawer"
+        className="chat-contracts__mobile__alarm"
         placement="bottom"
         closable={false}
         onClose={handleCloseDrawer}
-        visible={visible && !!deleteFriendInfo}
-        getContainer={false}
+        visible={visible && !isNullOrUndefined(deleteFriendInfo)}
+        height={px2rem(180)}
+        getContainer={document.getElementsByClassName('home__container')[0] as HTMLElement}
       >
-        <div className="chat-contracts__mobile__drawer__warn">
-          <Icon component={WarnIcon as any} className="chat-contracts__mobile__drawer__icon" />
-          <div className="chat-contracts__mobile__drawer__text">{`您确定要删除您的好友 ${
+        <div className="chat-contracts__mobile__alarm__warn">
+          <Icon component={Danger as any} className="chat-contracts__mobile__alarm__icon" />
+          <div className="chat-contracts__mobile__alarm__text">{`您确定要删除您的好友 ${
             deleteFriendInfo?.friend_username || ''
           } 吗？`}</div>
         </div>
         <Button
           type="danger"
-          className="chat-contracts__mobile__drawer__btn"
+          className="chat-contracts__mobile__alarm__btn"
           loading={loading}
           disabled={loading}
           onClick={handleConfirm}
         >
           确认
         </Button>
-        <Button className="chat-contracts__mobile__drawer__btn" onClick={handleCloseDrawer}>
+        <Button className="chat-contracts__mobile__alarm__btn" onClick={handleCloseDrawer}>
           取消
         </Button>
       </Drawer>
+      <Drawer
+        className="chat-contracts__mobile__search"
+        placement="right"
+        closable={false}
+        onClose={handleHideSearchContracts}
+        visible={showSearchContracts && !isNullOrUndefined(friendsList) && !isNullOrUndefined(groupsList)}
+        width={window.innerWidth}
+        getContainer={document.getElementsByClassName('home__container')[0] as HTMLElement}
+      ></Drawer>
     </div>
   );
 }

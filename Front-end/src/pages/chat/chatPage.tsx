@@ -1,5 +1,6 @@
 import { Action } from '@/redux/actions';
 import {
+  ActiveMenuState,
   ActiveMsgState,
   FriendListState,
   GroupsListState,
@@ -60,11 +61,10 @@ import { ConversationMobile } from './mobile/pages/conversation';
 import { ChatFooterMobile } from './mobile/components/chat-footer';
 import { AddFriendsMobile } from './mobile/pages/add-friend';
 import { LaunchGroupChat } from './mobile/pages/launch-group-chat';
-import { SearchContracts } from './mobile/pages/search-contracts';
 import { ContractCardSkeleton } from './component/contractCardSkeleton';
-import './index.less';
 import { DeleteFriendReq } from '@/interface/chat/deleteFriend';
 import Cookies from 'js-cookie';
+import './index.less';
 
 const { confirm } = Modal;
 
@@ -72,7 +72,7 @@ interface ChatPageProps extends WrapChatPageProps {
   dispatch(action: Action): void;
   updateUnreadMsg(): Promise<any>;
   userInfo: UserInfoState;
-  activeMenu: string;
+  activeMenu: ActiveMenuState;
   isSearch: boolean;
   socket: SocketState;
   friendsList: FriendListState;
@@ -639,9 +639,6 @@ function ChatPage(props: ChatPageProps) {
             dispatch={dispatch}
             deleteFriend={deleteFriend}
           />
-        </Route>
-        <Route path="/chat/contracts/search" exact>
-          <SearchContracts />
         </Route>
         <Route path="/chat/addFriends" exact>
           <AddFriendsMobile
