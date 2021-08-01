@@ -38,3 +38,4 @@ export const EXIT_GROUP = '/api/chat/exitGroup'; // 退出群聊
 export const DELETE_GROUP_MEMBER = '/api/chat/deleteMember'; // 删除群成员
 export const GET_SESSION_INFO = '/api/chat/getSessionInfo'; // 拉取某个会话信息
 export const DELETE_FRIEND = '/api/chat/deleteFriend'; // 删除好友
+export const SEARCH_CONTRACTS = '/api/chat/searchContracts'; // 查找联系人
