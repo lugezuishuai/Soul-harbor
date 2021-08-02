@@ -19,12 +19,12 @@ function SearchContractsForm({ handleSearch, form }: SearchContractsFormProps) {
   }
 
   return (
-    <Form className="chat-contracts__mobile__search__content__header__form">
+    <Form className="search-contracts__header__form">
       <Form.Item>
         {getFieldDecorator('input')(
           <Input
             prefix={
-              <Icon component={Search as any} className="chat-contracts__mobile__search__content__header__icon" />
+              <Icon component={Search as any} className="search-contracts__header__prefix" />
             }
             style={{ height: 32 }}
             placeholder="请输入您的好友的用户名"

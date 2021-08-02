@@ -1,0 +1,37 @@
+:global {
+  .folding-panel {
+    width: 100%;
+    height: 48px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    background: @N300;
+    &:active {
+      background: @N400;
+    }
+    &:hover {
+      cursor: pointer;
+    }
+    &-icon_up,
+    &-icon_down {
+      user-select: none;
+      font-size: 16px;
+      margin-right: 12px;
+    }
+    &-icon_up {
+      transform: rotate(180deg);
+      transition: 300ms;
+    }
+    &-icon_down {
+      transform: rotate(0deg);
+      transition: 300ms;
+    }
+    &-text {
+      user-select: none;
+      font-size: 16px;
+      line-height: 22px;
+      font-weight: 500;
+      color: @N900;
+    }
+  }
+}

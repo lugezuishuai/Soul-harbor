@@ -13,12 +13,23 @@ const { confirm } = Modal;
 
 interface FriendCardProps {
   handleShowDrawer?(friendInfo: FriendInfo): void;
+  deleteFriend?(id: string): Promise<void>;
   dispatch(action: Action): void;
-  deleteFriend(id: string): Promise<void>;
   friendInfo: FriendInfo;
+  needHightLight?: boolean;
+  showDelete?: boolean;
+  keyword?: string;
 }
 
-export function FriendCard({ friendInfo, dispatch, handleShowDrawer, deleteFriend }: FriendCardProps) {
+export function FriendCard({
+  friendInfo,
+  dispatch,
+  handleShowDrawer,
+  deleteFriend,
+  needHightLight = false,
+  showDelete = true,
+  keyword = '',
+}: FriendCardProps) {
   const { friend_avatar, friend_id, friend_username } = friendInfo;
 
   function handleClick() {
@@ -39,6 +50,10 @@ export function FriendCard({ friendInfo, dispatch, handleShowDrawer, deleteFrien
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
 
+    if (!deleteFriend) {
+      return;
+    }
+
     if (handleShowDrawer) {
       handleShowDrawer(friendInfo);
     } else {
@@ -53,15 +68,32 @@ export function FriendCard({ friendInfo, dispatch, handleShowDrawer, deleteFrien
     }
   }
 
+  // 高亮处理搜索关键字
+  function highLightKeyword(value: string, keyword: string) {
+    if (!keyword) {
+      return value;
+    }
+
+    const regExp = new RegExp(keyword, 'g');
+    return value.replace(regExp, `<span>${keyword}</span>`);
+  }
+
   return (
     <div className="chat-friend-card" onClick={handleClick}>
       <Avatar
-        className="chat-friend-card-avatar"
+        className="chat-friend-card__avatar"
         src={friend_id !== '0' ? friend_avatar || defaultAvatar : robotAvatar}
       />
-      <div className="chat-friend-card-name">{friend_username}</div>
-      {friend_id !== '0' && (
-        <Icon className="chat-friend-card-delete" component={DeleteFriend as any} onClick={handleDeleteFriend} />
+      {needHightLight ? (
+        <div
+          className="chat-friend-card__name"
+          dangerouslySetInnerHTML={{ __html: highLightKeyword(friend_username, keyword) }}
+        />
+      ) : (
+        <div className="chat-friend-card__name">{friend_username}</div>
+      )}
+      {friend_id !== '0' && showDelete && (
+        <Icon className="chat-friend-card__delete" component={DeleteFriend as any} onClick={handleDeleteFriend} />
       )}
     </div>
   );

@@ -1,6 +1,5 @@
-import React, { ReactNode, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button, Drawer, Icon } from 'antd';
-import ArrowDown from '@/assets/icon/arrow_down.svg';
 import Danger from '@/assets/icon/danger.svg';
 import { FriendInfo } from '@/interface/chat/getFriendsList';
 import { FriendListState, GroupsListState } from '@/redux/reducers/state';
@@ -10,6 +9,8 @@ import { Action } from '@/redux/actions';
 import { ContractCardSkeletonMobile } from '../../components/contract-card-skeleton';
 import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
 import { px2rem } from '@/utils/px2rem';
+import { SearchContracts } from './search-contracts';
+import { FoldingPanel } from '@/components/folding-panel';
 import './index.less';
 
 interface ChatContractsMobileProps {
@@ -59,28 +60,6 @@ export function ChatContractsMobile({
     setDeleteFriendInfo(friendInfo);
   }, []);
 
-  // 好友下拉tab
-  const FriendTab: ReactNode = (
-    <div className="chat-contracts__mobile__fold" onClick={handleFriendsListFold}>
-      <Icon
-        className={friendsListFold ? 'chat-contracts__mobile__fold-icon_down' : 'chat-contracts__mobile__fold-icon_up'}
-        component={ArrowDown as any}
-      />
-      <div className="chat-contracts__mobile__fold-text">好友</div>
-    </div>
-  );
-
-  // 群组下拉tab
-  const GroupTab: ReactNode = (
-    <div className="chat-contracts__mobile__fold" onClick={handleGroupsListFold}>
-      <Icon
-        className={groupsListFold ? 'chat-contracts__mobile__fold-icon_down' : 'chat-contracts__mobile__fold-icon_up'}
-        component={ArrowDown as any}
-      />
-      <div className="chat-contracts__mobile__fold-text">群组</div>
-    </div>
-  );
-
   function renderContractsList() {
     const robotInfo: FriendInfo = {
       friend_id: '0',
@@ -92,11 +71,11 @@ export function ChatContractsMobile({
       const array = new Array(5).fill(0);
       return (
         <>
-          {FriendTab}
+          <FoldingPanel handleFold={handleFriendsListFold} foldState={friendsListFold} textContent="好友" />
           {array.map((o, i) => (
             <ContractCardSkeletonMobile key={i} />
           ))}
-          {GroupTab}
+          <FoldingPanel handleFold={handleGroupsListFold} foldState={groupsListFold} textContent="群组" />
           {array.map((o, i) => (
             <ContractCardSkeletonMobile key={i} />
           ))}
@@ -105,7 +84,7 @@ export function ChatContractsMobile({
     } else {
       return (
         <>
-          {FriendTab}
+          <FoldingPanel handleFold={handleFriendsListFold} foldState={friendsListFold} textContent="好友" />
           {!friendsListFold &&
             newFriendsList.map((friendInfo) => (
               <FriendCard
@@ -116,9 +95,9 @@ export function ChatContractsMobile({
                 deleteFriend={deleteFriend}
               />
             ))}
-          {GroupTab}
+          <FoldingPanel handleFold={handleGroupsListFold} foldState={groupsListFold} textContent="群组" />
           {!groupsListFold &&
-            groupsList?.length &&
+            groupsList &&
             groupsList.map((groupInfo) => (
               <RoomCard key={groupInfo.room_id} roomInfo={groupInfo} dispatch={dispatch} />
             ))}
@@ -186,7 +165,9 @@ export function ChatContractsMobile({
         visible={showSearchContracts && !isNullOrUndefined(friendsList) && !isNullOrUndefined(groupsList)}
         width={window.innerWidth}
         getContainer={document.getElementsByClassName('home__container')[0] as HTMLElement}
-      ></Drawer>
+      >
+        <SearchContracts handleHideSearchContracts={handleHideSearchContracts} dispatch={dispatch} />
+      </Drawer>
     </div>
   );
 }

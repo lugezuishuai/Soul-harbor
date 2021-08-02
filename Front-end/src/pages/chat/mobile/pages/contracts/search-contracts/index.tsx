@@ -1,37 +1,44 @@
 import { SEARCH_CONTRACTS } from '@/constants/urls';
 import { SearchContractsData, SearchContractsRes } from '@/interface/chat/searchContracts';
-import { apiPost } from '@/utils/request';
+import { apiGet } from '@/utils/request';
 import { Icon } from 'antd';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { WrapSearchContractsForm } from './search';
 import './index.less';
+import { FoldingPanel } from '@/components/folding-panel';
+import { FriendCard } from '@/pages/chat/component/friendCard';
+import { Action } from '@/redux/actions';
 
 interface SearchContractsProps {
   handleHideSearchContracts(): void;
+  dispatch(action: Action): void;
 }
 
-export function SearchContracts({ handleHideSearchContracts }: SearchContractsProps) {
+export function SearchContracts({ handleHideSearchContracts, dispatch }: SearchContractsProps) {
   const [contractsData, setContractsData] = useState<SearchContractsData | null>(null); // 搜索的联系人信息
   const [friendsTabFold, setFriendsTabFold] = useState(false); // 「好友」tab折叠
   const [groupsTabFold, setGroupsTabFold] = useState(false); // 「群组」tab折叠
+  const timer = useRef(-1);
 
-  const handleSearch = useCallback(async (keyword: string) => {
-    try {
-      const { data }: SearchContractsRes = await apiPost(SEARCH_CONTRACTS, { keyword });
-      setContractsData(data);
-    } catch (e) {
-      console.error(e);
-    }
+  const handleSearch = useCallback((keyword: string) => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      try {
+        const { data }: SearchContractsRes = await apiGet(SEARCH_CONTRACTS, { keyword });
+        setContractsData(data);
+      } catch (e) {
+        setContractsData(null);
+        console.error(e);
+      }
+    }, 350) as any;
   }, []);
 
-  // 高亮处理搜索关键字
-  function hightLightKeyword(keyword: string, value: string) {
-    if (!keyword) {
-      return value;
-    }
+  function handleFriendsFold() {
+    setFriendsTabFold((friendsTabFold) => !friendsTabFold);
+  }
 
-    const regExp = new RegExp(keyword, 'g');
-    return value.replace(regExp, `<span className="chat-contracts__mobile__hightLight">${keyword}</span>`);
+  function handleGroupsFold() {
+    setGroupsTabFold((groupsTabFold) => !groupsTabFold);
   }
 
   return (
@@ -39,6 +46,25 @@ export function SearchContracts({ handleHideSearchContracts }: SearchContractsPr
       <div className="search-contracts__header">
         <WrapSearchContractsForm handleSearch={handleSearch} />
         <Icon type="menu-unfold" className="search-contracts__header__unfold" onClick={handleHideSearchContracts} />
+      </div>
+      <div className="search-contracts__content">
+        {contractsData && (
+          <>
+            <FoldingPanel handleFold={handleFriendsFold} foldState={friendsTabFold} textContent="好友" />
+            {!friendsTabFold &&
+              contractsData.friends.map((friendInfo) => (
+                <FriendCard
+                  key={friendInfo.friend_id}
+                  friendInfo={friendInfo}
+                  dispatch={dispatch}
+                  needHightLight={true}
+                  showDelete={false}
+                  keyword={contractsData.keyword}
+                />
+              ))}
+            <FoldingPanel handleFold={handleGroupsFold} foldState={groupsTabFold} textContent="群组" />
+          </>
+        )}
       </div>
     </div>
   );

@@ -14,14 +14,14 @@
     &:hover {
       cursor: pointer;
     }
-    &-avatar {
+    &__avatar {
       user-select: none;
       pointer-events: none;
       width: 36px;
       height: 36px;
       margin-right: 20px;
     }
-    &-name {
+    &__name {
       user-select: none;
       width: 180px;
       font-size: 14px;
@@ -34,8 +34,14 @@
       @media screen and (max-width: 1200px) {
         width: 136px;
       }
+      & > span:first-child {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        color: @B500;
+      }
     }
-    &-delete {
+    &__delete {
       position: absolute;
       z-index: 2;
       font-size: 20px;

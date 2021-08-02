@@ -11,7 +11,7 @@ import {
   State,
   UserInfoState,
 } from '@/redux/reducers/state';
-import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { ChatNav } from './component/nav';
 import { NoSearchResult, WrapChatSearch } from './component/search';
@@ -47,7 +47,6 @@ import { SessionCard, SessionCardSkeleton } from './component/sessionCard';
 import GroupChat from '@/assets/icon/group_chat.svg';
 import { Icon, Button, Modal, message } from 'antd';
 import { openGroupChatModal } from './component/openGroupChatModal';
-import ArrowDown from '@/assets/icon/arrow_down.svg';
 import { GetGroupsListRes } from '@/interface/chat/getGroupsList';
 import { RoomCard } from './component/roomCard';
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
@@ -64,6 +63,7 @@ import { LaunchGroupChat } from './mobile/pages/launch-group-chat';
 import { ContractCardSkeleton } from './component/contractCardSkeleton';
 import { DeleteFriendReq } from '@/interface/chat/deleteFriend';
 import Cookies from 'js-cookie';
+import { FoldingPanel } from '@/components/folding-panel';
 import './index.less';
 
 const { confirm } = Modal;
@@ -180,28 +180,6 @@ function ChatPage(props: ChatPageProps) {
     }
   }
 
-  // 好友下拉tab
-  const FriendTab: ReactNode = (
-    <div className="chat-page__left-fold" onClick={handleFriendsListFold}>
-      <Icon
-        className={friendsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
-        component={ArrowDown as any}
-      />
-      <div className="chat-page__left-fold-text">好友</div>
-    </div>
-  );
-
-  // 群组下拉tab
-  const GroupTab: ReactNode = (
-    <div className="chat-page__left-fold" onClick={handleGroupsListFold}>
-      <Icon
-        className={groupsListFold ? 'chat-page__left-fold-icon_down' : 'chat-page__left-fold-icon_up'}
-        component={ArrowDown as any}
-      />
-      <div className="chat-page__left-fold-text">群组</div>
-    </div>
-  );
-
   function renderContactsList() {
     const robotInfo: FriendInfo = {
       friend_id: '0',
@@ -213,13 +191,13 @@ function ChatPage(props: ChatPageProps) {
       const array = new Array(5).fill(0);
       return (
         <div className="chat-page__left-contracts">
-          {FriendTab}
+          <FoldingPanel handleFold={handleFriendsListFold} foldState={friendsListFold} textContent="好友" />
           <div className="chat-page__left-contracts__item">
             {array.map((o, i) => (
               <ContractCardSkeleton key={i} />
             ))}
           </div>
-          {GroupTab}
+          <FoldingPanel handleFold={handleGroupsListFold} foldState={groupsListFold} textContent="群组" />
           <div className="chat-page__left-contracts__item">
             {array.map((o, i) => (
               <ContractCardSkeleton key={i} />
@@ -230,7 +208,7 @@ function ChatPage(props: ChatPageProps) {
     } else {
       return (
         <>
-          {FriendTab}
+          <FoldingPanel handleFold={handleFriendsListFold} foldState={friendsListFold} textContent="好友" />
           {!friendsListFold &&
             newFriendsList.map((friendInfo) => (
               <FriendCard
@@ -240,7 +218,7 @@ function ChatPage(props: ChatPageProps) {
                 deleteFriend={deleteFriend}
               />
             ))}
-          {GroupTab}
+          <FoldingPanel handleFold={handleGroupsListFold} foldState={groupsListFold} textContent="群组" />
           {!groupsListFold &&
             groupsList?.length &&
             groupsList.map((groupInfo) => (
