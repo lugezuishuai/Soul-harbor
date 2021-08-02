@@ -5,6 +5,7 @@ import React from 'react';
 import { Action } from '@/redux/actions';
 import { Avatar } from 'antd';
 import defaultGroup from '@/assets/image/default-group.png';
+import { highLightKeyword } from '@/utils/highLightKeyword';
 import './index.less';
 
 interface SearchGroupChatProps {
@@ -20,7 +21,7 @@ export function SearchGroupCard({ roomInfo, dispatch }: SearchGroupChatProps) {
       type: 'room',
       sessionId: room_id,
       name: room_name,
-    }
+    };
 
     dispatch({
       type: SELECT_SESSION,
@@ -28,18 +29,9 @@ export function SearchGroupCard({ roomInfo, dispatch }: SearchGroupChatProps) {
     });
   }
 
-  // 高亮处理搜索关键字
-  function highLightKeyword(value: string, keyword: string) {
-    if (!keyword) {
-      return value;
-    }
-
-    const regExp = new RegExp(keyword, 'g');
-    return value.replace(regExp, `<span>${keyword}</span>`);
-  }
-
+  // 格式化搜索到的群成员用户名
   function formatMembersUsername() {
-    
+    return '';
   }
 
   return (
@@ -47,8 +39,8 @@ export function SearchGroupCard({ roomInfo, dispatch }: SearchGroupChatProps) {
       <Avatar className="search-group-card__avatar" src={room_avatar || defaultGroup} />
       <div className="search-group-card__info">
         <div className="search-group-card__info__name">{room_name}</div>
-        <div className="search-group-card__info__members"></div>
+        <div className="search-group-card__info__members">{formatMembersUsername()}</div>
       </div>
     </div>
-  )
+  );
 }

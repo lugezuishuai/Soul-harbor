@@ -7,6 +7,7 @@ import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
 import robotAvatar from '@/assets/image/robot.png';
 import DeleteFriend from '@/assets/icon/delete_friend.svg';
+import { highLightKeyword } from '@/utils/highLightKeyword';
 import './index.less';
 
 const { confirm } = Modal;
@@ -66,16 +67,6 @@ export function FriendCard({
         onOk: () => deleteFriend(friend_id),
       });
     }
-  }
-
-  // 高亮处理搜索关键字
-  function highLightKeyword(value: string, keyword: string) {
-    if (!keyword) {
-      return value;
-    }
-
-    const regExp = new RegExp(keyword, 'g');
-    return value.replace(regExp, `<span>${keyword}</span>`);
   }
 
   return (
