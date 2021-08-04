@@ -50,12 +50,12 @@ export function AddFriendsMobile({
       );
     } else if (!searchData) {
       return null;
-    } else if (!searchData.length) {
+    } else if (!searchData.membersInfo.length) {
       return <NoSearchResultMobile />;
     } else {
       return (
         <>
-          {searchData.map((userData, index) => (
+          {searchData.membersInfo.map((userData, index) => (
             <UserCard
               key={index}
               userData={userData}
@@ -64,6 +64,7 @@ export function AddFriendsMobile({
               dispatch={dispatch}
               socket={socket}
               username={username}
+              keyword={searchData.keyword}
             />
           ))}
         </>

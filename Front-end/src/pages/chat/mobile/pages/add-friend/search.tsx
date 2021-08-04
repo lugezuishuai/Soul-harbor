@@ -11,8 +11,8 @@ function SearchMobile({ form }: FormComponentProps) {
 
   function handleChange(e: any) {
     if (e?.target?.value) {
-      const search = e.target.value;
-      handleSearch(search);
+      const keyword = e.target.value;
+      handleSearch(keyword);
     }
   }
 

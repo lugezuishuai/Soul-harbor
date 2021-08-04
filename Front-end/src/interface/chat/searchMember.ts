@@ -1,6 +1,6 @@
 // searchMember
 export interface SearchMemberRequest {
-  search: string;
+  keyword: string;
 }
 
 export interface UserInfo {
@@ -17,8 +17,13 @@ export interface SearchMemberInfo {
   online?: boolean;
 }
 
+export interface SearchMemberInfoData {
+  keyword: string;
+  membersInfo: SearchMemberInfo[]
+}
+
 export interface SearchMemberRes {
   code: number;
-  data: SearchMemberInfo[];
+  data: SearchMemberInfoData;
   msg: string;
 }

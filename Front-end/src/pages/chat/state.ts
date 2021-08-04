@@ -1,14 +1,14 @@
 // ChatPage的公共数据在此处维护
 import { SEARCH_MEMBER } from '@/constants/urls';
 import { MsgInfo } from '@/interface/chat/getHistoryMsg';
-import { SearchMemberInfo, SearchMemberRequest, SearchMemberRes } from '@/interface/chat/searchMember';
+import { SearchMemberInfoData, SearchMemberRequest, SearchMemberRes } from '@/interface/chat/searchMember';
 import { apiGet } from '@/utils/request';
 import { useCallback, useRef, useState } from 'react';
 import { createContainer, useContainer } from 'unstated-next';
 
 function useCommonData() {
   const [searchLoading, setSearchLoading] = useState(false);
-  const [searchData, setSearchData] = useState<SearchMemberInfo[] | null>(null);
+  const [searchData, setSearchData] = useState<SearchMemberInfoData | null>(null);
   const [friendsLoading, setFriendsLoading] = useState(false); // 获取好友列表loading
   const [groupsLoading, setGroupsLoading] = useState(false); // 获取群组列表loading
   const [sessionsLoading, setSessionsLoading] = useState(false); // 获取会话列表loading
@@ -18,14 +18,14 @@ function useCommonData() {
   const count = useRef(0);
 
   // 搜索相关数据
-  const handleSearch = useCallback((value: string) => {
+  const handleSearch = useCallback((keyword: string) => {
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       const current = ++count.current;
       try {
         setSearchLoading(true);
         const reqData: SearchMemberRequest = {
-          search: value,
+          keyword,
         };
         const { data }: SearchMemberRes = await apiGet(SEARCH_MEMBER, reqData);
         setSearchData(data);

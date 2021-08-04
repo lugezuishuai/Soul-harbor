@@ -152,9 +152,9 @@ function wrapRoomMembers(searchMembersRes: SearchMembersRes[]): SearchContractsR
 // 搜索用户
 router.get('/search', async (req, res) => {
   try {
-    let { search }: any = req.query;
-    search = search.replace(/'|‘/g, '');
-    const searchByUsernameOrEmail = `select * from soul_user_info where binary soul_username like '%${search}%' or binary soul_email like '%${search}%'`;
+    let { keyword }: any = req.query;
+    keyword = keyword.replace(/'|‘/g, '');
+    const searchByUsernameOrEmail = `select * from soul_user_info where binary soul_username like '%${keyword}%' or binary soul_email like '%${keyword}%'`;
     const result: UserInfo[] = await query(searchByUsernameOrEmail);
 
     const lastResult = result.length
@@ -192,10 +192,14 @@ router.get('/search', async (req, res) => {
     const offlineUsers = lastResult.filter((user) => !user.online);
 
     const searchedUsers = onlineUsers.concat(offlineUsers);
+    const resData = {
+      keyword,
+      membersInfo: searchedUsers,
+    };
 
     return res.status(200).json({
       code: 0,
-      data: searchedUsers,
+      data: resData,
       msg: 'search success',
     });
   } catch (e) {

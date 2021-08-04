@@ -48,8 +48,8 @@ function ChatSearch({ dispatch, isSearch, form }: ChatSearchProps) {
   const handleChange = useCallback(
     (e: any) => {
       if (e?.target?.value) {
-        const search = e.target.value;
-        handleSearch(search);
+        const keyword = e.target.value;
+        handleSearch(keyword);
       }
     },
     [handleSearch]

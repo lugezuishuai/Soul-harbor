@@ -42,11 +42,11 @@
         width: calc(100% - 40px - 20px);
       }
       &-text {
-        width: 100%;
+        max-width: 100%;
         font-size: 14px;
-        height: 20px;
+        font-weight: 500;
         line-height: 20px;
-        color: @N650;
+        color: @N900;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -58,6 +58,12 @@
           &:last-child {
             margin-bottom: 0;
           }
+        }
+        & > span:first-child {
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 20px;
+          color: @B500;
         }
       }
     }

@@ -4,10 +4,11 @@ import { apiGet } from '@/utils/request';
 import { Icon } from 'antd';
 import React, { useCallback, useRef, useState } from 'react';
 import { WrapSearchContractsForm } from './search';
-import './index.less';
 import { FoldingPanel } from '@/components/folding-panel';
 import { FriendCard } from '@/pages/chat/component/friendCard';
 import { Action } from '@/redux/actions';
+import { SearchGroupCard } from '../search-group-card';
+import './index.less';
 
 interface SearchContractsProps {
   handleHideSearchContracts(): void;
@@ -63,6 +64,15 @@ export function SearchContracts({ handleHideSearchContracts, dispatch }: SearchC
                 />
               ))}
             <FoldingPanel handleFold={handleGroupsFold} foldState={groupsTabFold} textContent="群组" />
+            {!groupsTabFold &&
+              contractsData.rooms.map((roomInfo) => (
+                <SearchGroupCard
+                  key={roomInfo.room_id}
+                  roomInfo={roomInfo}
+                  keyword={contractsData.keyword}
+                  dispatch={dispatch}
+                />
+              ))}
           </>
         )}
       </div>

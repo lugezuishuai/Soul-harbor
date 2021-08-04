@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/skeleton';
 import classnames from 'classnames';
 import Cookies from 'js-cookie';
 import { screen } from '@/constants/screen';
+import { highLightKeyword } from '@/utils/highLightKeyword';
 import './index.less';
 
 const { confirm } = Modal;
@@ -25,9 +26,20 @@ interface UserCardProps {
   getFriendsList(): void;
   socket: SocketState;
   username: string;
+  needHighLight?: boolean;
+  keyword?: string;
 }
 
-export function UserCard({ userData, friendsList, getFriendsList, dispatch, socket, username }: UserCardProps) {
+export function UserCard({
+  userData,
+  friendsList,
+  getFriendsList,
+  dispatch,
+  socket,
+  username,
+  keyword = '',
+  needHighLight = true,
+}: UserCardProps) {
   const { userInfo, online } = userData;
 
   // 添加好友
@@ -101,8 +113,23 @@ export function UserCard({ userData, friendsList, getFriendsList, dispatch, sock
         style={isMobile ? { height: 24, width: 24 } : {}}
       />
       <div className="chat-user-card-info">
-        <div className="chat-user-card-info-text">{userInfo?.username}</div>
-        <div className="chat-user-card-info-text">{userInfo?.email}</div>
+        {needHighLight ? (
+          <>
+            <div
+              className="chat-user-card-info-text"
+              dangerouslySetInnerHTML={{ __html: highLightKeyword(userInfo?.username || '', keyword) }}
+            />
+            <div
+              className="chat-user-card-info-text"
+              dangerouslySetInnerHTML={{ __html: highLightKeyword(userInfo?.email || '', keyword) }}
+            />
+          </>
+        ) : (
+          <>
+            <div className="chat-user-card-info-text">{userInfo?.username || ''}</div>
+            <div className="chat-user-card-info-text">{userInfo?.email || ''}</div>
+          </>
+        )}
       </div>
     </div>
   );

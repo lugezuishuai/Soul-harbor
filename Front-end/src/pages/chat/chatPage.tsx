@@ -163,10 +163,10 @@ function ChatPage(props: ChatPageProps) {
       );
     } else if (!searchData) {
       return <div className="chat-page__left-content" />;
-    } else if (!searchData.length) {
+    } else if (!searchData.membersInfo.length) {
       return <NoSearchResult />;
     } else {
-      return searchData.map((userData, index) => (
+      return searchData.membersInfo.map((userData, index) => (
         <UserCard
           key={index}
           userData={userData}
@@ -175,6 +175,7 @@ function ChatPage(props: ChatPageProps) {
           dispatch={dispatch}
           socket={socket}
           username={userInfo?.username || ''}
+          keyword={searchData.keyword}
         />
       ));
     }
