@@ -65,11 +65,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(csrf({ cookie: { httpOnly: true }, ignoreMethods: ['GET', 'HEAD', 'OPTIONS'] })); // CSRF防御
-app.use(function (req, res, next) {
-  res.cookie('XSRF-TOKEN', req.csrfToken());
-  res.locals.csrftoken = req.csrfToken();
-  next();
-});
 app.use(passport.initialize()); // 初始化passport
 
 app.use('/', indexRouter);
@@ -85,22 +80,33 @@ app.use(function (req, res, next) {
 });
 
 // error handler(错误处理中间件)
-app.use(function (err, req, res) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
   if (err.name === 'UnauthorizedError') {
     // 返回401状态码
-    res.status(401).json({
+    return res.status(401).json({
       code: 1,
       data: {},
       msg: 'invalid token',
     });
+  } else if (err.code === 'EBADCSRFTOKEN') {
+    // 返回403状态码
+    return res.status(403).json({
+      code: 403,
+      data: {},
+      msg: 'csrf token check failed',
+    });
+  } else if (req.xhr) {
+    // 返回500状态码
+    return res.status(500).json({
+      code: 500,
+      data: {},
+      msg: 'system error',
+    });
   } else {
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-    // render the error page
-    res.status(err.status || 500);
-    res.render('error');
+    return next(err);
   }
 } as express.ErrorRequestHandler);
 

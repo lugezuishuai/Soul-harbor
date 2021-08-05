@@ -57,7 +57,6 @@ axios.interceptors.request.use(
   function (config) {
     const { headers } = config;
     headers.Authorization = Cookies.get('token')?.replace('%20', ' '); // 每个请求头带上Authorization
-    headers['X-CSRF-Token'] = Cookies.get('XSRF-TOKEN'); // 获取XSRF-TOKEN
 
     removePendingRequest(config); // 检查是否存在重复请求，若存在则取消已发送的请求
     addPendingRequest(config); // 把当前请求信息添加到pendingRequest对象中

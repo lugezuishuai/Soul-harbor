@@ -958,10 +958,12 @@ router.get('/init', async function (req, res) {
 
 // 设置xsrfToken
 router.get('/xsrf', function (req, res) {
+  res.cookie('XSRF-TOKEN', req.csrfToken());
+  res.locals.csrftoken = req.csrfToken();
   res.status(200).json({
     code: 0,
     data: {},
-    msg: 'xsrfToken init success',
+    msg: 'csrfToken init success',
   });
 });
 

@@ -3,7 +3,7 @@ import { Action } from '@/redux/actions';
 import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { apiGet } from '@/utils/request';
-import { GET_UNREAD_MSG, XSRFINIT } from '@/constants/urls';
+import { GET_UNREAD_MSG } from '@/constants/urls';
 import { GetUnreadMsgRes } from '@/interface/chat/getUnreadMsg';
 import { UNREAD_MESSAGE_COUNT } from '@/redux/actions/action_types';
 import { RouteType } from '@/config/types/route-type';
@@ -28,15 +28,6 @@ interface HomeProps {
 function Home(props: HomeProps) {
   const { userInfo, selectMenu, login, socket, dispatch, route } = props;
   const [authed, setAuthed] = useState<string[]>([]); // 当前用户所拥有的权限
-
-  // 初始化xsrf
-  const initXsrf = useCallback(async () => {
-    try {
-      await apiGet(XSRFINIT);
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
 
   // 更新离线信息
   const updateUnreadMsg = useCallback(async () => {
@@ -65,17 +56,6 @@ function Home(props: HomeProps) {
       console.error(e);
     }
   }, [dispatch, login]);
-
-  useEffect(() => {
-    initXsrf();
-
-    return () => {
-      if (socket) {
-        // @ts-ignore
-        socket.removeAllListeners(); // 移除所有监听
-      }
-    };
-  }, [initXsrf, socket]);
 
   useEffect(() => {
     updateUnreadMsg();
