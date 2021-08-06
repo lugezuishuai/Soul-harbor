@@ -96,22 +96,26 @@ axios.interceptors.response.use(
       const errorStatus = error?.response?.status;
       const errorData = error?.response?.data;
       const errorMsg = error?.response?.data?.msg;
-      if (errorStatus && errorStatus !== 401) {
-        handleErrorMsg(errorMsg || '请求出错，请重新尝试');
-      }
 
       if (errorStatus) {
         switch (errorStatus) {
+          case 401:
+            handleErrorMsg(errorMsg || '认证失败，请重新尝试');
+            break;
           case 403:
             window.location.href = '/exception/403';
+            handleErrorMsg(errorMsg || '无权限，请重新尝试');
             break;
           case 404:
             window.location.href = '/exception/404';
+            handleErrorMsg(errorMsg || '抱歉，没有找到相关资源');
             break;
           case 500:
             window.location.href = '/exception/500';
+            handleErrorMsg(errorMsg || '服务端出错');
             break;
           default:
+            handleErrorMsg(errorMsg || '请求出错，请重新尝试');
             break;
         }
       }
