@@ -56,7 +56,7 @@ import { screen } from '@/constants/screen';
 import { Switch, Redirect, Route, matchPath } from 'react-router-dom';
 import { ChatSessionsMobile } from './mobile/pages/sessions';
 import { ChatContractsMobile } from './mobile/pages/contracts';
-import { ConversationMobile } from './mobile/pages/conversation';
+import { WrapConversationMobile } from './mobile/pages/conversation';
 import { ChatFooterMobile } from './mobile/components/chat-footer';
 import { AddFriendsMobile } from './mobile/pages/add-friend';
 import { LaunchGroupChat } from './mobile/pages/launch-group-chat';
@@ -67,10 +67,11 @@ import { FoldingPanel } from '@/components/folding-panel';
 import './index.less';
 
 const { confirm } = Modal;
+const { isMobile } = screen;
 
 interface ChatPageProps extends WrapChatPageProps {
   dispatch(action: Action): void;
-  updateUnreadMsg(): Promise<any>;
+  updateUnreadMsg(): Promise<void>;
   userInfo: UserInfoState;
   activeMenu: ActiveMenuState;
   isSearch: boolean;
@@ -477,6 +478,7 @@ function ChatPage(props: ChatPageProps) {
           type: SELECT_SESSION,
           payload: null,
         });
+        isMobile && historyRef.current.goBack();
       }
 
       dispatch({
@@ -499,8 +501,12 @@ function ChatPage(props: ChatPageProps) {
     }
   }, [groupsList, socket]);
 
-  // 初始化selectSession
+  // 初始化selectSession(移动端不需要进行这一步)
   const initSelectSession = useCallback(async () => {
+    if (isMobile) {
+      return;
+    }
+
     const pathnameArr = locationRef.current.pathname.split('/');
     const sessionId = pathnameArr[pathnameArr.length - 1];
 
@@ -593,7 +599,7 @@ function ChatPage(props: ChatPageProps) {
     }
   }, [activeMsg, dispatch]);
 
-  return screen.isMobile ? (
+  return isMobile ? (
     <div className="chat-page__mobile">
       <Switch>
         <Route path="/chat/sessions" exact>
@@ -638,7 +644,16 @@ function ChatPage(props: ChatPageProps) {
           />
         </Route>
         <Route path="/chat/conversation/:id" exact>
-          <ConversationMobile />
+          <WrapConversationMobile
+            dispatch={dispatch}
+            getGroupsList={getGroupsList}
+            getSessionsList={getSessionsList}
+            updateUnreadMsg={updateUnreadMsg}
+            socket={socket}
+            userInfo={userInfo}
+            selectSession={selectSession}
+            friendsList={friendsList}
+          />
         </Route>
         <Redirect to={`/chat/${activeMenu}`} />
       </Switch>

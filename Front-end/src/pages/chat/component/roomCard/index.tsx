@@ -5,7 +5,11 @@ import { SelectSession } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
 import { RoomInfo } from '@/interface/chat/getGroupsList';
+import { screen } from '@/constants/screen';
+import { useHistory } from 'react-router-dom';
 import './index.less';
+
+const { isMobile } = screen;
 
 interface RoomCardProps {
   roomInfo: RoomInfo;
@@ -13,6 +17,7 @@ interface RoomCardProps {
 }
 
 export function RoomCard({ roomInfo, dispatch }: RoomCardProps) {
+  const history = useHistory();
   const { room_id, room_name, room_avatar } = roomInfo;
 
   function handleClick() {
@@ -26,6 +31,7 @@ export function RoomCard({ roomInfo, dispatch }: RoomCardProps) {
       type: SELECT_SESSION,
       payload: selectSession,
     });
+    isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
   }
 
   return (

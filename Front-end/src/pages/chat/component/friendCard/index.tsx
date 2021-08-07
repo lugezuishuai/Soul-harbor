@@ -8,9 +8,12 @@ import { SELECT_SESSION } from '@/redux/actions/action_types';
 import robotAvatar from '@/assets/image/robot.png';
 import DeleteFriend from '@/assets/icon/delete_friend.svg';
 import { highLightKeyword } from '@/utils/highLightKeyword';
+import { screen } from '@/constants/screen';
+import { useHistory } from 'react-router-dom';
 import './index.less';
 
 const { confirm } = Modal;
+const { isMobile } = screen;
 
 interface FriendCardProps {
   handleShowDrawer?(friendInfo: FriendInfo): void;
@@ -31,6 +34,7 @@ export function FriendCard({
   showDelete = true,
   keyword = '',
 }: FriendCardProps) {
+  const history = useHistory();
   const { friend_avatar, friend_id, friend_username } = friendInfo;
 
   function handleClick() {
@@ -44,6 +48,7 @@ export function FriendCard({
       type: SELECT_SESSION,
       payload: selectSession,
     });
+    isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
   }
 
   function handleDeleteFriend(e: any) {

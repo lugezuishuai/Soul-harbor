@@ -67,6 +67,35 @@ interface SearchContractsRes {
   keyword: string;
 }
 
+interface SearchChatRecord {
+  sender_avatar: string | null;
+  sender_id: string;
+  sender_username: string;
+  message: string;
+  message_id: number;
+  time: number; // 时间戳（秒为单位）
+}
+
+interface SearchFriendChatRecordSqlRes {
+  sender_avatar: string | null;
+  sender_id: string;
+  soul_username: string;
+  message: string;
+  message_id: number;
+}
+
+interface SearchRobotChatRecordsSqlRes {
+  sender_avatar: string | null;
+  sender_id: string;
+  message: string;
+  message_id: number;
+}
+
+interface SearchChatRecordsRes {
+  keyword: string;
+  records: SearchChatRecord[];
+}
+
 function batchInsertMembers(members: MemberInfo[], room_id: string) {
   const nowTime = dayjs().unix();
   let batchInsertMembers =
@@ -212,10 +241,88 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// 根据关键字搜索聊天记录
+router.get('/searchChatRecords', async (req, res) => {
+  try {
+    const { uuid } = req.cookies;
+    if (!uuid) {
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'client error',
+      });
+    }
+
+    let { keyword }: any = req.query;
+    const { sessionId }: any = req.query;
+    keyword = keyword.replace(/'|‘/g, '');
+
+    const searchChatRecordsRes: SearchChatRecordsRes = {
+      records: [],
+      keyword,
+    };
+    const searchFriendChatRecordsSql = `select soul_user_info.soul_username, tb_private_chat.sender_id, tb_private_chat.sender_avatar, tb_private_chat.message, tb_private_chat.message_id from soul_user_info, tb_private_chat where (tb_private_chat.sender_id = '${sessionId}' or tb_private_chat.sender_id = '${uuid}') and tb_private_chat.sender_id = soul_user_info.soul_uuid and binary tb_private_chat.message like '%${keyword}%' order by tb_private_chat.message_id dsc`; // 按照message_id降序来排列
+    const searchRobotChatRecordsSql = `select sender_avatar, sender_id, message, message_id from tb_private_chat where (sender_id = '${sessionId}' or sender_id = '${uuid}') and binary message like '%${keyword}%' order by message_id dsc`; // 按照message_id降序排列
+
+    if (sessionId !== '0') {
+      const result: SearchFriendChatRecordSqlRes[] = await query(searchFriendChatRecordsSql);
+      if (result?.length) {
+        searchChatRecordsRes.records = result.map((item) => {
+          const { sender_avatar, sender_id, soul_username, message, message_id } = item;
+          return {
+            sender_avatar,
+            sender_id,
+            sender_username: soul_username,
+            message,
+            message_id,
+            time: message_id,
+          };
+        });
+      }
+    } else {
+      const result: SearchRobotChatRecordsSqlRes[] = await query(searchRobotChatRecordsSql);
+      if (result?.length) {
+        searchChatRecordsRes.records = result.map((item) => {
+          const { sender_avatar, sender_id, message, message_id } = item;
+          return {
+            sender_avatar,
+            sender_id,
+            sender_username: '机器人小X',
+            message,
+            message_id,
+            time: message_id,
+          };
+        });
+      }
+    }
+
+    return res.status(200).json({
+      code: 0,
+      data: searchChatRecordsRes,
+      msg: 'success',
+    });
+  } catch (e) {
+    console.error('Error: ', e);
+    return res.status(500).json({
+      code: 1,
+      data: {},
+      msg: e.message.toString(),
+    });
+  }
+});
+
 // 根据关键字搜索用户和群组
 router.get('/searchContracts', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!uuid) {
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'client error',
+      });
+    }
+
     let { keyword }: any = req.query;
     keyword = keyword.replace(/'|‘/g, '');
 

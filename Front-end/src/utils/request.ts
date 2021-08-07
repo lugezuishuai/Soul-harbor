@@ -99,8 +99,10 @@ axios.interceptors.response.use(
 
       if (errorStatus) {
         switch (errorStatus) {
+          case 400:
+            handleErrorMsg(errorMsg || '请求参数有误，请重新尝试');
+            break;
           case 401:
-            handleErrorMsg(errorMsg || '认证失败，请重新尝试');
             break;
           case 403:
             window.location.href = '/exception/403';

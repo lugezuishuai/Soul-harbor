@@ -13,11 +13,13 @@ import classnames from 'classnames';
 import Cookies from 'js-cookie';
 import { screen } from '@/constants/screen';
 import { highLightKeyword } from '@/utils/highLightKeyword';
+import { useHistory } from 'react-router-dom';
 import './index.less';
 
 const { confirm } = Modal;
 const { Block, Avatar: AvatarSkeleton } = Skeleton;
-const isMobile = screen.isSmallScreen || screen.isLittleScreen;
+const { isMobile, isSmallScreen, isLittleScreen } = screen;
+const isMobilePhone = isSmallScreen || isLittleScreen;
 
 interface UserCardProps {
   dispatch(action: Action): void;
@@ -41,6 +43,7 @@ export function UserCard({
   needHighLight = true,
 }: UserCardProps) {
   const { userInfo, online } = userData;
+  const history = useHistory();
 
   // 添加好友
   async function handleAddFriend(friendId: string) {
@@ -61,6 +64,7 @@ export function UserCard({
         type: SELECT_SESSION,
         payload: selectSession,
       });
+      isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
 
       if (socket) {
         socket.emit('update friend', Cookies.get('uuid') || '', userInfo?.uid || '', username, 'add');
@@ -94,6 +98,7 @@ export function UserCard({
         type: SELECT_SESSION,
         payload: selectSession,
       });
+      isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
     }
   }
 
@@ -102,7 +107,7 @@ export function UserCard({
       <div
         className="chat-user-card-online"
         style={
-          isMobile
+          isMobilePhone
             ? { backgroundColor: online ? '#1afa29' : '#BBBFC4', width: 6, height: 6 }
             : { backgroundColor: online ? '#1afa29' : '#BBBFC4' }
         }
@@ -110,7 +115,7 @@ export function UserCard({
       <Avatar
         className="chat-user-card-avatar"
         src={userInfo?.avatar || defaultAvatar}
-        style={isMobile ? { height: 24, width: 24 } : {}}
+        style={isMobilePhone ? { height: 24, width: 24 } : {}}
       />
       <div className="chat-user-card-info">
         {needHighLight ? (

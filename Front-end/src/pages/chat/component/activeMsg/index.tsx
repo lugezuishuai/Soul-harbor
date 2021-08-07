@@ -8,7 +8,11 @@ import { FriendListState, GroupsListState, SelectSession } from '@/redux/reducer
 import { ActiveSessionPayload } from '../../chatPage';
 import { Action } from '@/redux/actions';
 import { ACTIVE_MSG, ACTIVE_SESSION, SELECT_SESSION } from '@/redux/actions/action_types';
+import { screen } from '@/constants/screen';
 import './index.less';
+import { useHistory } from 'react-router-dom';
+
+const { isMobile } = screen;
 
 interface ActiveMsgProps {
   msg: MsgInfo;
@@ -18,6 +22,7 @@ interface ActiveMsgProps {
 }
 
 export function ActiveMsg({ msg, friendsList, groupsList, dispatch }: ActiveMsgProps) {
+  const history = useHistory();
   const { sender_id, receiver_id, message, sender_avatar, private_chat } = msg;
   const [name, setName] = useState('');
 
@@ -45,6 +50,7 @@ export function ActiveMsg({ msg, friendsList, groupsList, dispatch }: ActiveMsgP
       type: SELECT_SESSION,
       payload: selectSession,
     });
+    isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
   }
 
   function getAvatar() {

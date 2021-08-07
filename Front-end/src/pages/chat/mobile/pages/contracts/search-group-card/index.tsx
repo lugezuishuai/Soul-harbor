@@ -6,6 +6,7 @@ import { Action } from '@/redux/actions';
 import { Avatar } from 'antd';
 import defaultGroup from '@/assets/image/default-group.png';
 import { highLightKeyword } from '@/utils/highLightKeyword';
+import { useHistory } from 'react-router-dom';
 import './index.less';
 
 interface SearchGroupChatProps {
@@ -15,6 +16,7 @@ interface SearchGroupChatProps {
 }
 
 export function SearchGroupCard({ roomInfo, keyword, dispatch }: SearchGroupChatProps) {
+  const history = useHistory();
   const { room_avatar, room_id, room_name, member_username } = roomInfo;
 
   function handleClick() {
@@ -28,6 +30,7 @@ export function SearchGroupCard({ roomInfo, keyword, dispatch }: SearchGroupChat
       type: SELECT_SESSION,
       payload: selectSession,
     });
+    history.push(`/chat/conversation/${selectSession.sessionId}`);
   }
 
   return (

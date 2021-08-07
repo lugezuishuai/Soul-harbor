@@ -11,9 +11,12 @@ import { ACTIVE_SESSION, SELECT_SESSION } from '@/redux/actions/action_types';
 import robotAvatar from '@/assets/image/robot.png';
 import dayjs from 'dayjs';
 import { ActiveSessionPayload } from '../../chatPage';
+import { screen } from '@/constants/screen';
+import { useHistory } from 'react-router-dom';
 import './index.less';
 
 const { Block, Avatar: AvatarSkeleton } = Skeleton;
+const { isMobile } = screen;
 
 interface SessionCardProps {
   sessionInfo: SessionInfo;
@@ -22,6 +25,7 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ sessionInfo, activeSession, dispatch }: SessionCardProps) {
+  const history = useHistory();
   const { sessionId, name, avatar, latestTime, latestMessage, type } = sessionInfo;
   const isActiveSession = activeSession.includes(sessionId);
 
@@ -46,6 +50,7 @@ export function SessionCard({ sessionInfo, activeSession, dispatch }: SessionCar
       type: SELECT_SESSION,
       payload: selectSession,
     });
+    isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
   }
 
   function getAvatar() {
