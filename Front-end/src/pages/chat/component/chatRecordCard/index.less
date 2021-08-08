@@ -1,0 +1,58 @@
+:global {
+  .chat-record-card {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 65px;
+    padding: 12px;
+    background: @N100;
+    border-bottom: 1px solid @N400;
+    &__avatar {
+      user-select: none;
+      pointer-events: none;
+      width: 36px;
+      height: 36px;
+      margin-right: 12px;
+    }
+    &__info {
+      max-width: calc(100% - 48px);
+      user-select: none;
+    }
+    &__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 20px;
+      font-size: 12px;
+      line-height: 20px;
+    }
+    &__username {
+      font-weight: 500;
+      color: @N900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    &__time {
+      color: @N650;
+    }
+    &__message {
+      max-width: 100%;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+      color: @N900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      & > span:first-child {
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 20px;
+        color: @B500;
+      }
+    }
+  }
+}

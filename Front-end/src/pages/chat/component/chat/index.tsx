@@ -34,8 +34,11 @@ import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessio
 import { useHistory } from 'react-router-dom';
 import { GroupOperation } from './groupOperation';
 import './index.less';
+import { getOffsetTop, scrollToTop } from '@/utils/dom';
+import { PrivateOperation } from './privateOperation';
 
 const { confirm } = Modal;
+const headerHeight = 130;
 
 interface ChatRoomProps extends FormComponentProps {
   dispatch(action: Action): void;
@@ -82,6 +85,7 @@ function ChatRoom({
   const [visible, setVisible] = useState(false); // drawer 显示与否
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>();
+  const contentsRef = useRef<Record<number, HTMLDivElement>>({});
 
   // 更新会话信息
   async function updateSessionInfo(sessionId: string, type: 'private' | 'room') {
@@ -126,9 +130,9 @@ function ChatRoom({
     setVisible(!visible);
   }
 
-  function handleCloseDrawer() {
+  const handleCloseDrawer = useCallback(() => {
     setVisible(false);
-  }
+  }, []);
 
   // // 获取自己的权限
   // function getRole() {
@@ -336,6 +340,11 @@ function ChatRoom({
     }
   }
 
+  // 滚动到指定位置
+  const scrollToSpecifyLocation = useCallback((messageId: number) => {
+    scrollToTop(getOffsetTop(contentsRef.current[messageId]) - headerHeight);
+  }, []);
+
   // // 拼接接收到的信息
   // const receiveMsg = useCallback(() => {
   //   if (sessionMsg) {
@@ -412,7 +421,12 @@ function ChatRoom({
                 selectSession={selectSession}
               />
             ) : (
-              <div />
+              <PrivateOperation
+                scrollToSpecifyLocation={scrollToSpecifyLocation}
+                handleCloseDrawer={handleCloseDrawer}
+                selectSession={selectSession}
+                friendsList={friendsList}
+              />
             )}
           </Drawer>
           <div className="chat-room-content" ref={ref as any}>
@@ -422,6 +436,7 @@ function ChatRoom({
                 return (
                   <Message
                     key={index}
+                    onMount={(dom) => (contentsRef.current[msg.message_id] = dom)}
                     avatar={
                       selectSession.sessionId === '0' && type === 'receive'
                         ? robotAvatar

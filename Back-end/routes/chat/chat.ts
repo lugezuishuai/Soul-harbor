@@ -73,7 +73,7 @@ interface SearchChatRecord {
   sender_username: string;
   message: string;
   message_id: number;
-  time: number; // 时间戳（秒为单位）
+  time: string; // YYYY/MM/DD
 }
 
 interface SearchFriendChatRecordSqlRes {
@@ -178,6 +178,24 @@ function wrapRoomMembers(searchMembersRes: SearchMembersRes[]): SearchContractsR
   return result;
 }
 
+// 判断用户是否有权限
+async function hasPermission(uuid?: string) {
+  if (!uuid) {
+    return false;
+  }
+
+  const checkPermissionSql = `select * from soul_user_info where soul_uuid = '${uuid}'`;
+  const result = await query(checkPermissionSql);
+
+  if (!result) {
+    return false;
+  } else if (result.length !== 1) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 // 搜索用户
 router.get('/search', async (req, res) => {
   try {
@@ -245,24 +263,31 @@ router.get('/search', async (req, res) => {
 router.get('/searchChatRecords', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!uuid) {
-      return res.status(400).json({
-        code: clientError,
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
         data: {},
-        msg: 'client error',
+        msg: 'no permission',
       });
     }
 
-    let { keyword }: any = req.query;
     const { sessionId }: any = req.query;
+    if (!sessionId) {
+      return res.status(400).json({
+        code: clientError,
+        data: {},
+        msg: 'client Error',
+      });
+    }
+    let { keyword }: any = req.query;
     keyword = keyword.replace(/'|‘/g, '');
 
     const searchChatRecordsRes: SearchChatRecordsRes = {
       records: [],
       keyword,
     };
-    const searchFriendChatRecordsSql = `select soul_user_info.soul_username, tb_private_chat.sender_id, tb_private_chat.sender_avatar, tb_private_chat.message, tb_private_chat.message_id from soul_user_info, tb_private_chat where (tb_private_chat.sender_id = '${sessionId}' or tb_private_chat.sender_id = '${uuid}') and tb_private_chat.sender_id = soul_user_info.soul_uuid and binary tb_private_chat.message like '%${keyword}%' order by tb_private_chat.message_id dsc`; // 按照message_id降序来排列
-    const searchRobotChatRecordsSql = `select sender_avatar, sender_id, message, message_id from tb_private_chat where (sender_id = '${sessionId}' or sender_id = '${uuid}') and binary message like '%${keyword}%' order by message_id dsc`; // 按照message_id降序排列
+    const searchFriendChatRecordsSql = `select soul_user_info.soul_username, tb_private_chat.sender_id, tb_private_chat.sender_avatar, tb_private_chat.message, tb_private_chat.message_id from soul_user_info, tb_private_chat where (tb_private_chat.sender_id = '${sessionId}' or tb_private_chat.sender_id = '${uuid}') and (tb_private_chat.receiver_id = '${sessionId}' or tb_private_chat.receiver_id = '${uuid}') and soul_user_info.soul_uuid = tb_private_chat.sender_id and binary tb_private_chat.message like '%${keyword}%' order by tb_private_chat.message_id desc`; // 按照message_id降序来排列
+    const searchRobotChatRecordsSql = `select sender_avatar, sender_id, message, message_id from tb_private_chat where (sender_id = '${sessionId}' or sender_id = '${uuid}') and (receiver_id = '${sessionId}' or receiver_id = '${uuid}') and binary message like '%${keyword}%' order by message_id desc`; // 按照message_id降序排列
 
     if (sessionId !== '0') {
       const result: SearchFriendChatRecordSqlRes[] = await query(searchFriendChatRecordsSql);
@@ -275,7 +300,7 @@ router.get('/searchChatRecords', async (req, res) => {
             sender_username: soul_username,
             message,
             message_id,
-            time: message_id,
+            time: dayjs(message_id * 1000).format('YYYY/MM/DD'),
           };
         });
       }
@@ -290,7 +315,7 @@ router.get('/searchChatRecords', async (req, res) => {
             sender_username: '机器人小X',
             message,
             message_id,
-            time: message_id,
+            time: dayjs(message_id * 1000).format('YYYY/MM/DD'),
           };
         });
       }
@@ -315,11 +340,11 @@ router.get('/searchChatRecords', async (req, res) => {
 router.get('/searchContracts', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!uuid) {
-      return res.status(400).json({
-        code: clientError,
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
         data: {},
-        msg: 'client error',
+        msg: 'no permission',
       });
     }
 
@@ -367,6 +392,14 @@ router.get('/searchContracts', async (req, res) => {
 router.get('/unread', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const searchUnreadMsg = `select * from tb_private_chat where receiver_id = '${uuid}' and type = 'offline' order by message_id asc`; // 按照message_id升序来排列
     const result: MsgInfo[] = await query(searchUnreadMsg);
 
@@ -412,6 +445,14 @@ router.get('/unread', async (req, res) => {
 router.get('/getHisMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const { sessionId, type } = req.query; // roomId || uuid
 
     const searchMsg =
@@ -442,6 +483,14 @@ router.get('/getHisMsg', async (req, res) => {
 router.post('/readUnreadMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const { sessionId, type } = req.body; // roomId || uuid
 
     const updateUnreadMsg =
@@ -470,9 +519,7 @@ router.post('/readUnreadMsg', async (req, res) => {
 router.post('/addFriend', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    const { friendId } = req.body;
-
-    if (!uuid) {
+    if (!hasPermission(uuid)) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -480,6 +527,7 @@ router.post('/addFriend', async (req, res) => {
       });
     }
 
+    const { friendId } = req.body;
     if (!friendId) {
       return res.status(400).json({
         code: invalidUid,
@@ -544,6 +592,14 @@ router.post('/addFriend', async (req, res) => {
 router.post('/deleteFriend', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const { friendId } = req.body;
 
     const searchFriend = `select * from tb_friend where user_id = '${uuid}' and friend_id = '${friendId}'`;
@@ -599,6 +655,14 @@ router.post('/deleteFriend', async (req, res) => {
 router.get('/getFriendsList', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const searchFriends = `select friend_id, friend_username, friend_avatar from tb_friend where user_id = '${uuid}' order by add_time asc`; // 按照添加时间升序排列
 
     const friendsList: FriendInfo[] = await query(searchFriends);
@@ -624,6 +688,14 @@ router.get('/getFriendsList', async (req, res) => {
 router.get('/getSessionsList', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const result: SessionInfo[][] = await batchGetSessions(uuid);
 
     if (!result || result.length !== 2) {
@@ -657,6 +729,14 @@ router.get('/getSessionsList', async (req, res) => {
 router.get('/getSessionInfo', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const { sessionId, type } = req.query;
     if (type === 'private') {
       const sessionInfo: SessionInfo | null = JSON.parse(await redisGet(`session_${uuid}_${sessionId}`));
@@ -799,6 +879,14 @@ router.post('/robotChat', async (req, res) => {
 router.post('/newGroupChat', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const { members, room_name }: NewGroupChatReq = req.body;
     const room_id = uuidv4();
 
@@ -830,7 +918,7 @@ router.post('/addGroupMembers', async (req, res) => {
     const searchOldMemberIds = `select member_id from room_member where room_id = '${room_id}'`;
     const result: { member_id: string }[] = await query(searchOldMemberIds);
 
-    if (!result || !result.length) {
+    if (!result?.length) {
       // 该群组没有任何成员
       return res.status(400).json({
         code: clientError,
@@ -872,11 +960,19 @@ router.post('/addGroupMembers', async (req, res) => {
 router.get('/getGroupsList', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const getGroupsId = `select room_id from room_member where member_id = '${uuid}'`;
 
     const result: { room_id: string }[] = await query(getGroupsId);
 
-    if (!result || !result.length) {
+    if (!result?.length) {
       return res.status(200).json({
         code: 0,
         data: {
@@ -921,7 +1017,7 @@ router.get('/getGroupMembers', async (req, res) => {
     const getGroupMembers = `select member_id, member_username, member_avatar, member_role from room_member where room_member.room_id = '${room_id}' order by join_time asc`; // 按照入群时间排序
     const result: MemberInfo[] = await query(getGroupMembers);
 
-    if (!result || !result.length) {
+    if (!result?.length) {
       return res.status(200).json({
         code: 0,
         data: {
@@ -953,6 +1049,13 @@ router.post('/exitGroup', async (req, res) => {
   try {
     const { room_id } = req.body;
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
 
     const searchMember = `select * from room_member where room_id = '${room_id}' and member_id = '${uuid}'`;
     const result = await query(searchMember);
@@ -987,13 +1090,21 @@ router.post('/exitGroup', async (req, res) => {
 router.post('/deleteMember', async (req, res) => {
   try {
     const { uuid } = req.cookies;
+    if (!hasPermission(uuid)) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
+
     const { member_id, room_id } = req.body;
 
     // 判断有没有删除群成员的权限
     const hasAbility = `select * from room_member where member_id = '${uuid}' and room_id = '${room_id}' and member_role = 0`;
     const result = await query(hasAbility);
 
-    if (!result || !result.length) {
+    if (!result) {
       return res.status(403).json({
         code: noPermission,
         data: {},

@@ -1,5 +1,64 @@
 :global {
   .private-operation {
-    
+    height: 100%;
+    width: 100%;
+    background: #fff;
+    &__header {
+      width: 100%;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      font-size: 20px;
+      color: @N900;
+      font-weight: 500;
+      background: @N100;
+    }
+    &__info {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 64px;
+      padding: 12px;
+      &__avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 12px;
+      }
+      &__username {
+        max-width: calc(100% - 52px);
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 28px;
+        color: @N900;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+    &__search-content {
+      width: 100%;
+      max-height: calc(100% - 232px);
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+    &__no-result {
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 80px;
+      width: 100%;
+      &__icon {
+        font-size: 20px;
+        margin-right: 16px;
+      }
+      &__text {
+        font-size: 20px;
+        line-height: 32px;
+        color: @N650;
+      }
+    }
   }
 }

@@ -1,8 +1,10 @@
+import { noop } from '@/utils/noop';
 import { Avatar } from 'antd';
 import React from 'react';
 import './index.less';
 
 interface MessageProps {
+  onMount?: (dom: HTMLDivElement) => void;
   type: 'send' | 'receive';
   avatar: string;
   message: string;
@@ -10,11 +12,11 @@ interface MessageProps {
 }
 
 export function Message(props: MessageProps) {
-  const { type, message, time, avatar } = props;
+  const { type, message, time, avatar, onMount = noop } = props;
   const receive = type === 'receive';
 
   return (
-    <div className="chat-message" style={receive ? {} : { flexFlow: 'row-reverse' }}>
+    <div className="chat-message" ref={(dom) => dom && onMount(dom)} style={receive ? {} : { flexFlow: 'row-reverse' }}>
       <div className="chat-message-user" style={receive ? { marginRight: 16 } : { marginLeft: 16 }}>
         <Avatar className="chat-message-avatar" src={avatar} />
         <div className="chat-message-time">{time}</div>

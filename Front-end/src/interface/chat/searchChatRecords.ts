@@ -10,7 +10,7 @@ export interface SearchChatRecord {
   sender_username: string;
   message: string;
   message_id: number;
-  time: number; // 时间戳（秒为单位）
+  time: string; // YYYY/MM/DD
 }
 
 export interface SearchChatRecordsData {
