@@ -33,12 +33,11 @@ import { SELECT_SESSION, UPDATE_SESSION_INFO } from '@/redux/actions/action_type
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';
 import { useHistory } from 'react-router-dom';
 import { GroupOperation } from './groupOperation';
-import './index.less';
 import { getOffsetTop, scrollToTop } from '@/utils/dom';
 import { PrivateOperation } from './privateOperation';
+import './index.less';
 
 const { confirm } = Modal;
-const headerHeight = 130;
 
 interface ChatRoomProps extends FormComponentProps {
   dispatch(action: Action): void;
@@ -84,6 +83,7 @@ function ChatRoom({
   // const [membersList, setMembersList] = useState<MemberInfo[]>([]); // 群成员列表
   const [visible, setVisible] = useState(false); // drawer 显示与否
   const [loading, setLoading] = useState(false);
+  const [activeMsgId, setActiveMsgId] = useState<number | null>(null); // 活跃消息的messageId(用于聊天记录查询定位信息)
   const ref = useRef<HTMLDivElement>();
   const contentsRef = useRef<Record<number, HTMLDivElement>>({});
 
@@ -342,7 +342,8 @@ function ChatRoom({
 
   // 滚动到指定位置
   const scrollToSpecifyLocation = useCallback((messageId: number) => {
-    scrollToTop(getOffsetTop(contentsRef.current[messageId]) - headerHeight);
+    scrollToTop(getOffsetTop(contentsRef.current[messageId]) - 154, '.chat-room-content');
+    setActiveMsgId(messageId);
   }, []);
 
   // // 拼接接收到的信息
@@ -445,6 +446,7 @@ function ChatRoom({
                     type={type}
                     message={msg.message}
                     time={msg.time}
+                    activeMessage={msg.message_id === activeMsgId}
                   />
                 );
               })}

@@ -1,5 +1,5 @@
-export function scrollToTop(top: number, needScroll = false) {
-  const items = document.querySelectorAll('#root,body,html');
+export function scrollToTop(top: number, selector = '#root,body,html', needScroll = false) {
+  const items = document.querySelectorAll(selector);
   Array.from(items).some((e: any) => {
     if (e) {
       if (needScroll) {

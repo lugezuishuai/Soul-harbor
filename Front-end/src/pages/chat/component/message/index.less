@@ -1,10 +1,25 @@
-@import '~@/variable.less';
+@keyframes active-message {
+  from {
+    background-color: #fff;
+  }
+  50% {
+    background-color: @N200;
+  }
+  to {
+    background-color: #fff;
+  }
+}
 :global {
   .chat-message {
     display: flex;
     flex-flow: row;
     width: 100%;
     margin-bottom: 16px;
+    &--active {
+      :local {
+        animation: active-message 300ms 6;
+      }
+    }
     &-user {
       display: flex;
       flex-flow: column;
