@@ -80,6 +80,7 @@
     "@typescript-eslint/parser": "^4.28.3",
     "eslint": "^7.30.0",
     "eslint-plugin-react": "^7.24.0",
+    "file-stream-rotator": "^0.5.7",
     "nodemon": "^2.0.6",
     "shelljs": "^0.8.4",
     "ts-node": "^9.1.1",

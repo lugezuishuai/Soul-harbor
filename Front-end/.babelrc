@@ -2,7 +2,8 @@
   "presets":[
     ["@babel/preset-env", {
       "corejs": "3",
-      "useBuiltIns": "usage"
+      "useBuiltIns": "usage",
+      "modules": "auto"
     }],
     "@babel/preset-react"
   ],
@@ -22,7 +23,8 @@
         "style": true // 默认使用less，若使用css则改为'css'
       }
     ],
-    ["@babel/plugin-syntax-dynamic-import"], // 支持import懒加载
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-syntax-dynamic-import", // 支持import懒加载
     "@babel/plugin-transform-arrow-functions",  // 这个是箭头函数的处理
     ["@babel/plugin-proposal-decorators", { "legacy": true }], // 这个是装饰器
     ["@babel/plugin-proposal-class-properties", { "loose": false }] // 支持class的转译（loose为true时类属性将被编译为赋值表达式而不是 Object.defineProperty）

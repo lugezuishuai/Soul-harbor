@@ -18,6 +18,7 @@ import employeeRouter from './routes/employee';
 import { getIPAddress } from './utils/getIPAddress';
 import os from 'os';
 import dotenv from 'dotenv';
+import fileStreamRotator from 'file-stream-rotator';
 import './config/passport';
 
 dotenv.config({ path: '.env' });
@@ -29,20 +30,28 @@ const { chat } = chatRouter;
 const app = express();
 
 // 设置跨域（使用中间件）
-app.use(cors()); // 配置全部跨域
+app.use(
+  cors({
+    origin: `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}`, // Access-Control-Allow-Origin
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'], // Access-Control-Allow-Methods
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Access-Control-Request-Headers
+    preflightContinue: false, // Pass the CORS preflight response to the next handler
+    optionsSuccessStatus: 200, // Provides a status code to use for successful OPTIONS requests
+  })
+);
 
-// 配置响应头
-app.all('*', function (req, res, next) {
-  res.header(
-    'Access-Control-Allow-Origin',
-    `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}:${process.env.FRONT_END_PORT || 5000}`
-  );
-  res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'content-type,Authorization,X-Requested-With');
-  // res.header("X-Powered-By", ' 3.2.1');
-  // res.header("Content-Type", "application/json;charset=utf-8");
-  next();
-});
+// // 配置响应头
+// app.all('*', function (req, res, next) {
+//   res.header(
+//     'Access-Control-Allow-Origin',
+//     `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}:${process.env.FRONT_END_PORT || 5000}`
+//   );
+//   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
+//   res.header('Access-Control-Allow-Headers', 'content-type,Authorization,X-Requested-With');
+//   // res.header("X-Powered-By", ' 3.2.1');
+//   // res.header("Content-Type", "application/json;charset=utf-8");
+//   next();
+// });
 
 // 验证token是否过期并规定那些路由不需要验证
 app.use(

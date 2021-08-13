@@ -198,10 +198,12 @@ module.exports = {
       'process.env': JSON.stringify(process.env),
     }),
     new HtmlWebpackPlugin({
+      title: 'Soul Harbor',
       template: './public/index.html',
       favicon: './public/favicon.ico',
       filename: 'index.html',
       env: process.env.NODE_ENV,
+      minify: true,
     }),
     new miniCssExtractPlugin({
       filename: isEnvProduction ? 'css/[name].[contenthash:8].css' : '[name].[hash:8].css'
