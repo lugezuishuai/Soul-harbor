@@ -361,6 +361,8 @@ router.post('/login', urlencodedParser, (req, res) => {
           };
           const token = await setToken(userInfo);
           res.cookie('uuid', userInfo.uid);
+          // @ts-ignore
+          req.session.token = md5(dayjs().valueOf() + md5(userInfo.uid)); // 设置session
           return res.status(200).json({
             code: 0,
             data: token,
@@ -881,6 +883,8 @@ router.post('/loginByEmail', urlencodedParser, (req, res) => {
           };
           const token = await setToken(userInfo);
           res.cookie('uuid', userInfo.uid);
+          // @ts-ignore
+          req.session.token = md5(dayjs().valueOf() + md5(userInfo.uid)); // 设置session
           return res.status(200).json({
             code: 0,
             data: token,
@@ -932,6 +936,8 @@ router.get('/init', async function (req, res) {
     }
 
     res.cookie('uuid', soul_uuid);
+    // @ts-ignore
+    req.session.token = md5(dayjs().valueOf() + md5(soul_uuid)); // 设置session
     return res.status(200).json({
       code: 0,
       data: {
@@ -958,7 +964,7 @@ router.get('/init', async function (req, res) {
 
 // 设置xsrfToken
 router.get('/xsrf', function (req, res) {
-  res.cookie('XSRF-TOKEN', req.csrfToken());
+  res.cookie('XSRF-TOKEN', req.csrfToken(), { httpOnly: true, path: '/' });
   res.locals.csrftoken = req.csrfToken();
   res.status(200).json({
     code: 0,
@@ -974,6 +980,7 @@ router.get('/logout', function (req, res) {
     path: '/',
     maxAge: -1,
   });
+  req.session = null;
 
   res.json({
     code: 0,

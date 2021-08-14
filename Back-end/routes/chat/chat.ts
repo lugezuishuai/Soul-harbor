@@ -179,8 +179,8 @@ function wrapRoomMembers(searchMembersRes: SearchMembersRes[]): SearchContractsR
 }
 
 // 判断用户是否有权限
-async function hasPermission(uuid?: string) {
-  if (!uuid) {
+async function hasPermission(uuid?: string, token?: string) {
+  if (!uuid || !token) {
     return false;
   }
 
@@ -263,7 +263,9 @@ router.get('/search', async (req, res) => {
 router.get('/searchChatRecords', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -340,7 +342,9 @@ router.get('/searchChatRecords', async (req, res) => {
 router.get('/searchContracts', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -392,7 +396,9 @@ router.get('/searchContracts', async (req, res) => {
 router.get('/unread', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -445,7 +451,9 @@ router.get('/unread', async (req, res) => {
 router.get('/getHisMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -483,7 +491,9 @@ router.get('/getHisMsg', async (req, res) => {
 router.post('/readUnreadMsg', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -519,7 +529,9 @@ router.post('/readUnreadMsg', async (req, res) => {
 router.post('/addFriend', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -592,7 +604,9 @@ router.post('/addFriend', async (req, res) => {
 router.post('/deleteFriend', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -655,7 +669,9 @@ router.post('/deleteFriend', async (req, res) => {
 router.get('/getFriendsList', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -688,7 +704,9 @@ router.get('/getFriendsList', async (req, res) => {
 router.get('/getSessionsList', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -729,7 +747,9 @@ router.get('/getSessionsList', async (req, res) => {
 router.get('/getSessionInfo', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -879,7 +899,9 @@ router.post('/robotChat', async (req, res) => {
 router.post('/newGroupChat', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -960,7 +982,9 @@ router.post('/addGroupMembers', async (req, res) => {
 router.get('/getGroupsList', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -1049,7 +1073,9 @@ router.post('/exitGroup', async (req, res) => {
   try {
     const { room_id } = req.body;
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -1090,7 +1116,9 @@ router.post('/exitGroup', async (req, res) => {
 router.post('/deleteMember', async (req, res) => {
   try {
     const { uuid } = req.cookies;
-    if (!hasPermission(uuid)) {
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
