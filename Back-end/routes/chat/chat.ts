@@ -7,6 +7,7 @@ import { UnSuccessCodeType } from './code-type';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { hasPermission } from '../../utils/hasPermission';
 
 const router = express.Router();
 const { alreadyAddFriend, invalidUid, noPermission, clientError } = UnSuccessCodeType;
@@ -178,27 +179,19 @@ function wrapRoomMembers(searchMembersRes: SearchMembersRes[]): SearchContractsR
   return result;
 }
 
-// 判断用户是否有权限
-async function hasPermission(uuid?: string, token?: string) {
-  if (!uuid || !token) {
-    return false;
-  }
-
-  const checkPermissionSql = `select * from soul_user_info where soul_uuid = '${uuid}'`;
-  const result = await query(checkPermissionSql);
-
-  if (!result) {
-    return false;
-  } else if (result.length !== 1) {
-    return false;
-  } else {
-    return true;
-  }
-}
-
 // 搜索用户
 router.get('/search', async (req, res) => {
   try {
+    const { uuid } = req.cookies;
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
     let { keyword }: any = req.query;
     keyword = keyword.replace(/'|‘/g, '');
     const searchByUsernameOrEmail = `select * from soul_user_info where binary soul_username like '%${keyword}%' or binary soul_email like '%${keyword}%'`;
@@ -808,6 +801,16 @@ router.get('/getSessionInfo', async (req, res) => {
 // 机器人聊天
 router.post('/robotChat', async (req, res) => {
   try {
+    const { uuid } = req.cookies;
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
     const prevTime = dayjs().unix();
     const { messageBody }: RobotChatReq = req.body;
     const { sender_id, sender_avatar, receiver_id, message, message_id, time } = messageBody;
@@ -934,6 +937,16 @@ router.post('/newGroupChat', async (req, res) => {
 // 添加群成员
 router.post('/addGroupMembers', async (req, res) => {
   try {
+    const { uuid } = req.cookies;
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
     const { room_id, members }: AddGroupMemberReq = req.body;
     const newMembersIds = members.map((memberInfo) => memberInfo.member_id); // 新添加用户的id
 
@@ -1037,6 +1050,16 @@ router.get('/getGroupsList', async (req, res) => {
 // 获取群成员列表
 router.get('/getGroupMembers', async (req, res) => {
   try {
+    const { uuid } = req.cookies;
+    // @ts-ignore
+    const { token } = req.session;
+    if (!(await hasPermission(uuid, token))) {
+      return res.status(403).json({
+        code: noPermission,
+        data: {},
+        msg: 'no permission',
+      });
+    }
     const { room_id } = req.query;
     const getGroupMembers = `select member_id, member_username, member_avatar, member_role from room_member where room_member.room_id = '${room_id}' order by join_time asc`; // 按照入群时间排序
     const result: MemberInfo[] = await query(getGroupMembers);
@@ -1071,7 +1094,6 @@ router.get('/getGroupMembers', async (req, res) => {
 // 退出群聊
 router.post('/exitGroup', async (req, res) => {
   try {
-    const { room_id } = req.body;
     const { uuid } = req.cookies;
     // @ts-ignore
     const { token } = req.session;
@@ -1083,6 +1105,7 @@ router.post('/exitGroup', async (req, res) => {
       });
     }
 
+    const { room_id } = req.body;
     const searchMember = `select * from room_member where room_id = '${room_id}' and member_id = '${uuid}'`;
     const result = await query(searchMember);
 

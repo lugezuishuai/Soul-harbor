@@ -31,6 +31,8 @@ const { sliceFileUpload } = fileRouter;
 const { userInfo } = userRouter;
 const { chat } = chatRouter;
 
+export const isDevelopment = process.env.NODE_ENV === 'development';
+
 const app = express();
 
 // 限制请求数量5分钟内为100个
@@ -142,8 +144,6 @@ app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-  // 打印当前的环境
-  console.log('environment: ', req.app.get('env'));
   if (err.name === 'UnauthorizedError') {
     // 返回401状态码
     return res.status(401).json({
