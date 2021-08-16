@@ -3,6 +3,7 @@ import path from 'path';
 import fse from 'fs-extra';
 // @ts-ignore
 import fileStreamRotator from 'file-stream-rotator';
+import { isDevelopment } from '../app';
 
 export function getAccessLogStream(type: 'normal' | 'error' = 'normal') {
   try {
@@ -18,7 +19,7 @@ export function getAccessLogStream(type: 'normal' | 'error' = 'normal') {
       max_logs: '30d', // 最长保留30天的日志
     });
   } catch (e) {
-    console.error(e);
+    isDevelopment && console.error(e);
   }
 }
 
@@ -33,4 +34,4 @@ export const accessLogErr = logger('combined', {
   },
 });
 
-export { logger };
+export const accessLogDev = logger('dev');

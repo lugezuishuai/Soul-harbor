@@ -15,20 +15,19 @@ import rateLimit from 'express-rate-limit';
 import { jwtSecret } from './config/token/token';
 import { notTokenPath } from './config/token/path';
 import indexRouter from './routes/index';
-import userRouter from './routes/user'; // 用户相关
+import { router as userRouter } from './routes/user'; // 用户相关
 import fileRouter from './routes/file'; // 文件相关
 import chatRouter from './routes/chat'; // 聊天相关
 import employeeRouter from './routes/employee';
 import { getIPAddress } from './utils/getIPAddress';
 import os from 'os';
 import dotenv from 'dotenv';
-import { logger, accessLog, accessLogErr } from './helpers/logger';
+import { accessLog, accessLogDev, accessLogErr } from './helpers/logger';
 import './config/passport';
 
 dotenv.config({ path: '.env' });
 
 const { sliceFileUpload } = fileRouter;
-const { userInfo } = userRouter;
 const { chat } = chatRouter;
 
 export const isDevelopment = process.env.NODE_ENV === 'development';
@@ -66,25 +65,12 @@ app.use(helmet());
 app.use(
   cors({
     origin: `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}`, // Access-Control-Allow-Origin
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'], // Access-Control-Allow-Methods
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Access-Control-Request-Headers
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Access-Control-Allow-Methods
+    allowedHeaders: 'Origin,X-Requested-With,Content-Type,Accept,Authorization', // Access-Control-Allow-Headers
     preflightContinue: false, // Pass the CORS preflight response to the next handler
     optionsSuccessStatus: 200, // Provides a status code to use for successful OPTIONS requests
   })
 );
-
-// // 配置响应头
-// app.all('*', function (req, res, next) {
-//   res.header(
-//     'Access-Control-Allow-Origin',
-//     `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}:${process.env.FRONT_END_PORT || 5000}`
-//   );
-//   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
-//   res.header('Access-Control-Allow-Headers', 'content-type,Authorization,X-Requested-With');
-//   // res.header("X-Powered-By", ' 3.2.1');
-//   // res.header("Content-Type", "application/json;charset=utf-8");
-//   next();
-// });
 
 // 验证token是否过期并规定那些路由不需要验证
 app.use(
@@ -107,7 +93,7 @@ app.set('view engine', 'jade');
 // 处理日志
 if (process.env.NODE_ENV === 'development') {
   // 开发环境打印日志不保存
-  app.use(logger('dev'));
+  app.use(accessLogDev);
 } else {
   app.use(accessLog);
   app.use(accessLogErr);
@@ -129,7 +115,7 @@ app.use(passport.initialize()); // 初始化passport
 
 app.use('/', indexRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
-app.use('/api/user', userInfo);
+app.use('/api/user', userRouter);
 app.use('/api/employee', employeeRouter);
 app.use('/api/file', sliceFileUpload);
 app.use('/api/chat', chat);
@@ -146,6 +132,7 @@ app.use(function (err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
   if (err.name === 'UnauthorizedError') {
     // 返回401状态码
+    isDevelopment && console.error('身份认证失败');
     return res.status(401).json({
       code: 1,
       data: {},
@@ -153,6 +140,7 @@ app.use(function (err, req, res, next) {
     });
   } else if (err.code === 'EBADCSRFTOKEN') {
     // 返回403状态码
+    isDevelopment && console.error('csrf token认证失败');
     return res.status(403).json({
       code: 403,
       data: {},
@@ -160,6 +148,7 @@ app.use(function (err, req, res, next) {
     });
   } else if (req.xhr) {
     // 返回500状态码
+    isDevelopment && console.error('服务端出错');
     return res.status(500).json({
       code: 500,
       data: {},

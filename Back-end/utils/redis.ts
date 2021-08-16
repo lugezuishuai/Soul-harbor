@@ -36,7 +36,7 @@ export function batchGetSessions(
   uid: string,
   privateKey = `session_${uid}_*`,
   roomKey = 'room_session_*'
-): Promise<any> {
+): Promise<[SessionInfo[], SessionInfo[]]> {
   const privatePromise = new Promise((resolve, reject) => {
     client.keys(privateKey, async function (err, keys) {
       if (err) {
@@ -95,7 +95,7 @@ export function batchGetSessions(
     });
   });
 
-  return Promise.all([privatePromise, roomPromise]);
+  return Promise.all([privatePromise, roomPromise]) as Promise<[SessionInfo[], SessionInfo[]]>;
 }
 
 export async function batchSetSessionsAvatar(uid: string, avatar: string) {

@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import query from '../../../utils/query';
 import { escape, format } from 'sqlstring';
 import { UnSuccessCodeType } from '../code-type';
-import { BCRYPT_SALT_ROUNDS } from '../userInfo';
+import { BCRYPT_SALT_ROUNDS } from '..';
 import { isDevelopment } from '../../../app';
 
 const { expiredOrUnValid } = UnSuccessCodeType;

@@ -1,3 +1,4 @@
+// 这是旧文件，仅供参考
 import express from 'express';
 import bodyParser from 'body-parser';
 import query from '../../utils/query';
@@ -39,14 +40,19 @@ const {
   forgetPassword,
   checkTokenValid,
   updatePassword,
+  sendLoginVerifyCode,
+  loginByEmail,
+  init,
+  xsrf,
+  logout,
 } = handler;
 
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
-export const BCRYPT_SALT_ROUNDS = 12;
+const BCRYPT_SALT_ROUNDS = 12;
 
 // 头像上传
-export const AVATAR_PATH = path.join(__dirname, '../../public/user/avatar');
+// export const AVATAR_PATH = path.join(__dirname, '../../public/user/avatar');
 // const acceptType = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/bmp'];
 // const avatarUpload = multer({
 //   dest: AVATAR_PATH,
@@ -737,307 +743,312 @@ router.post('/updatePassword', updatePassword);
 // });
 
 // 发送登录验证码
-router.post('/sendLoginVerifyCode', (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    res.status(400).json({
-      code: 400,
-      data: {},
-      msg: 'email require',
-    });
-  } else {
-    console.log('Email: ', email);
-    const searchEmail = `select * from soul_user_info where binary soul_email = '${email}'`;
-    query(searchEmail)
-      .then((user) => {
-        if (!user || user.length === 0) {
-          res.status(200).json({
-            code: badAccount,
-            data: {},
-            msg: 'email not in db',
-          });
-          return breakPromise();
-        } else {
-          const checkEmail = `select * from login_verify_code where binary email = '${email}'`;
-          return query(checkEmail);
-        }
-      })
-      .then((result) => {
-        const verify_code = md5(uuidv4()).slice(0, 6).toLowerCase(); // 生成一个6位数的验证码
-        const verify_codeMd5 = md5(md5(email + md5(verify_code))); // 使用md5再次加密
-        const expire_time = (dayjs(new Date()).valueOf() + 60000).toString(); // 60s过期时间
+router.post('/sendLoginVerifyCode', sendLoginVerifyCode);
+// router.post('/sendLoginVerifyCode', (req, res) => {
+//   const { email } = req.body;
+//   if (!email) {
+//     res.status(400).json({
+//       code: 400,
+//       data: {},
+//       msg: 'email require',
+//     });
+//   } else {
+//     console.log('Email: ', email);
+//     const searchEmail = `select * from soul_user_info where binary soul_email = '${email}'`;
+//     query(searchEmail)
+//       .then((user) => {
+//         if (!user || user.length === 0) {
+//           res.status(200).json({
+//             code: badAccount,
+//             data: {},
+//             msg: 'email not in db',
+//           });
+//           return breakPromise();
+//         } else {
+//           const checkEmail = `select * from login_verify_code where binary email = '${email}'`;
+//           return query(checkEmail);
+//         }
+//       })
+//       .then((result) => {
+//         const verify_code = md5(uuidv4()).slice(0, 6).toLowerCase(); // 生成一个6位数的验证码
+//         const verify_codeMd5 = md5(md5(email + md5(verify_code))); // 使用md5再次加密
+//         const expire_time = (dayjs(new Date()).valueOf() + 60000).toString(); // 60s过期时间
 
-        const mailOptions = {
-          from: `${process.env.EMAIL_ADDRESS}`,
-          to: `${email}`,
-          subject: 'Soul-Harbor-Here is your login verification code',
-          html: `<div>
-                <h1>Your login verification code is:</h1>
-                <br/>
-                <h2>${verify_code}</h2>
-                <br/>
-                <div>Please use your login verification code within 60 seconds, otherwise it will be invalid</div>
-              </div>`,
-        };
+//         const mailOptions = {
+//           from: `${process.env.EMAIL_ADDRESS}`,
+//           to: `${email}`,
+//           subject: 'Soul-Harbor-Here is your login verification code',
+//           html: `<div>
+//                 <h1>Your login verification code is:</h1>
+//                 <br/>
+//                 <h2>${verify_code}</h2>
+//                 <br/>
+//                 <div>Please use your login verification code within 60 seconds, otherwise it will be invalid</div>
+//               </div>`,
+//         };
 
-        console.log('sending mail');
+//         console.log('sending mail');
 
-        if (!result || result.length === 0) {
-          // 新增验证码
-          bcrypt
-            .hash(verify_codeMd5, BCRYPT_SALT_ROUNDS)
-            .then((hashedVerifyCode) => {
-              const insertVerifyCode = `insert into login_verify_code (email, verify_code, expire_time) values ('${email}', '${hashedVerifyCode}', '${expire_time}')`;
-              return query(insertVerifyCode);
-            })
-            .then(() => {
-              transporter.sendMail(mailOptions, (err, response) => {
-                if (err) {
-                  console.error('Error: ', err);
-                  res.status(500).json({
-                    code: 1,
-                    data: {},
-                    msg: 'Failed to send verification code',
-                  });
-                } else {
-                  console.log('here is the res: ', response);
-                  res.status(200).json({
-                    code: 0,
-                    data: {},
-                    msg: 'Success to send verification code',
-                  });
-                }
-              });
-            });
-        } else {
-          // 更新验证码
-          bcrypt
-            .hash(verify_codeMd5, BCRYPT_SALT_ROUNDS)
-            .then((hashedVerifyCode) => {
-              const updateVerifyCode = `update login_verify_code set verify_code = '${hashedVerifyCode}', expire_time = '${expire_time}' where binary email = '${email}'`;
-              return query(updateVerifyCode);
-            })
-            .then(() => {
-              transporter.sendMail(mailOptions, (err, response) => {
-                if (err) {
-                  console.error('Error: ', err);
-                  res.status(500).json({
-                    code: 1,
-                    data: {},
-                    msg: 'Failed to send verification code',
-                  });
-                } else {
-                  console.log('here is the res: ', response);
-                  res.status(200).json({
-                    code: 0,
-                    data: {},
-                    msg: 'Success to send verification code',
-                  });
-                }
-              });
-            });
-        }
-      })
-      .catch((e) => {
-        if (!e.notRealPromiseException) {
-          res.status(500).json({
-            code: 1,
-            data: {},
-            msg: e.message.toString(),
-          });
-        }
-      });
-  }
-});
+//         if (!result || result.length === 0) {
+//           // 新增验证码
+//           bcrypt
+//             .hash(verify_codeMd5, BCRYPT_SALT_ROUNDS)
+//             .then((hashedVerifyCode) => {
+//               const insertVerifyCode = `insert into login_verify_code (email, verify_code, expire_time) values ('${email}', '${hashedVerifyCode}', '${expire_time}')`;
+//               return query(insertVerifyCode);
+//             })
+//             .then(() => {
+//               transporter.sendMail(mailOptions, (err, response) => {
+//                 if (err) {
+//                   console.error('Error: ', err);
+//                   res.status(500).json({
+//                     code: 1,
+//                     data: {},
+//                     msg: 'Failed to send verification code',
+//                   });
+//                 } else {
+//                   console.log('here is the res: ', response);
+//                   res.status(200).json({
+//                     code: 0,
+//                     data: {},
+//                     msg: 'Success to send verification code',
+//                   });
+//                 }
+//               });
+//             });
+//         } else {
+//           // 更新验证码
+//           bcrypt
+//             .hash(verify_codeMd5, BCRYPT_SALT_ROUNDS)
+//             .then((hashedVerifyCode) => {
+//               const updateVerifyCode = `update login_verify_code set verify_code = '${hashedVerifyCode}', expire_time = '${expire_time}' where binary email = '${email}'`;
+//               return query(updateVerifyCode);
+//             })
+//             .then(() => {
+//               transporter.sendMail(mailOptions, (err, response) => {
+//                 if (err) {
+//                   console.error('Error: ', err);
+//                   res.status(500).json({
+//                     code: 1,
+//                     data: {},
+//                     msg: 'Failed to send verification code',
+//                   });
+//                 } else {
+//                   console.log('here is the res: ', response);
+//                   res.status(200).json({
+//                     code: 0,
+//                     data: {},
+//                     msg: 'Success to send verification code',
+//                   });
+//                 }
+//               });
+//             });
+//         }
+//       })
+//       .catch((e) => {
+//         if (!e.notRealPromiseException) {
+//           res.status(500).json({
+//             code: 1,
+//             data: {},
+//             msg: e.message.toString(),
+//           });
+//         }
+//       });
+//   }
+// });
 
 // 邮箱验证码登录
-router.post('/loginByEmail', urlencodedParser, (req, res) => {
-  passport.authenticate('loginByEmail', (err, user, info) => {
-    if (err) {
-      console.error('Error: ', err);
-      res.status(500).json({
-        code: 1,
-        data: {},
-        msg: err.message.toString(),
-      });
-    } else if (info) {
-      console.error(info.message);
-      switch (info.message) {
-        case 'bad email':
-          res.status(200).json({
-            code: badAccount,
-            data: {},
-            msg: info.message,
-          });
-          break;
-        case 'verify_code do not match':
-          res.status(200).json({
-            code: noMatch,
-            data: {},
-            msg: info.message,
-          });
-          break;
-        default:
-          res.status(200).json({
-            code: expiredOrUnValid,
-            data: {},
-            msg: info.message,
-          });
-      }
-    } else {
-      req.logIn(user, async () => {
-        try {
-          const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth } = user;
-          let { soul_avatar } = user;
+router.post('/loginByEmail', loginByEmail);
+// router.post('/loginByEmail', urlencodedParser, (req, res) => {
+//   passport.authenticate('loginByEmail', (err, user, info) => {
+//     if (err) {
+//       console.error('Error: ', err);
+//       res.status(500).json({
+//         code: 1,
+//         data: {},
+//         msg: err.message.toString(),
+//       });
+//     } else if (info) {
+//       console.error(info.message);
+//       switch (info.message) {
+//         case 'bad email':
+//           res.status(200).json({
+//             code: badAccount,
+//             data: {},
+//             msg: info.message,
+//           });
+//           break;
+//         case 'verify_code do not match':
+//           res.status(200).json({
+//             code: noMatch,
+//             data: {},
+//             msg: info.message,
+//           });
+//           break;
+//         default:
+//           res.status(200).json({
+//             code: expiredOrUnValid,
+//             data: {},
+//             msg: info.message,
+//           });
+//       }
+//     } else {
+//       req.logIn(user, async () => {
+//         try {
+//           const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth } = user;
+//           let { soul_avatar } = user;
 
-          if (soul_avatar) {
-            const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-            const newIPAddress = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces());
+//           if (soul_avatar) {
+//             const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
+//             const newIPAddress = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces());
 
-            if (oldIPAddress !== newIPAddress) {
-              // 如果IP地址发生了改变，要修改头像链接的IP地址
-              soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
-              const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
-              await query(updateAvatar);
-            }
-          }
+//             if (oldIPAddress !== newIPAddress) {
+//               // 如果IP地址发生了改变，要修改头像链接的IP地址
+//               soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
+//               const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
+//               await query(updateAvatar);
+//             }
+//           }
 
-          // if (!isNullOrUndefined(soul_avatar)) {
-          //   const oldIPAddress = soul_avatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
-          //   const newIPAddress = getIPAddress(os.networkInterfaces());
+//           // if (!isNullOrUndefined(soul_avatar)) {
+//           //   const oldIPAddress = soul_avatar.match(/^http:\/\/(.*?):4001\/.*?/i)[1]; // 防止因为网络发生变化导致ip地址发生变化
+//           //   const newIPAddress = getIPAddress(os.networkInterfaces());
 
-          //   if (oldIPAddress !== newIPAddress) {
-          //     // 如果IP地址发生了改变，要修改头像链接的IP地址
-          //     soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
-          //     const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
-          //     await query(updateAvatar);
-          //   }
-          // }
+//           //   if (oldIPAddress !== newIPAddress) {
+//           //     // 如果IP地址发生了改变，要修改头像链接的IP地址
+//           //     soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
+//           //     const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
+//           //     await query(updateAvatar);
+//           //   }
+//           // }
 
-          const userInfo = {
-            username: soul_username,
-            uid: soul_uuid,
-            signature: soul_signature,
-            birth: soul_birth,
-            email: soul_email,
-            avatar: soul_avatar,
-          };
-          const token = await setToken(userInfo);
-          res.cookie('uuid', userInfo.uid);
-          // @ts-ignore
-          req.session.token = md5(dayjs().valueOf() + md5(userInfo.uid)); // 设置session
-          return res.status(200).json({
-            code: 0,
-            data: token,
-            msg: 'user found & logged in',
-          });
-        } catch (e) {
-          console.error('Error: ', e);
-          return res.status(500).json({
-            code: 1,
-            data: {},
-            msg: e.message.toString(),
-          });
-        }
-      });
-    }
-  })(req, res);
-});
+//           const userInfo = {
+//             username: soul_username,
+//             uid: soul_uuid,
+//             signature: soul_signature,
+//             birth: soul_birth,
+//             email: soul_email,
+//             avatar: soul_avatar,
+//           };
+//           const token = await setToken(userInfo);
+//           res.cookie('uuid', userInfo.uid);
+//           // @ts-ignore
+//           req.session.token = md5(dayjs().valueOf() + md5(userInfo.uid)); // 设置session
+//           return res.status(200).json({
+//             code: 0,
+//             data: token,
+//             msg: 'user found & logged in',
+//           });
+//         } catch (e) {
+//           console.error('Error: ', e);
+//           return res.status(500).json({
+//             code: 1,
+//             data: {},
+//             msg: e.message.toString(),
+//           });
+//         }
+//       });
+//     }
+//   })(req, res);
+// });
 
 // 初始化，验证token
-router.get('/init', async function (req, res) {
-  try {
-    // @ts-ignore
-    const { uid } = req.user;
-    const getUserInfo = `select soul_username, soul_uuid, soul_email, soul_signature, soul_birth, soul_avatar from soul_user_info where soul_uuid = '${uid}'`;
-    const userInfo = await query(getUserInfo);
-    if (!userInfo.length) {
-      return res.status(400).json({
-        code: 400,
-        data: {},
-        msg: 'client error',
-      });
-    }
-    if (userInfo.length > 1) {
-      throw new Error('invalid uuid');
-    }
-    const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth } = userInfo[0];
-    let { soul_avatar } = userInfo[0];
+router.get('/init', init);
+// router.get('/init', async function (req, res) {
+//   try {
+//     // @ts-ignore
+//     const { uid } = req.user;
+//     const getUserInfo = `select soul_username, soul_uuid, soul_email, soul_signature, soul_birth, soul_avatar from soul_user_info where soul_uuid = '${uid}'`;
+//     const userInfo = await query(getUserInfo);
+//     if (!userInfo.length) {
+//       return res.status(400).json({
+//         code: 400,
+//         data: {},
+//         msg: 'client error',
+//       });
+//     }
+//     if (userInfo.length > 1) {
+//       throw new Error('invalid uuid');
+//     }
+//     const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth } = userInfo[0];
+//     let { soul_avatar } = userInfo[0];
 
-    if (soul_avatar) {
-      const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-      const newIPAddress = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces());
+//     if (soul_avatar) {
+//       const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
+//       const newIPAddress = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces());
 
-      if (oldIPAddress !== newIPAddress) {
-        // 如果IP地址发生了改变，要修改头像链接的IP地址
-        soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
-        const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
-        await query(updateAvatar);
-      }
-    }
+//       if (oldIPAddress !== newIPAddress) {
+//         // 如果IP地址发生了改变，要修改头像链接的IP地址
+//         soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
+//         const updateAvatar = `update soul_user_info set soul_avatar = '${soul_avatar}' where soul_uuid = '${soul_uuid}'`;
+//         await query(updateAvatar);
+//       }
+//     }
 
-    res.cookie('uuid', soul_uuid);
-    // @ts-ignore
-    req.session.token = md5(dayjs().valueOf() + md5(soul_uuid)); // 设置session
-    return res.status(200).json({
-      code: 0,
-      data: {
-        userInfo: {
-          username: soul_username,
-          uid: soul_uuid,
-          email: soul_email,
-          birth: soul_birth,
-          signature: soul_signature,
-          avatar: soul_avatar,
-        },
-      },
-      msg: 'init success',
-    });
-  } catch (e) {
-    console.error('Error: ', e);
-    return res.status(500).json({
-      code: 1,
-      data: {},
-      msg: e.message.toString(),
-    });
-  }
-});
+//     res.cookie('uuid', soul_uuid);
+//     // @ts-ignore
+//     req.session.token = md5(dayjs().valueOf() + md5(soul_uuid)); // 设置session
+//     return res.status(200).json({
+//       code: 0,
+//       data: {
+//         userInfo: {
+//           username: soul_username,
+//           uid: soul_uuid,
+//           email: soul_email,
+//           birth: soul_birth,
+//           signature: soul_signature,
+//           avatar: soul_avatar,
+//         },
+//       },
+//       msg: 'init success',
+//     });
+//   } catch (e) {
+//     console.error('Error: ', e);
+//     return res.status(500).json({
+//       code: 1,
+//       data: {},
+//       msg: e.message.toString(),
+//     });
+//   }
+// });
 
 // 设置xsrfToken
-router.get('/xsrf', function (req, res) {
-  res.cookie('XSRF-TOKEN', req.csrfToken(), { path: '/' });
-  res.locals.csrftoken = req.csrfToken();
-  res.status(200).json({
-    code: 0,
-    data: {},
-    msg: 'csrfToken init success',
-  });
-});
+router.get('/xsrf', xsrf);
+// router.get('/xsrf', function (req, res) {
+//   res.cookie('XSRF-TOKEN', req.csrfToken(), { path: '/' });
+//   res.locals.csrftoken = req.csrfToken();
+//   res.status(200).json({
+//     code: 0,
+//     data: {},
+//     msg: 'csrfToken init success',
+//   });
+// });
 
 // 退出登录
-router.get('/logout', async function (req, res) {
-  const { uuid } = req.cookies;
-  // @ts-ignore
-  const { token } = req.session;
-  if (!(await hasPermission(uuid, token))) {
-    return res.status(403).json({
-      code: noPermission,
-      data: {},
-      msg: 'no permission',
-    });
-  }
-  req.logout();
-  res.cookie('token', '', {
-    path: '/',
-    maxAge: -1,
-  });
-  req.session = null;
+router.get('/logout', logout);
+// router.get('/logout', async function (req, res) {
+//   const { uuid } = req.cookies;
+//   // @ts-ignore
+//   const { token } = req.session;
+//   if (!(await hasPermission(uuid, token))) {
+//     return res.status(403).json({
+//       code: noPermission,
+//       data: {},
+//       msg: 'no permission',
+//     });
+//   }
+//   req.logout();
+//   res.cookie('token', '', {
+//     path: '/',
+//     maxAge: -1,
+//   });
+//   req.session = null;
 
-  res.json({
-    code: 0,
-    data: {},
-    msg: 'success logout',
-  });
-});
+//   res.json({
+//     code: 0,
+//     data: {},
+//     msg: 'success logout',
+//   });
+// });
 
 export default router;
