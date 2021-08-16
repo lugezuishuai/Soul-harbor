@@ -106,16 +106,16 @@ axios.interceptors.response.use(
           case 401:
             break;
           case 403:
-            window.location.href = '/exception/403';
             handleErrorMsg(errorMsg || '无权限，请重新尝试');
+            window.location.href = '/exception/403';
             break;
           case 404:
-            window.location.href = '/exception/404';
             handleErrorMsg(errorMsg || '抱歉，没有找到相关资源');
+            window.location.href = '/exception/404';
             break;
           case 500:
-            window.location.href = '/exception/500';
             handleErrorMsg(errorMsg || '服务端出错');
+            window.location.href = '/exception/500';
             break;
           default:
             handleErrorMsg(errorMsg || '请求出错，请重新尝试');
