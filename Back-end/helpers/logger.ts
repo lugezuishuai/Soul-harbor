@@ -16,7 +16,7 @@ export function getAccessLogStream(type: 'normal' | 'error' = 'normal') {
       verbose: false,
       date_format: 'YYYY-MM-DD',
       size: '5M', // 限制文件大小为5M
-      max_logs: '30d', // 最长保留30天的日志
+      max_logs: '10d', // 最长保留10天的日志
     });
   } catch (e) {
     isDevelopment && console.error(e);

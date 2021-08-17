@@ -144,12 +144,12 @@ module.exports = {
           { loader: 'css-loader', options: { sourceMap, modules: true, import: true } },
           postcssLoader,
           lessLoader,
-          { 
+          {
             loader: 'style-resources-loader',
             options: {
               patterns: path.resolve(__dirname, '../src/variable.less'),
               injector: 'append'
-            } 
+            }
           }
         ]
       },
