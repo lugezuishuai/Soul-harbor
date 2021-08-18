@@ -110,7 +110,7 @@ app.use(
     path: '/',
   })
 );
-app.use(csrf({ cookie: { httpOnly: true, path: '/' }, ignoreMethods: ['GET', 'HEAD', 'OPTIONS'] })); // CSRF防御
+app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
 app.use(passport.initialize()); // 初始化passport
 
 app.use('/', indexRouter);

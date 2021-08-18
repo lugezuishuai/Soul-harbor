@@ -6,7 +6,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import { screen } from '@/constants/screen';
 import { ImageUpload } from '@/components/image-upload';
-import { verifyAvatarFileAndMessage } from './verifyAvatar';
+import { verifyAvatarFile } from './verifyAvatar';
 import { RcFile } from 'antd/lib/upload';
 import { apiPost } from '@/utils/request';
 import { BASICINFO, UPLOADAVATAR } from '@/constants/urls';
@@ -44,7 +44,7 @@ function ConfigData(props: ConfigDataProps) {
 
   async function checkAvatar(file: RcFile) {
     try {
-      await verifyAvatarFileAndMessage(file);
+      await verifyAvatarFile(file);
       setFields({
         avatar: {
           errors: null,
