@@ -10,6 +10,8 @@ import './index.less';
 
 export interface ImageUploadProps {
   onChange?: (value: string) => void;
+  onUploading?: () => void;
+  onUploaded?: () => void;
   size?: number | { width: number; height: number }; // 预览图标的尺寸
   value?: string; // 预览图标的src
   useOriginDirectly?: (file: RcFile) => boolean | Promise<boolean>; // 满足某些条件直接上传
@@ -30,6 +32,8 @@ function alwaysTrue() {
 export function ImageUpload(props: PropsWithChildren<ImageUploadProps>) {
   const {
     onChange = noop,
+    onUploading = noop,
+    onUploaded = noop,
     render,
     size = 64,
     value,
@@ -53,6 +57,7 @@ export function ImageUpload(props: PropsWithChildren<ImageUploadProps>) {
     try {
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const file = (await useOriginDirectly(options.file)) ? options.file : await convertFile(options.file);
+      onUploading();
       setLoading(true);
       const url = await upload(file);
       // 调用antd成功事件
@@ -63,6 +68,7 @@ export function ImageUpload(props: PropsWithChildren<ImageUploadProps>) {
       onError(e);
     } finally {
       setLoading(false);
+      onUploaded();
     }
   }
 
