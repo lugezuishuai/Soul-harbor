@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { hasPermission } from '../../utils/hasPermission';
+import { stringifySessionInfo } from '../../helpers/fastJson';
 
 const router = express.Router();
 const { alreadyAddFriend, invalidUid, noPermission, clientError } = UnSuccessCodeType;
@@ -824,7 +825,7 @@ router.post('/robotChat', async (req, res) => {
       sessionInfo = {
         type: 'private',
         sessionId: receiver_id,
-        owner_id: sender_id,
+        ownId: sender_id,
         latestTime: time,
         latestMessage: message,
         name: '机器人小X',
@@ -832,7 +833,7 @@ router.post('/robotChat', async (req, res) => {
       };
     }
 
-    redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
+    redisSet(`session_${sender_id}_${receiver_id}`, stringifySessionInfo(sessionInfo));
 
     const sendMessage: MsgInfo = {
       sender_id,
@@ -876,7 +877,7 @@ router.post('/robotChat', async (req, res) => {
     sessionInfo.latestTime = nowTImeForClient;
     sessionInfo.latestMessage = replyMessage.message;
 
-    redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo));
+    redisSet(`session_${sender_id}_${receiver_id}`, stringifySessionInfo(sessionInfo));
 
     const insertReplyMessage = `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, private_chat) values ('${replyMessage.sender_id}', '${replyMessage.receiver_id}', ${replyMessage.message_id}, '${replyMessage.type}', '${replyMessage.time}', '${replyMessage.message}', 0)`;
     await query(insertReplyMessage);

@@ -1,5 +1,6 @@
 import redis from 'redis';
 import { redisConfig } from '../config/db';
+import { stringifySessionInfo } from '../helpers/fastJson';
 import { SessionInfo } from '../type/type';
 import query from './query';
 const client = redis.createClient(redisConfig);
@@ -114,8 +115,8 @@ export async function batchSetSessionsAvatar(uid: string, avatar: string) {
           avatar,
         };
 
-        if (session.owner_id) {
-          redisSet(`session_${session.owner_id}_${uid}`, JSON.stringify(newSession));
+        if (session.ownId) {
+          redisSet(`session_${session.ownId}_${uid}`, stringifySessionInfo(newSession));
         }
       }
     }

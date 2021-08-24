@@ -26,7 +26,7 @@ export interface ChatSearchRes {
 
 export interface SessionInfo {
   type: 'private' | 'room';
-  owner_id?: string; // 用户自己id
+  ownId?: string; // 用户自己id
   sessionId: string; // 用户id | 房间id
   name: string; // 用户名 | 房间名
   avatar: string | null; // 用户头像 | 房间头像

@@ -9,6 +9,7 @@ import query from '../../utils/query';
 import { UserInfo, SessionInfo, MsgInfo, MessageBody, RoomInfo } from '../../type/type';
 import cookie from 'cookie';
 import dotenv from 'dotenv';
+import { stringifySessionInfo } from '../../helpers/fastJson';
 dotenv.config({ path: '.env' });
 
 export function createSocketIo(server: HttpServer) {
@@ -60,7 +61,7 @@ export function createSocketIo(server: HttpServer) {
           sessionInfo_send = {
             type: 'private',
             sessionId: receiver_id,
-            owner_id: sender_id,
+            ownId: sender_id,
             latestTime: time,
             latestMessage: message,
             name: soul_username,
@@ -78,7 +79,7 @@ export function createSocketIo(server: HttpServer) {
           sessionInfo_receive = {
             type: 'private',
             sessionId: sender_id,
-            owner_id: receiver_id,
+            ownId: receiver_id,
             latestTime: time,
             latestMessage: message,
             name: soul_username,
@@ -96,7 +97,7 @@ export function createSocketIo(server: HttpServer) {
           sessionInfo_send = {
             type: 'private',
             sessionId: receiver_id,
-            owner_id: sender_id,
+            ownId: sender_id,
             latestTime: time,
             latestMessage: message,
             name: userInfoReceive[0].soul_username,
@@ -107,7 +108,7 @@ export function createSocketIo(server: HttpServer) {
           sessionInfo_receive = {
             type: 'private',
             sessionId: sender_id,
-            owner_id: receiver_id,
+            ownId: receiver_id,
             latestTime: time,
             latestMessage: message,
             name: userInfoSend[0].soul_username,
@@ -115,8 +116,9 @@ export function createSocketIo(server: HttpServer) {
           };
         }
 
-        redisSet(`session_${sender_id}_${receiver_id}`, JSON.stringify(sessionInfo_send));
-        redisSet(`session_${receiver_id}_${sender_id}`, JSON.stringify(sessionInfo_receive));
+        sessionInfo_send && redisSet(`session_${sender_id}_${receiver_id}`, stringifySessionInfo(sessionInfo_send));
+        sessionInfo_receive &&
+          redisSet(`session_${receiver_id}_${sender_id}`, stringifySessionInfo(sessionInfo_receive));
 
         // 根据receiver_id获取socketId, 判断用户是否在线
         const socketId = await redisGet(`socket_${receiver_id.slice(0, 8)}`);
@@ -202,7 +204,7 @@ export function createSocketIo(server: HttpServer) {
             latestMessage: message,
           };
         }
-        redisSet(`room_session_${receiver_id}`, JSON.stringify(sessionInfo)); // 设置会话
+        redisSet(`room_session_${receiver_id}`, stringifySessionInfo(sessionInfo)); // 设置会话
 
         const sendMessage: MsgInfo = {
           sender_id,
