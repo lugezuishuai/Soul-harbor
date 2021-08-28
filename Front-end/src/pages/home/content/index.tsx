@@ -5,6 +5,7 @@ import { dataURLtoFile } from '@/utils/dataUrlToFile';
 import { Button } from 'antd';
 import { imageCutting } from '@/components/image-cutting';
 import { Utils } from '../../../components/change-svg-color';
+import { Link } from 'react-router-dom';
 import './index.less';
 
 const CANVAS_WIDTH = 240;
@@ -51,6 +52,11 @@ export default function Content() {
       <Button type="primary" onClick={imageCutting} className="content-page__btn">
         尝试一下
       </Button>
+      <Link to="/markdown">
+        <Button type="primary" className="content-page__btn">
+          markdown
+        </Button>
+      </Link>
       <Utils />
     </div>
   );

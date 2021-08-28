@@ -9,6 +9,7 @@ import { NoPermission } from '@/pages/no-permission';
 import { Error } from '@/pages/error-page';
 import { RouteType } from './types/route-type';
 import { WrapHome, WrapNoPermission } from '@/pages/home';
+import { MarkDownCom } from '@/pages/markdown';
 
 export const routes: RouteType[] = [
   {
@@ -60,6 +61,10 @@ export const routes: RouteType[] = [
         component: UserInfo,
         auth: ['login'],
         replaceComponent: WrapNoPermission,
+      },
+      {
+        path: '/markdown',
+        component: MarkDownCom,
       },
     ],
   },

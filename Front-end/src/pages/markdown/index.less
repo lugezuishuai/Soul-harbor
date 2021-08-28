@@ -1,0 +1,17 @@
+:global {
+  .markdown-com {
+    width: 100%;
+    height: calc(100vh - 106px);
+    display: flex;
+    &__editor {
+      width: 50%;
+      height: 100%;
+      overflow: scroll;
+    }
+    &__renderer {
+      width: calc(50% - 250px);
+      height: 100%;
+      overflow: scroll;
+    }
+  }
+}

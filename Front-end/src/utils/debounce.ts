@@ -1,4 +1,4 @@
-export function debounce(func: () => any, wait: number, immediate = false) {
+export function debounce<T extends (...args: any) => any>(func: T, wait: number, immediate = false) {
   let timer: any;
   return function (this: any, ...args: any) {
     if (timer) clearTimeout(timer);

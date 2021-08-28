@@ -1,0 +1,66 @@
+:global {
+  .markdown-nav {
+    user-select: none;
+    width: 250px;
+    height: 100%;
+    &__title {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 24px;
+      margin: 16px 0 0 16px;
+      color: @N900;
+    }
+    &__menu {
+      // height: calc(100% - 56px);
+      overflow-x: hidden;
+      overflow-y: scroll;
+      .title-anchor {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #bbb;
+        transition: all 0.2s;
+        margin: 12px 0;
+        font-weight: lighter;
+        line-height: 30px;
+        padding-right: 24px;
+        cursor: pointer;
+        & > small {
+          margin: 0 8px;
+          font-size: 80%;
+        }
+        &:hover {
+          background-color: #f8f8f8;
+        }
+      }
+      .title-level2 {
+        color: @N650;
+        font-size: 16px;
+        padding-left: 16px;
+        font-weight: 500;
+      }
+      .title-level3 {
+        color: @N600;
+        font-size: 14px;
+        padding-left: 32px;
+        font-weight: 400;
+      }
+      .title-level4 {
+        color: @N500;
+        font-size: 12px;
+        padding-left: 48px;
+        font-weight: 400;
+      }
+      .title-level5 {
+        color: @N500;
+        font-size: 12px;
+        padding-left: 60px;
+        font-weight: 400;
+      }
+      .active {
+        color: @B500;
+        background-color: #f8f8f8;
+      }
+    }
+  }
+}
