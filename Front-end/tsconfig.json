@@ -5,6 +5,7 @@
     "scripts/*",
     "typings.d.ts"
   ],
+  "exclude": ["node_modules", "build", "dist"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 

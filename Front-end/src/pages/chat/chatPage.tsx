@@ -339,7 +339,7 @@ function ChatPage(props: ChatPageProps) {
         });
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   // 发起群聊
@@ -399,7 +399,7 @@ function ChatPage(props: ChatPageProps) {
         console.error(e);
       }
     },
-    [dispatch, selectSession?.sessionId, socket, userInfo?.username]
+    [dispatch, selectSession?.sessionId, socket, userInfo?.username],
   );
 
   // 监听socket
@@ -723,5 +723,5 @@ export const WrapChatPage = connect(
     unreadChatMsgCount,
     friendsListFold,
     groupsListFold,
-  })
+  }),
 )(ChatPage);

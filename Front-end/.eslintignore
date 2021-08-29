@@ -1,5 +1,8 @@
+/node_modules
 /dist
+/build
+/public
+/bin
 # 不校验隐藏文件
 .*
 *.d.ts
-bin
