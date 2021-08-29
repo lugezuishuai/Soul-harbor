@@ -14,7 +14,9 @@ module.exports = {
     "at-rule-no-unknown": [true, {
       "ignoreAtRules": ["/^my-/", "custom", "extends", "ignores"]
     }],
-    "indentation": "tab",
+    "indentation": null,
+    "rule-empty-line-before": "never",
+    "at-rule-empty-line-before": "never",
   },
   // 忽略其他文件，只校验样式相关的文件
   ignoreFiles: [
