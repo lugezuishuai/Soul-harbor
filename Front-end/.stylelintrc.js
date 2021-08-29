@@ -7,9 +7,9 @@ module.exports = {
     "at-rule-no-vendor-prefix": true,
     "selector-no-vendor-prefix": true,
     "property-no-vendor-prefix": true,
-    "value-no-vendor-prefix": true,
+    // "value-no-vendor-prefix": true, // 禁止给值添加浏览器引擎前缀。
     "selector-pseudo-class-no-unknown": [true, {
-      "ignorePseudoClasses": ["global"]
+      "ignorePseudoClasses": ["global", "local"]
     }],
     "at-rule-no-unknown": [true, {
       "ignoreAtRules": ["/^my-/", "custom", "extends", "ignores"]
@@ -17,6 +17,8 @@ module.exports = {
     "indentation": null,
     "rule-empty-line-before": "never",
     "at-rule-empty-line-before": "never",
+    "selector-list-comma-newline-after": "always-multi-line",
+    "declaration-colon-newline-after": "always-multi-line",
   },
   // 忽略其他文件，只校验样式相关的文件
   ignoreFiles: [
