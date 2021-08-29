@@ -12,8 +12,9 @@ module.exports = {
       "ignorePseudoClasses": ["global"]
     }],
     "at-rule-no-unknown": [true, {
-      "ignoreAtRules": ["/^my-/", "custom"]
+      "ignoreAtRules": ["/^my-/", "custom", "extends", "ignores"]
     }],
+    "indentation": "tab",
   },
   // 忽略其他文件，只校验样式相关的文件
   ignoreFiles: [
