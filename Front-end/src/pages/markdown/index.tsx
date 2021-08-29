@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+// import rehypeKatex from 'rehype-katex';
 import { Input } from 'antd';
 import { CodeBox } from './code-box';
 import { debounce } from 'lodash';
@@ -33,7 +33,7 @@ export function MarkDownCom() {
       <ReactMarkdown
         className="markdown-com__renderer"
         remarkPlugins={[[remarkGfm, { singleTilde: false }], remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        // rehypePlugins={[rehypeKatex]}
         components={{
           code({ node, inline, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '');

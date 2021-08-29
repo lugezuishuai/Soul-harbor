@@ -93,7 +93,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(js|jsx|ts|tsx)$/i,             //要想babel-import-plugin生效，babel-loader要加上ts|tsx
+        test: /\.(js|jsx|ts|tsx)$/i, // 要想babel-import-plugin生效，babel-loader要加上ts|tsx
         use: [
           { 
             loader: 'babel-loader',
@@ -105,7 +105,7 @@ module.exports = {
         test: /\.(ts|tsx)$/i,
         loader: 'ts-loader',
         options: {
-            transpileOnly: true,
+          transpileOnly: true, // 关闭类型检查，只进行转译
         },
         exclude: /node_modules/
       },
