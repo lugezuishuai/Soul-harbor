@@ -1,4 +1,4 @@
-// rules/spoiler.ts
+// @ts-ignore
 import { Eat, Parser } from 'remark-parse';
 
 function tokenizeSpoiler(eat: Eat, value: string, silent?: boolean): any {
@@ -19,11 +19,11 @@ function tokenizeSpoiler(eat: Eat, value: string, silent?: boolean): any {
   }
 }
 tokenizeSpoiler.notInLink = true;
-tokenizeSpoiler.locator = function (value, fromIndex) {
+tokenizeSpoiler.locator = function (value: any, fromIndex: any) {
   return value.indexOf('||', fromIndex);
 };
 
-function spoilerSyntax(this: any) {
+export function spoilerSyntax(this: any) {
   const Parser = this.Parser as { prototype: Parser };
   const tokenizers = Parser.prototype.inlineTokenizers;
   const methods = Parser.prototype.inlineMethods;
@@ -34,4 +34,3 @@ function spoilerSyntax(this: any) {
   // Run it just before `text`.
   methods.splice(methods.indexOf('text'), 0, 'spoiler');
 }
-export { spoilerSyntax };

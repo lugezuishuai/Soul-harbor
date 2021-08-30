@@ -1,55 +1,40 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-// import rehypeKatex from 'rehype-katex';
-import { Input } from 'antd';
+import rehypeKatex from 'rehype-katex';
 import { CodeBox } from './code-box';
-import { debounce } from 'lodash';
 import { MarkdownNav } from './markdown-nav';
+import { fnv32aHashCode } from '@/utils/fnv32aHashCode';
+import testMd from './data/test1.md';
+import { spoilerSyntax } from './rules/spoiler';
+import 'katex/dist/katex.min.css'; // `rehype-katex` does not import the CSS for you
 import './index.less';
 
-const { TextArea } = Input;
-
 export function MarkDownCom() {
-  const [content, setContent] = useState('');
-
-  const handleChange = useMemo(() => {
-    return debounce((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const value = String(e.target.value);
-      setContent(value);
-    }, 300);
-  }, []);
-
   return (
     <div className="markdown-com">
-      <TextArea
-        onChange={(e) => {
-          e.persist();
-          handleChange(e);
-        }}
-        className="markdown-com__editor"
-      />
       <ReactMarkdown
         className="markdown-com__renderer"
         remarkPlugins={[[remarkGfm, { singleTilde: false }], remarkMath]}
-        // rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[rehypeKatex as any]}
         components={{
-          code({ node, inline, className, children, ...props }) {
+          code({ node, inline, className, children }) {
             const match = /language-(\w+)/.exec(className || '');
             return !inline && match ? (
-              <CodeBox value={String(children)} language={match[1]} {...props} />
+              <CodeBox value={String(children)} language={match[1]} node={node} />
             ) : (
-              <code className={className} {...props}>
-                {children}
-              </code>
+              <code className={className}>{children}</code>
             );
+          },
+          h1({ children }) {
+            return <h1 id={fnv32aHashCode(String(children))}>{String(children)}</h1>;
           },
         }}
       >
-        {content}
+        {testMd}
       </ReactMarkdown>
-      <MarkdownNav content={content} />
+      <MarkdownNav content={testMd} />
     </div>
   );
 }
