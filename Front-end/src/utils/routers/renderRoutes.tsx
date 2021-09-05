@@ -5,13 +5,14 @@ import { isNullOrUndefined } from '../isNullOrUndefined';
 import { hasAuthority } from './utils';
 
 export function renderRoutes(
-  routes: RouteType[],
+  routes: RouteType[] = [],
   authed: string[] = [],
-  extraProps = {},
-  switchProps: SwitchProps = {}
+  extraProps: Array<Record<string, any>> = [],
+  globalRedirect?: string,
+  switchProps: SwitchProps = {},
 ) {
   return (
-    routes && (
+    routes.length && (
       <Switch {...switchProps}>
         {routes.map((route, i) => {
           const { key, path, exact, strict, render, component: Component, auth, replaceComponent, redirect } = route;
@@ -25,9 +26,15 @@ export function renderRoutes(
               render={(props) => {
                 function renderComponent() {
                   if (render) {
-                    return render({ ...props, ...extraProps, route });
+                    return !isNullOrUndefined(extraProps[i])
+                      ? render({ ...props, ...extraProps[i], route })
+                      : render({ ...props, route });
                   } else if (Component) {
-                    return <Component {...props} {...extraProps} route={route} />;
+                    return !isNullOrUndefined(extraProps[i]) ? (
+                      <Component {...props} {...extraProps[i]} route={route} />
+                    ) : (
+                      <Component {...props} route={route} />
+                    );
                   } else {
                     return <Redirect to="/exception/404" />;
                   }
@@ -50,7 +57,7 @@ export function renderRoutes(
             />
           );
         })}
-        <Redirect to="/exception/404" />
+        <Redirect to={globalRedirect || '/exception/404'} />
       </Switch>
     )
   );

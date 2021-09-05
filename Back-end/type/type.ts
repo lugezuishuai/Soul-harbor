@@ -10,20 +10,6 @@ export interface UserInfo {
   soul_birth: string | null;
 }
 
-export interface ResUserInfo {
-  username: string;
-  uid: string;
-  email: string;
-  signature: string | null;
-  birth: string | null;
-  avatar: string | null;
-}
-
-export interface ChatSearchRes {
-  online: boolean;
-  userInfo: ResUserInfo;
-}
-
 export interface SessionInfo {
   type: 'private' | 'room';
   ownId?: string; // 用户自己id
@@ -58,4 +44,17 @@ export interface RoomInfo {
   room_id: string;
   room_name: string;
   room_avatar: string | null;
+}
+
+export interface FriendInfo {
+  friend_id: string;
+  friend_username: string;
+  friend_avatar: string | null;
+}
+
+export interface MemberInfo {
+  member_id: string;
+  member_username: string;
+  member_avatar: string | null;
+  member_role: 0 | 1; // 0表示群主，1表示普通成员
 }

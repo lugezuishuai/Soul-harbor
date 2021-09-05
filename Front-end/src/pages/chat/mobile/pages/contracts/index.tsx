@@ -13,7 +13,7 @@ import { SearchContracts } from './search-contracts';
 import { FoldingPanel } from '@/components/folding-panel';
 import './index.less';
 
-interface ChatContractsMobileProps {
+export interface ChatContractsMobileProps {
   friendsLoading: boolean;
   groupsLoading: boolean;
   friendsListFold: boolean;

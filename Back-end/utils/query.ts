@@ -4,7 +4,7 @@ import { mysqlDbConfig } from '../config/db';
 // 注意：连接池要放在最外面
 const soulHarborPool = mysql.createPool(mysqlDbConfig);
 
-export default function query(sql: string, values?: any) {
+export function query(sql: string, values?: any) {
   return new Promise<any>((resolve, reject) => {
     soulHarborPool.getConnection((error, connection) => {
       if (error) {

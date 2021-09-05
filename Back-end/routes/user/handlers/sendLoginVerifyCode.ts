@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import bcrypt from 'bcryptjs';
 import { escape, format } from 'sqlstring';
-import query from '../../../utils/query';
+import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
 import { BCRYPT_SALT_ROUNDS } from '..';
 import { transporter } from '../../../config/nodemailer';

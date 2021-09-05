@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import passport from 'passport';
-import query from '../../../utils/query';
+import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
 import { escape, format } from 'sqlstring';
 import { isDevelopment } from '../../../app';

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
-import query from '../utils/query';
+import { query } from '../utils/query';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { Strategy as LocalStrategy } from 'passport-local';

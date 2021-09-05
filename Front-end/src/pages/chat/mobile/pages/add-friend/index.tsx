@@ -10,7 +10,7 @@ import { WrapSearchMobile } from './search';
 import { History } from 'history';
 import './index.less';
 
-interface AddFriendsMobileProps {
+export interface AddFriendsMobileProps {
   dispatch(action: Action): void;
   getFriendsList(): void;
   history: History;

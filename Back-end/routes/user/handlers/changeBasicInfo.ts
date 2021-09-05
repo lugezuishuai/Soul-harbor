@@ -6,7 +6,7 @@ import { hasPermission } from '../../../utils/hasPermission';
 import { UnSuccessCodeType } from '../code-type';
 import { getDirectories } from '../../../utils/getDirectories';
 import { listFile } from '../../../utils/listFile';
-import query from '../../../utils/query';
+import { query } from '../../../utils/query';
 import { getAvatarUrl } from '../../../utils/getAvatarUrl';
 import { batchSetSessionsAvatar } from '../../../utils/redis';
 import { isDevelopment } from '../../../app';

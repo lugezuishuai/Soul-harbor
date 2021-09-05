@@ -23,10 +23,10 @@ interface ActiveMsgProps {
 
 export function ActiveMsg({ msg, friendsList, groupsList, dispatch }: ActiveMsgProps) {
   const history = useHistory();
-  const { sender_id, receiver_id, message, sender_avatar, private_chat } = msg;
   const [name, setName] = useState('');
 
   function handleClick() {
+    const { sender_id, private_chat, receiver_id } = msg;
     const selectSession: SelectSession = {
       type: private_chat === 0 ? 'private' : 'room',
       sessionId: private_chat === 0 ? sender_id : receiver_id,
@@ -54,6 +54,7 @@ export function ActiveMsg({ msg, friendsList, groupsList, dispatch }: ActiveMsgP
   }
 
   function getAvatar() {
+    const { private_chat, sender_id, sender_avatar } = msg;
     if (private_chat === 0) {
       return sender_id !== '0' ? sender_avatar || defaultAvatar : robotAvatar;
     } else {
@@ -62,6 +63,7 @@ export function ActiveMsg({ msg, friendsList, groupsList, dispatch }: ActiveMsgP
   }
 
   useEffect(() => {
+    const { private_chat, receiver_id, sender_id } = msg;
     if (private_chat === 0) {
       // 私聊
       const friendInfo = friendsList?.find((item) => item.friend_id === sender_id);
@@ -84,7 +86,7 @@ export function ActiveMsg({ msg, friendsList, groupsList, dispatch }: ActiveMsgP
       <Avatar src={getAvatar()} className="chat-page__msg-avatar" />
       <div className="chat-page__msg-info">
         <div className="chat-page__msg-info__item">{name}</div>
-        <div className="chat-page__msg-info__item">{message}</div>
+        <div className="chat-page__msg-info__item">{msg.message}</div>
       </div>
     </div>
   );

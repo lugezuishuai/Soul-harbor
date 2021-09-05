@@ -4,11 +4,13 @@ import {
   CHANGE_SHOW_EMAIL,
   GET_USERINFO,
   CHANGE_LOGIN_STATE,
+  SET_AUTHED,
 } from '../actions/action_types';
-import { initialUserState } from './state';
+import { initialUserState, UserState } from './state';
 import { Action } from '../actions/index';
+import { SetAuthedPayload } from '@/pages/home';
 
-export default function (state = initialUserState, action: Action) {
+export default function (state = initialUserState, action: Action): UserState {
   switch (action.type) {
     case GET_USERINFO:
       return {
@@ -35,6 +37,22 @@ export default function (state = initialUserState, action: Action) {
         ...state,
         login: action.payload,
       };
+    case SET_AUTHED: {
+      let newAuthed: string[];
+      const { type, value } = action.payload as SetAuthedPayload;
+      if (type === 'add') {
+        newAuthed = [...state.authed, ...value];
+      } else if (type === 'delete') {
+        newAuthed = [...state.authed].filter((item) => !value.includes(item));
+      } else {
+        newAuthed = [...value];
+      }
+
+      return {
+        ...state,
+        authed: newAuthed,
+      };
+    }
     default:
       return state;
   }

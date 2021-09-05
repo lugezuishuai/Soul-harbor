@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
-import * as handler from './handlers/index';
+import * as handlers from './handlers';
 dotenv.config({ path: '.env' });
 
 const {
@@ -18,7 +18,7 @@ const {
   init,
   xsrf,
   logout,
-} = handler;
+} = handlers;
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据
 export const router = express.Router();

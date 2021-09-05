@@ -35,6 +35,7 @@ import { useHistory } from 'react-router-dom';
 import { GroupOperation } from './groupOperation';
 import { getOffsetTop, scrollToTop } from '@/utils/dom';
 import { PrivateOperation } from './privateOperation';
+import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
 import './index.less';
 
 const { confirm } = Modal;
@@ -373,6 +374,14 @@ function ChatRoom({
     }
   }, [readMessage]);
 
+  useEffect(() => {
+    if (!isNullOrUndefined(activeMsgId)) {
+      const timer = setTimeout(() => setActiveMsgId(null), 1800);
+
+      return () => clearTimeout(timer);
+    }
+  }, [activeMsgId]);
+
   return (
     selectSession && (
       <div className="chat-room">
@@ -468,7 +477,7 @@ function ChatRoom({
                     autoComplete="off"
                     allowClear={false}
                     onKeyPress={handleKeyPress}
-                  />
+                  />,
                 )}
               </Form.Item>
             </Form>

@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Action } from '@/redux/actions';
 import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { connect } from 'react-redux';
 import { apiGet } from '@/utils/request';
 import { GET_UNREAD_MSG } from '@/constants/urls';
 import { GetUnreadMsgRes } from '@/interface/chat/getUnreadMsg';
-import { UNREAD_MESSAGE_COUNT } from '@/redux/actions/action_types';
+import { SET_AUTHED, UNREAD_MESSAGE_COUNT } from '@/redux/actions/action_types';
 import { RouteType } from '@/config/types/route-type';
 import Header from '@/pages/home/header';
 import { Footer } from '@/pages/home/footer';
@@ -16,6 +16,11 @@ import { NoPermission } from '../no-permission';
 import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
 import './index.less';
 
+export interface SetAuthedPayload {
+  type: 'cover' | 'add' | 'delete';
+  value: string[];
+}
+
 interface HomeProps {
   dispatch(action: Action): void;
   selectMenu: string;
@@ -23,11 +28,11 @@ interface HomeProps {
   login: LoginState;
   socket: SocketState;
   route: RouteType;
+  authed: string[];
 }
 
 function Home(props: HomeProps) {
-  const { userInfo, selectMenu, login, socket, dispatch, route } = props;
-  const [authed, setAuthed] = useState<string[]>([]); // 当前用户所拥有的权限
+  const { userInfo, selectMenu, login, socket, dispatch, route, authed } = props;
 
   // 更新离线信息
   const updateUnreadMsg = useCallback(async () => {
@@ -63,13 +68,16 @@ function Home(props: HomeProps) {
 
   useEffect(() => {
     if (!isNullOrUndefined(login)) {
-      if (login) {
-        setAuthed(['login']);
-      } else {
-        setAuthed([]);
-      }
+      login &&
+        dispatch({
+          type: SET_AUTHED,
+          payload: {
+            type: 'add',
+            value: ['login'],
+          } as SetAuthedPayload,
+        });
     }
-  }, [login]);
+  }, [dispatch, login]);
 
   return (
     <>
@@ -91,11 +99,12 @@ function Home(props: HomeProps) {
 
 export const WrapNoPermission = <NoPermission className="wrap-exception" />;
 export const WrapHome = connect(
-  ({ header: { selectMenu }, user: { userInfo, login }, chat: { socket, unreadChatMessage } }: State) => ({
+  ({ header: { selectMenu }, user: { userInfo, login, authed }, chat: { socket, unreadChatMessage } }: State) => ({
     selectMenu,
     userInfo,
     login,
     socket,
     unreadChatMessage,
-  })
+    authed,
+  }),
 )(Home);

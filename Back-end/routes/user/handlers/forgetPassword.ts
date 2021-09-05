@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { UnSuccessCodeType } from '../code-type';
-import query from '../../../utils/query';
+import { query } from '../../../utils/query';
 import crypto from 'crypto';
 import dayjs from 'dayjs';
 import { transporter } from '../../../config/nodemailer';

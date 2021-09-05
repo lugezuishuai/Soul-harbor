@@ -10,7 +10,7 @@ import { SessionCard } from '@/pages/chat/component/sessionCard';
 import { Action } from '@/redux/actions';
 import './index.less';
 
-interface ChatSessionsMobileProps {
+export interface ChatSessionsMobileProps {
   dispatch(action: Action): void;
   unreadChatMsgCount: number;
   sessionsLoading: boolean;

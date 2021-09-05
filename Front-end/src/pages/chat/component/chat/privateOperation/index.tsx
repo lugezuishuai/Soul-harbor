@@ -1,6 +1,7 @@
 import { FriendInfo } from '@/interface/chat/getFriendsList';
 import { FriendListState, SelectSession } from '@/redux/reducers/state';
 import defaultAvatar from '@/assets/image/default-avatar.png';
+import robotAvatar from '@/assets/image/robot.png';
 import { Avatar, Icon } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FoldingPanel } from '@/components/folding-panel';
@@ -64,7 +65,7 @@ export function PrivateOperation({
         }
       }, 350) as any;
     },
-    [friendInfo]
+    [friendInfo],
   );
 
   const getFriendInfo = useCallback(() => {
@@ -72,8 +73,17 @@ export function PrivateOperation({
       return;
     }
 
-    const friendInfoData = friendsList.find((item) => selectSession.sessionId === item.friend_id);
-    friendInfoData && setFriendInfo(friendInfoData);
+    const { sessionId } = selectSession;
+    if (sessionId === '0') {
+      setFriendInfo({
+        friend_avatar: robotAvatar,
+        friend_id: '0',
+        friend_username: '机器人小X',
+      });
+    } else {
+      const friendInfoData = friendsList.find((item) => sessionId === item.friend_id);
+      friendInfoData && setFriendInfo(friendInfoData);
+    }
   }, [friendsList, selectSession]);
 
   function handleChatRecordFold() {

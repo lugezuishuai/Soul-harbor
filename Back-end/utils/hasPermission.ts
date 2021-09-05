@@ -1,4 +1,4 @@
-import query from './query';
+import { query } from './query';
 
 // 判断用户是否有权限
 export async function hasPermission(uuid?: string, token?: string) {

@@ -21,6 +21,7 @@ export type UserState = {
   userNameShow: boolean;
   userIdShow: boolean;
   emailShow: boolean;
+  authed: string[];
 };
 
 export type HeaderState = {
@@ -77,6 +78,7 @@ export const initialUserState: UserState = {
   userNameShow: false, // 显示或隐藏用户名
   userIdShow: false, // 显示或隐藏用户ID
   emailShow: false, // 显示或隐藏邮箱
+  authed: [], // 当前用户权限
 };
 
 export const initialHeaderState: HeaderState = {

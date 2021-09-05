@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import dayjs from 'dayjs';
 import bcrypt from 'bcryptjs';
-import query from '../../../utils/query';
+import { query } from '../../../utils/query';
 import { escape, format } from 'sqlstring';
 import { UnSuccessCodeType } from '../code-type';
 import { BCRYPT_SALT_ROUNDS } from '..';

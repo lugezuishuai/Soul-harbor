@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import dayjs from 'dayjs';
 import { escape } from 'sqlstring';
-import query from '../../../utils/query';
+import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
 import { isDevelopment } from '../../../app';
 

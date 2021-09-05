@@ -10,6 +10,14 @@ import { Error } from '@/pages/error-page';
 import { RouteType } from './types/route-type';
 import { WrapHome, WrapNoPermission } from '@/pages/home';
 import { MarkDownCom } from '@/pages/markdown';
+import { screen } from '@/constants/screen';
+import { ChatSessionsMobile } from '@/pages/chat/mobile/pages/sessions';
+import { ChatContractsMobile } from '@/pages/chat/mobile/pages/contracts';
+import { AddFriendsMobile } from '@/pages/chat/mobile/pages/add-friend';
+import { LaunchGroupChat } from '@/pages/chat/mobile/pages/launch-group-chat';
+import { WrapConversationMobile } from '@/pages/chat/mobile/pages/conversation';
+
+const { isMobile } = screen;
 
 export const routes: RouteType[] = [
   {
@@ -47,6 +55,40 @@ export const routes: RouteType[] = [
         auth: ['login'],
         exact: false,
         replaceComponent: WrapNoPermission,
+        routes: isMobile
+          ? [
+              {
+                path: '/chat/sessions',
+                component: ChatSessionsMobile,
+                auth: ['login'],
+                replaceComponent: WrapNoPermission,
+              },
+              {
+                path: '/chat/contracts',
+                component: ChatContractsMobile,
+                auth: ['login'],
+                replaceComponent: WrapNoPermission,
+              },
+              {
+                path: '/chat/addFriends',
+                component: AddFriendsMobile,
+                auth: ['login'],
+                replaceComponent: WrapNoPermission,
+              },
+              {
+                path: '/chat/launchGroupChat',
+                component: LaunchGroupChat,
+                auth: ['login'],
+                replaceComponent: WrapNoPermission,
+              },
+              {
+                path: '/chat/conversation/:id',
+                component: WrapConversationMobile,
+                auth: ['login'],
+                replaceComponent: WrapNoPermission,
+              },
+            ]
+          : [],
       },
       {
         path: '/news',

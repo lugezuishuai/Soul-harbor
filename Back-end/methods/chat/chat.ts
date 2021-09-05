@@ -5,7 +5,7 @@ import { getIPAddress } from '../../utils/getIPAddress';
 import { redisDel, redisGet, redisSet } from '../../utils/redis';
 import dayjs from 'dayjs';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
-import query from '../../utils/query';
+import { query } from '../../utils/query';
 import { UserInfo, SessionInfo, MsgInfo, MessageBody, RoomInfo } from '../../type/type';
 import cookie from 'cookie';
 import dotenv from 'dotenv';

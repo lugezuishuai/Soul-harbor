@@ -53,17 +53,19 @@ import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessio
 import { ActiveMsg } from './component/activeMsg';
 import { WrapChatPageProps } from '.';
 import { screen } from '@/constants/screen';
-import { Switch, Redirect, Route, matchPath } from 'react-router-dom';
-import { ChatSessionsMobile } from './mobile/pages/sessions';
-import { ChatContractsMobile } from './mobile/pages/contracts';
-import { WrapConversationMobile } from './mobile/pages/conversation';
+import { matchPath } from 'react-router-dom';
+import { ChatSessionsMobileProps } from './mobile/pages/sessions';
+import { ChatContractsMobileProps } from './mobile/pages/contracts';
+import { ConversationMobileProps } from './mobile/pages/conversation';
 import { ChatFooterMobile } from './mobile/components/chat-footer';
-import { AddFriendsMobile } from './mobile/pages/add-friend';
-import { LaunchGroupChat } from './mobile/pages/launch-group-chat';
+import { AddFriendsMobileProps } from './mobile/pages/add-friend';
+import { LaunchGroupChatProps } from './mobile/pages/launch-group-chat';
 import { ContractCardSkeleton } from './component/contractCardSkeleton';
 import { DeleteFriendReq } from '@/interface/chat/deleteFriend';
 import Cookies from 'js-cookie';
 import { FoldingPanel } from '@/components/folding-panel';
+import { RouteType } from '@/config/types/route-type';
+import { renderRoutes } from '@/utils/routers/renderRoutes';
 import './index.less';
 
 const { confirm } = Modal;
@@ -85,6 +87,8 @@ interface ChatPageProps extends WrapChatPageProps {
   unreadChatMsgCount: number;
   friendsListFold: boolean;
   groupsListFold: boolean;
+  route: RouteType;
+  authed: string[];
 }
 
 interface UpdateFriend {
@@ -116,15 +120,14 @@ function ChatPage(props: ChatPageProps) {
     friendsListFold,
     groupsListFold,
     updateUnreadMsg,
+    route,
+    authed,
   } = props;
   const isSessionsMenu = activeMenu === 'sessions' && !isSearch;
   const isContractsMenu = activeMenu === 'contracts' && !isSearch;
   const showChatFooter =
     matchPath(location.pathname, { path: '/chat/sessions', exact: true }) ||
     matchPath(location.pathname, { path: '/chat/contracts', exact: true });
-
-  const locationRef = useRef(location);
-  const historyRef = useRef(history);
 
   const {
     searchData,
@@ -137,6 +140,8 @@ function ChatPage(props: ChatPageProps) {
     setSessionsLoading,
     setSessionMsg,
   } = useChat();
+  const locationRef = useRef(location);
+  const historyRef = useRef(history);
 
   const handleFriendsListFold = useCallback(() => {
     dispatch({
@@ -515,58 +520,127 @@ function ChatPage(props: ChatPageProps) {
     } else {
       if (sessionId === 'chat' || sessionId === '') {
         return;
-      }
-
-      if (friendsList && groupsList) {
-        const promiseFriend = new Promise((resolve, reject) => {
-          if (!friendsList.length) {
-            reject();
-          }
-
-          const friendInfo = friendsList.find((item) => item.friend_id === sessionId);
-
-          if (friendInfo) {
-            const { friend_id, friend_username } = friendInfo;
-            const session: SelectSession = {
-              sessionId: friend_id,
-              name: friend_username,
-              type: 'private',
-            };
-            resolve(session);
-          } else {
-            reject();
-          }
-        });
-
-        const promiseGroup = new Promise((resolve, reject) => {
-          if (!groupsList.length) {
-            reject();
-          }
-
-          const groupInfo = groupsList.find((item) => item.room_id === sessionId);
-
-          if (groupInfo) {
-            const { room_id, room_name } = groupInfo;
-            const session: SelectSession = {
-              sessionId: room_id,
-              name: room_name,
-              type: 'room',
-            };
-            resolve(session);
-          } else {
-            reject();
-          }
-        });
-
-        const result = await Promise.any([promiseFriend, promiseGroup]);
+      } else if (sessionId === '0') {
+        // 机器人聊天
+        const session: SelectSession = {
+          sessionId: '0',
+          name: '机器人小X',
+          type: 'private',
+        };
 
         dispatch({
           type: SELECT_SESSION,
-          payload: result,
+          payload: session,
         });
+      } else {
+        if (friendsList && groupsList) {
+          const promiseFriend = new Promise((resolve, reject) => {
+            if (!friendsList.length) {
+              reject();
+            }
+
+            const friendInfo = friendsList.find((item) => item.friend_id === sessionId);
+
+            if (friendInfo) {
+              const { friend_id, friend_username } = friendInfo;
+              const session: SelectSession = {
+                sessionId: friend_id,
+                name: friend_username,
+                type: 'private',
+              };
+              resolve(session);
+            } else {
+              reject();
+            }
+          });
+
+          const promiseGroup = new Promise((resolve, reject) => {
+            if (!groupsList.length) {
+              reject();
+            }
+
+            const groupInfo = groupsList.find((item) => item.room_id === sessionId);
+
+            if (groupInfo) {
+              const { room_id, room_name } = groupInfo;
+              const session: SelectSession = {
+                sessionId: room_id,
+                name: room_name,
+                type: 'room',
+              };
+              resolve(session);
+            } else {
+              reject();
+            }
+          });
+
+          const result = await Promise.any([promiseFriend, promiseGroup]);
+
+          dispatch({
+            type: SELECT_SESSION,
+            payload: result,
+          });
+        }
       }
     }
   }, [friendsList, groupsList, dispatch, selectSession]);
+
+  // 定义routes组件的props
+  const chatSessionsMobileProps: ChatSessionsMobileProps = {
+    dispatch,
+    unreadChatMsgCount,
+    sessionsList,
+    sessionsLoading,
+    activeSession,
+  };
+
+  const chatContractsMobileProps: ChatContractsMobileProps = {
+    friendsLoading,
+    groupsLoading,
+    friendsListFold,
+    groupsListFold,
+    friendsList,
+    groupsList,
+    handleFriendsListFold,
+    handleGroupsListFold,
+    dispatch,
+    deleteFriend,
+  };
+
+  const addFriendsMobileProps: AddFriendsMobileProps = {
+    history,
+    dispatch,
+    getFriendsList,
+    friendsList,
+    socket,
+    username: userInfo?.username || '',
+  };
+
+  const launchGroupChatProps: LaunchGroupChatProps = {
+    getGroupsList,
+    friendsList,
+    userInfo,
+    history,
+  };
+
+  const conversationMobileProps: Omit<ConversationMobileProps, 'form'> = {
+    dispatch,
+    getGroupsList,
+    getSessionsList,
+    updateUnreadMsg,
+    socket,
+    userInfo,
+    selectSession,
+    friendsList,
+  };
+
+  const renderRoutesExtraProps: Record<string, any>[] = [
+    chatSessionsMobileProps,
+    chatContractsMobileProps,
+    addFriendsMobileProps,
+    launchGroupChatProps,
+    conversationMobileProps,
+  ]; // 提供给renderRoutes的参数, 这里的顺序要和路由配置里面保持一致
 
   useEffect(() => {
     joinRoom();
@@ -601,62 +675,7 @@ function ChatPage(props: ChatPageProps) {
 
   return isMobile ? (
     <div className="chat-page__mobile">
-      <Switch>
-        <Route path="/chat/sessions" exact>
-          <ChatSessionsMobile
-            dispatch={dispatch}
-            unreadChatMsgCount={unreadChatMsgCount}
-            sessionsList={sessionsList}
-            sessionsLoading={sessionsLoading}
-            activeSession={activeSession}
-          />
-        </Route>
-        <Route path="/chat/contracts" exact>
-          <ChatContractsMobile
-            friendsLoading={friendsLoading}
-            groupsLoading={groupsLoading}
-            friendsListFold={friendsListFold}
-            groupsListFold={groupsListFold}
-            friendsList={friendsList}
-            groupsList={groupsList}
-            handleFriendsListFold={handleFriendsListFold}
-            handleGroupsListFold={handleGroupsListFold}
-            dispatch={dispatch}
-            deleteFriend={deleteFriend}
-          />
-        </Route>
-        <Route path="/chat/addFriends" exact>
-          <AddFriendsMobile
-            history={history}
-            dispatch={dispatch}
-            getFriendsList={getFriendsList}
-            friendsList={friendsList}
-            socket={socket}
-            username={userInfo?.username || ''}
-          />
-        </Route>
-        <Route path="/chat/launchGroupChat" exact>
-          <LaunchGroupChat
-            getGroupsList={getGroupsList}
-            friendsList={friendsList}
-            userInfo={userInfo}
-            history={history}
-          />
-        </Route>
-        <Route path="/chat/conversation/:id" exact>
-          <WrapConversationMobile
-            dispatch={dispatch}
-            getGroupsList={getGroupsList}
-            getSessionsList={getSessionsList}
-            updateUnreadMsg={updateUnreadMsg}
-            socket={socket}
-            userInfo={userInfo}
-            selectSession={selectSession}
-            friendsList={friendsList}
-          />
-        </Route>
-        <Redirect to={`/chat/${activeMenu}`} />
-      </Switch>
+      {renderRoutes(route.routes, authed, renderRoutesExtraProps, `/chat/${activeMenu}`)}
       {showChatFooter && (
         <ChatFooterMobile activeMenu={activeMenu} dispatch={dispatch} history={history} location={location} />
       )}
@@ -694,7 +713,7 @@ function ChatPage(props: ChatPageProps) {
 
 export const WrapChatPage = connect(
   ({
-    user: { userInfo },
+    user: { userInfo, authed },
     chat: {
       activeMenu,
       isSearch,
@@ -723,5 +742,6 @@ export const WrapChatPage = connect(
     unreadChatMsgCount,
     friendsListFold,
     groupsListFold,
+    authed,
   }),
 )(ChatPage);

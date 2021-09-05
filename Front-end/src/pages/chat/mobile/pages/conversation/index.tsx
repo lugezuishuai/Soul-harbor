@@ -7,7 +7,7 @@ import ChatMenu from '@/assets/icon/chat-menu.svg';
 import { useHistory } from 'react-router-dom';
 import './index.less';
 
-interface ConversationMobileProps extends FormComponentProps {
+export interface ConversationMobileProps extends FormComponentProps {
   dispatch(action: Action): void;
   getGroupsList(): Promise<void>;
   getSessionsList(): Promise<void>;

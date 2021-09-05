@@ -16,8 +16,8 @@ import { jwtSecret } from './config/token/token';
 import { notTokenPath } from './config/token/path';
 import indexRouter from './routes/index';
 import { router as userRouter } from './routes/user'; // 用户相关
-import fileRouter from './routes/file'; // 文件相关
-import chatRouter from './routes/chat'; // 聊天相关
+import { router as fileRouter } from './routes/file'; // 文件相关
+import { router as chatRouter } from './routes/chat'; // 聊天相关
 import employeeRouter from './routes/employee';
 import { getIPAddress } from './utils/getIPAddress';
 import os from 'os';
@@ -26,9 +26,6 @@ import { accessLog, accessLogDev, accessLogErr } from './helpers/logger';
 import './config/passport';
 
 dotenv.config({ path: '.env' });
-
-const { sliceFileUpload } = fileRouter;
-const { chat } = chatRouter;
 
 export const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -115,10 +112,10 @@ app.use(passport.initialize()); // 初始化passport
 
 app.use('/', indexRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use('/api/employee', employeeRouter); // TODO: 后续要换成博客的路由
 app.use('/api/user', userRouter);
-app.use('/api/employee', employeeRouter);
-app.use('/api/file', sliceFileUpload);
-app.use('/api/chat', chat);
+app.use('/api/file', fileRouter);
+app.use('/api/chat', chatRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

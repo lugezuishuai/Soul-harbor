@@ -6,6 +6,7 @@ export const UPDATE_EMPLOYEE = 'UPDATE_EMPLOYEE';
 
 // 用户信息相关action
 export const GET_USERINFO = 'GET_USERINFO'; // 获取用户信息
+export const SET_AUTHED = 'SET_AUTHED'; // 当前用户权限
 export const CHANGE_SHOW_USERNAME = 'CHANGE_SHOW_USERNAME'; // 改变用户名的显示状态
 export const CHANGE_SHOW_USERID = 'CHANGE_SHOW_USERID'; // 改变用户ID的显示状态
 export const CHANGE_SHOW_EMAIL = 'CHANGE_SHOW_EMAIL'; // 翻遍用户email的显示状态

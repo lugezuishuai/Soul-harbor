@@ -2,7 +2,7 @@ import redis from 'redis';
 import { redisConfig } from '../config/db';
 import { stringifySessionInfo } from '../helpers/fastJson';
 import { SessionInfo } from '../type/type';
-import query from './query';
+import { query } from './query';
 const client = redis.createClient(redisConfig);
 
 export function redisGet(key: string): Promise<any> {

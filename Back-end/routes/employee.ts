@@ -2,7 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 // @ts-ignore
 import excelExport from 'excel-export';
-import query from '../utils/query';
+import { query } from '../utils/query';
 
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: false }); // 解析form表单提交的数据

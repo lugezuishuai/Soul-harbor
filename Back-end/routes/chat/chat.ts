@@ -1,7 +1,8 @@
+// 这是旧文件，仅供参考
 import express from 'express';
-import { ChatSearchRes, MessageBody, MsgInfo, ResUserInfo, RoomInfo, SessionInfo, UserInfo } from '../../type/type';
+import { MessageBody, MsgInfo, RoomInfo, SessionInfo, UserInfo } from '../../type/type';
 import { isNullOrUndefined } from '../../utils/isNullOrUndefined';
-import query from '../../utils/query';
+import { query } from '../../utils/query';
 import { batchGetSessions, redisDel, redisGet, redisSet } from '../../utils/redis';
 import { UnSuccessCodeType } from './code-type';
 import dayjs from 'dayjs';
@@ -11,7 +12,7 @@ import { hasPermission } from '../../utils/hasPermission';
 import { stringifySessionInfo } from '../../helpers/fastJson';
 
 const router = express.Router();
-const { alreadyAddFriend, invalidUid, noPermission, clientError } = UnSuccessCodeType;
+const { alreadyAddFriend, invalidUuid: invalidUid, noPermission, clientError } = UnSuccessCodeType;
 
 interface UnreadPrivateMsg {
   [key: string]: MsgInfo[];
@@ -96,6 +97,20 @@ interface SearchRobotChatRecordsSqlRes {
 interface SearchChatRecordsRes {
   keyword: string;
   records: SearchChatRecord[];
+}
+
+interface ResUserInfo {
+  username: string;
+  uid: string;
+  email: string;
+  signature: string | null;
+  birth: string | null;
+  avatar: string | null;
+}
+
+interface ChatSearchRes {
+  online: boolean;
+  userInfo: ResUserInfo;
 }
 
 function batchInsertMembers(members: MemberInfo[], room_id: string) {

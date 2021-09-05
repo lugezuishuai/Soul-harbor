@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import passport from 'passport';
 import { format } from 'sqlstring';
 import md5 from 'md5';
-import query from '../../../utils/query';
+import { query } from '../../../utils/query';
 import os from 'os';
 import dayjs from 'dayjs';
 import { UnSuccessCodeType } from '../code-type';

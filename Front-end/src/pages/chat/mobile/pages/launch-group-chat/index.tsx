@@ -11,7 +11,7 @@ export interface FriendsListInfo extends FriendInfo {
   selected: boolean;
 }
 
-interface LaunchGroupChatProps {
+export interface LaunchGroupChatProps {
   getGroupsList: () => Promise<any>;
   friendsList: FriendListState;
   userInfo: UserInfoState;
