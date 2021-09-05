@@ -62,11 +62,10 @@ function wrapRoomMembers(searchMembersRes: SearchMembersRes[]): SearchContractsR
 }
 
 function batchSearchRoomMembers(roomIds: string[], keyword: string, searcherId: string) {
-  let batchSearchRoomMembers = `select room_member.member_username, room_info.room_id, room_info.room_name, room_info.room_avatar from room_member, room_info where room_member.member_username like '%${escape(
-    keyword
-  )}%' and room_member.member_id <> ${escape(
-    searcherId
-  )} and room_info.room_id = room_member.room_id and room_info.room_id in (`;
+  let batchSearchRoomMembers = format(
+    'select room_member.member_username, room_info.room_id, room_info.room_name, room_info.room_avatar from room_member, room_info where room_member.member_username like ? and room_member.member_id <> ? and room_info.room_id = room_member.room_id and room_info.room_id in (',
+    [`%${keyword}%`, searcherId]
+  );
   roomIds.forEach((roomId, index) => {
     if (index === roomIds.length - 1) {
       batchSearchRoomMembers += `${escape(roomId)})`;
