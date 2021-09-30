@@ -7,9 +7,9 @@ import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
 import robotAvatar from '@/assets/image/robot.png';
 import DeleteFriend from '@/assets/icon/delete_friend.svg';
-import { highLightKeyword } from '@/utils/highLightKeyword';
 import { screen } from '@/constants/screen';
 import { useHistory } from 'react-router-dom';
+import { highlightKeyword } from '@/utils/highlightKeyword';
 import './index.less';
 
 const { confirm } = Modal;
@@ -20,7 +20,6 @@ interface FriendCardProps {
   deleteFriend?(id: string): Promise<void>;
   dispatch(action: Action): void;
   friendInfo: FriendInfo;
-  needHightLight?: boolean;
   showDelete?: boolean;
   keyword?: string;
 }
@@ -30,7 +29,6 @@ export function FriendCard({
   dispatch,
   handleShowDrawer,
   deleteFriend,
-  needHightLight = false,
   showDelete = true,
   keyword = '',
 }: FriendCardProps) {
@@ -80,14 +78,7 @@ export function FriendCard({
         className="chat-friend-card__avatar"
         src={friend_id !== '0' ? friend_avatar || defaultAvatar : robotAvatar}
       />
-      {needHightLight ? (
-        <div
-          className="chat-friend-card__name"
-          dangerouslySetInnerHTML={{ __html: highLightKeyword(friend_username, keyword) }}
-        />
-      ) : (
-        <div className="chat-friend-card__name">{friend_username}</div>
-      )}
+      <div className="chat-friend-card__name">{highlightKeyword(friend_username, keyword)}</div>
       {friend_id !== '0' && showDelete && (
         <Icon className="chat-friend-card__delete" component={DeleteFriend as any} onClick={handleDeleteFriend} />
       )}

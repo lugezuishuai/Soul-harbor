@@ -5,8 +5,8 @@ import React from 'react';
 import { Action } from '@/redux/actions';
 import { Avatar } from 'antd';
 import defaultGroup from '@/assets/image/default-group.png';
-import { highLightKeyword } from '@/utils/highLightKeyword';
 import { useHistory } from 'react-router-dom';
+import { highlightKeyword } from '@/utils/highlightKeyword';
 import './index.less';
 
 interface SearchGroupChatProps {
@@ -38,10 +38,10 @@ export function SearchGroupCard({ roomInfo, keyword, dispatch }: SearchGroupChat
       <Avatar className="search-group-card__avatar" src={room_avatar || defaultGroup} />
       <div className="search-group-card__info">
         <div className="search-group-card__info__text">{room_name}</div>
-        <div
-          className="search-group-card__info__text"
-          dangerouslySetInnerHTML={{ __html: `包含：${highLightKeyword(member_username.join(', '), keyword)}` }}
-        />
+        <div className="search-group-card__info__text">{`包含：${highlightKeyword(
+          member_username.join(', '),
+          keyword,
+        )}`}</div>
       </div>
     </div>
   );

@@ -58,7 +58,6 @@ export function SearchContracts({ handleHideSearchContracts, dispatch }: SearchC
                   key={friendInfo.friend_id}
                   friendInfo={friendInfo}
                   dispatch={dispatch}
-                  needHightLight={true}
                   showDelete={false}
                   keyword={contractsData.keyword}
                 />

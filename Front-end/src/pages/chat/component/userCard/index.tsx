@@ -12,8 +12,8 @@ import { Skeleton } from '@/components/skeleton';
 import classnames from 'classnames';
 import Cookies from 'js-cookie';
 import { screen } from '@/constants/screen';
-import { highLightKeyword } from '@/utils/highLightKeyword';
 import { useHistory } from 'react-router-dom';
+import { highlightKeyword } from '@/utils/highlightKeyword';
 import './index.less';
 
 const { confirm } = Modal;
@@ -120,14 +120,8 @@ export function UserCard({
       <div className="chat-user-card-info">
         {needHighLight ? (
           <>
-            <div
-              className="chat-user-card-info-text"
-              dangerouslySetInnerHTML={{ __html: highLightKeyword(userInfo?.username || '', keyword) }}
-            />
-            <div
-              className="chat-user-card-info-text"
-              dangerouslySetInnerHTML={{ __html: highLightKeyword(userInfo?.email || '', keyword) }}
-            />
+            <div className="chat-user-card-info-text">{highlightKeyword(userInfo?.username || '', keyword)}</div>
+            <div className="chat-user-card-info-text">{highlightKeyword(userInfo?.email || '', keyword)}</div>
           </>
         ) : (
           <>

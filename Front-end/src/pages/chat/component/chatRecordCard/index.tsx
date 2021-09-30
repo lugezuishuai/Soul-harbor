@@ -2,7 +2,7 @@ import { SearchChatRecord } from '@/interface/chat/searchChatRecords';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import { Avatar } from 'antd';
 import React from 'react';
-import { highLightKeyword } from '@/utils/highLightKeyword';
+import { highlightKeyword } from '@/utils/highlightKeyword';
 import './index.less';
 
 interface ChatRecordCardProps {
@@ -27,10 +27,7 @@ export function ChatRecordCard({ scrollToSpecifyLocation, handleCloseDrawer, rec
           <div className="chat-record-card__username">{sender_username}</div>
           <div className="chat-record-card__time">{time}</div>
         </div>
-        <div
-          className="chat-record-card__message"
-          dangerouslySetInnerHTML={{ __html: highLightKeyword(message, keyword) }}
-        />
+        <div className="chat-record-card__message">{highlightKeyword(message, keyword)}</div>
       </div>
     </div>
   );
