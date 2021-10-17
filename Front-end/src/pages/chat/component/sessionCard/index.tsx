@@ -6,7 +6,7 @@ import defaultAvatar from '@/assets/image/default-avatar.png';
 import defaultGroup from '@/assets/image/default-group.png';
 import { SessionInfo } from '@/interface/chat/getSessionsList';
 import { Action } from '@/redux/actions';
-import { SelectSession } from '@/redux/reducers/state';
+import { SelectSession, SelectSessionState } from '@/redux/reducers/state';
 import { ACTIVE_SESSION, SELECT_SESSION } from '@/redux/actions/action_types';
 import robotAvatar from '@/assets/image/robot.png';
 import dayjs from 'dayjs';
@@ -21,16 +21,25 @@ const { isMobile } = screen;
 interface SessionCardProps {
   sessionInfo: SessionInfo;
   activeSession: string[];
+  selectSession: SelectSessionState;
   dispatch(action: Action): void;
 }
 
-export function SessionCard({ sessionInfo, activeSession, dispatch }: SessionCardProps) {
+export function SessionCard({ sessionInfo, activeSession, selectSession, dispatch }: SessionCardProps) {
   const history = useHistory();
   const { sessionId, name, avatar, latestTime, latestMessage, type } = sessionInfo;
   const isActiveSession = activeSession.includes(sessionId);
 
   function handleClick() {
-    const selectSession: SelectSession = {
+    if (selectSession) {
+      const { sessionId: activeSessionId } = selectSession;
+      if (sessionId === activeSessionId) {
+        isMobile && history.push(`/chat/conversation/${activeSessionId}`);
+        return;
+      }
+    }
+
+    const newSelectSession: SelectSession = {
       type,
       sessionId,
       name,
@@ -48,9 +57,9 @@ export function SessionCard({ sessionInfo, activeSession, dispatch }: SessionCar
 
     dispatch({
       type: SELECT_SESSION,
-      payload: selectSession,
+      payload: newSelectSession,
     });
-    isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
+    isMobile && history.push(`/chat/conversation/${newSelectSession.sessionId}`);
   }
 
   function getAvatar() {

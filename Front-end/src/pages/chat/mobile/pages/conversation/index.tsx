@@ -16,7 +16,7 @@ import defaultAvatar from '@/assets/image/default-avatar.png';
 import robotAvatar from '@/assets/image/robot.png';
 import Cookies from 'js-cookie';
 import { ReadUnreadMsgReq } from '@/interface/chat/readUnreadMsg';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 import dayjs from 'dayjs';
 import { RobotChatReq, RobotChatRes, SendMessageBody } from '@/interface/chat/robotChat';
 import { GetSessionInfoReq, GetSessionInfoRes } from '@/interface/chat/getSessionInfo';

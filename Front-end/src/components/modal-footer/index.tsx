@@ -1,4 +1,4 @@
-import { noop } from 'lodash';
+import { noop } from 'lodash-es';
 import { Button } from 'antd';
 import React from 'react';
 import classnames from 'classnames';

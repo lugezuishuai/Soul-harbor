@@ -22,7 +22,7 @@ import {
 } from '@/constants/urls';
 import { ReadUnreadMsgReq } from '@/interface/chat/readUnreadMsg';
 import { useChat } from '../../state';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 import { RobotChatReq, RobotChatRes, SendMessageBody } from '@/interface/chat/robotChat';
 import { GetGroupMembersReq, GetGroupMembersRes } from '@/interface/chat/getGroupMembers';
 import { GroupMemberCard } from '../groupMemberCard';

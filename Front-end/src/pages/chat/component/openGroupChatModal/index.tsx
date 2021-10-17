@@ -10,7 +10,7 @@ import { UserInfoState } from '@/redux/reducers/state';
 import Cookie from 'js-cookie';
 import { apiPost } from '@/utils/request';
 import { NEW_GROUP_CHAT } from '@/constants/urls';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 import './index.less';
 
 interface ModalContentProps extends FormComponentProps {
@@ -113,7 +113,7 @@ function ModalContent({ form, friendsList, onCancel, userInfo, getGroupsList }: 
               placeholder="请输入群名称"
               allowClear={true}
               autoComplete="off"
-            />
+            />,
           )}
         </Form.Item>
       </Form>
@@ -142,7 +142,7 @@ const WrapModalContent = Form.create<ModalContentProps>({
 export async function openGroupChatModal(
   friendsList: FriendInfo[],
   userInfo: UserInfoState,
-  getGroupsList: () => Promise<any>
+  getGroupsList: () => Promise<any>,
 ) {
   const { hide } = await openWidget(
     {
@@ -165,6 +165,6 @@ export async function openGroupChatModal(
       closable: false,
       footer: null,
     },
-    'modal'
+    'modal',
   );
 }

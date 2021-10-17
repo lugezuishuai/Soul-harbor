@@ -5,7 +5,7 @@ import { useChat } from '@/pages/chat/state';
 import { UserCardSkeletonMobile } from '../../components/user-card-skeleton';
 import NoResult from '@/assets/icon/no-result.svg';
 import { UserCard } from '@/pages/chat/component/userCard';
-import { FriendListState, SocketState } from '@/redux/reducers/state';
+import { FriendListState, SelectSessionState, SocketState } from '@/redux/reducers/state';
 import { WrapSearchMobile } from './search';
 import { History } from 'history';
 import './index.less';
@@ -17,6 +17,7 @@ export interface AddFriendsMobileProps {
   friendsList: FriendListState;
   socket: SocketState;
   username: string;
+  selectSession: SelectSessionState;
 }
 
 function NoSearchResultMobile() {
@@ -35,6 +36,7 @@ export function AddFriendsMobile({
   socket,
   username,
   history,
+  selectSession,
 }: AddFriendsMobileProps) {
   const { searchData, searchLoading } = useChat();
 
@@ -65,12 +67,13 @@ export function AddFriendsMobile({
               socket={socket}
               username={username}
               keyword={searchData.keyword}
+              selectSession={selectSession}
             />
           ))}
         </>
       );
     }
-  }, [dispatch, friendsList, getFriendsList, searchData, searchLoading, socket, username]);
+  }, [dispatch, friendsList, getFriendsList, searchData, searchLoading, selectSession, socket, username]);
 
   function handleGoBack() {
     history.goBack();

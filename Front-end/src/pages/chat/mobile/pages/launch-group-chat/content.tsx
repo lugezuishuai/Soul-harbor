@@ -6,7 +6,7 @@ import { WrapSearchMember } from './search-members';
 import { SelectMember } from './select-member';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import { FriendsListInfo } from '.';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 import { MemberInfo, NewGroupChatReq } from '@/interface/chat/newGroupChat';
 import Cookies from 'js-cookie';
 import { apiPost } from '@/utils/request';
@@ -41,7 +41,7 @@ export function LaunchGroupChatContent({ getGroupsList, friendsList, userInfo }:
           const friends = await Promise.resolve(
             keyword
               ? friendsListInfo.filter((friendInfo) => friendInfo.friend_username.includes(keyword))
-              : friendsListInfo
+              : friendsListInfo,
           );
 
           if (count.current === current) {
@@ -54,7 +54,7 @@ export function LaunchGroupChatContent({ getGroupsList, friendsList, userInfo }:
         }
       }, 350) as any;
     },
-    [friendsListInfo]
+    [friendsListInfo],
   );
 
   // 删除所选
@@ -78,7 +78,7 @@ export function LaunchGroupChatContent({ getGroupsList, friendsList, userInfo }:
       });
       setShowFriendsListInfo(newShowFriendsListInfo);
     },
-    [friendsListInfo, showFriendsListInfo]
+    [friendsListInfo, showFriendsListInfo],
   );
 
   async function handleConfirm() {

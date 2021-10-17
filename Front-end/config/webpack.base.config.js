@@ -1,6 +1,7 @@
 /* eslint-disable */
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const miniCssExtractPlugin = require("mini-css-extract-plugin");          // 单独抽离css文件
+const MiniCssExtractPlugin = require("mini-css-extract-plugin"); // 单独抽离css文件
+const PurgecssPlugin = require('purgecss-webpack-plugin'); // 去除无用的css
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const resolve = require('./helper/resolve');
@@ -8,12 +9,13 @@ const webpack = require('webpack');
 const px2rem = require('postcss-px2rem-exclude');
 const dotenv = require('dotenv');
 const path = require('path');
+const glob = require('glob')
 dotenv.config({ path: '.env' });
 
-const isEnvProduction = process.env.NODE_ENV === 'production';            // 是否是生产环境
+const isEnvProduction = process.env.NODE_ENV === 'production'; // 是否是生产环境
 const sourceMap = !isEnvProduction; // 生产模式不开启sourceMap
 const miniCssLoader = isEnvProduction ? { 
-  loader: miniCssExtractPlugin.loader, 
+  loader: MiniCssExtractPlugin.loader, 
   options: {
     publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
     modules: { namedExport: true }
@@ -40,7 +42,7 @@ const postcssPlugins = [
   // 移动端适配
   px2rem({
     remUnit: 53.99, // 1rem = 53.99px
-    exclude: /node_modules/i,
+    include: resolve('src'),
   }),
 ]
 
@@ -91,15 +93,12 @@ module.exports = {
     alias: { '@': resolve('src') }
   },
   module: {
+    noParse:/jquery|chartjs/,
     rules: [
       {
         test: /\.(js|jsx|ts|tsx)$/i, // 要想babel-import-plugin生效，babel-loader要加上ts|tsx
-        use: [
-          { 
-            loader: 'babel-loader',
-          }
-        ],
-        exclude: /node_modules/
+        use: ['babel-loader'],
+        include: resolve('src')
       },
       {
         test: /\.(ts|tsx)$/i,
@@ -107,7 +106,7 @@ module.exports = {
         options: {
           transpileOnly: true, // 关闭类型检查，只进行转译
         },
-        exclude: /node_modules/
+        include: resolve('src')
       },
       {
         test: /\.css$/i,
@@ -138,7 +137,7 @@ module.exports = {
       },
       {
         test: /\.less$/i,
-        exclude: /node_modules/,
+        include: resolve('src'),
         use: [
           miniCssLoader,
           { loader: 'css-loader', options: { sourceMap, modules: true, import: true } },
@@ -209,8 +208,11 @@ module.exports = {
       env: process.env.NODE_ENV,
       minify: true,
     }),
-    new miniCssExtractPlugin({
+    new MiniCssExtractPlugin({
       filename: isEnvProduction ? 'css/[name].[contenthash:8].css' : '[name].[hash:8].css'
+    }),
+    new PurgecssPlugin({
+      paths: glob.sync('src/**/*',  { nodir: true }),
     }),
     new OptimizeCSSPlugin({
       cssProcessorOptions: isEnvProduction

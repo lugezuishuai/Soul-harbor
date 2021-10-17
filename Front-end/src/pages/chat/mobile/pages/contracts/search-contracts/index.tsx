@@ -8,14 +8,16 @@ import { FoldingPanel } from '@/components/folding-panel';
 import { FriendCard } from '@/pages/chat/component/friendCard';
 import { Action } from '@/redux/actions';
 import { SearchGroupCard } from '../search-group-card';
+import { SelectSessionState } from '@/redux/reducers/state';
 import './index.less';
 
 interface SearchContractsProps {
   handleHideSearchContracts(): void;
   dispatch(action: Action): void;
+  selectSession: SelectSessionState;
 }
 
-export function SearchContracts({ handleHideSearchContracts, dispatch }: SearchContractsProps) {
+export function SearchContracts({ handleHideSearchContracts, dispatch, selectSession }: SearchContractsProps) {
   const [contractsData, setContractsData] = useState<SearchContractsData | null>(null); // 搜索的联系人信息
   const [friendsTabFold, setFriendsTabFold] = useState(false); // 「好友」tab折叠
   const [groupsTabFold, setGroupsTabFold] = useState(false); // 「群组」tab折叠
@@ -60,6 +62,7 @@ export function SearchContracts({ handleHideSearchContracts, dispatch }: SearchC
                   dispatch={dispatch}
                   showDelete={false}
                   keyword={contractsData.keyword}
+                  selectSession={selectSession}
                 />
               ))}
             <FoldingPanel handleFold={handleGroupsFold} foldState={groupsTabFold} textContent="群组" />

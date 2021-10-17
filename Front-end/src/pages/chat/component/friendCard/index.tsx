@@ -2,7 +2,7 @@ import React from 'react';
 import { FriendInfo } from '@/interface/chat/getFriendsList';
 import { Avatar, Icon, Modal } from 'antd';
 import defaultAvatar from '@/assets/image/default-avatar.png';
-import { SelectSession } from '@/redux/reducers/state';
+import { SelectSession, SelectSessionState } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
 import robotAvatar from '@/assets/image/robot.png';
@@ -22,6 +22,7 @@ interface FriendCardProps {
   friendInfo: FriendInfo;
   showDelete?: boolean;
   keyword?: string;
+  selectSession: SelectSessionState;
 }
 
 export function FriendCard({
@@ -29,6 +30,7 @@ export function FriendCard({
   dispatch,
   handleShowDrawer,
   deleteFriend,
+  selectSession,
   showDelete = true,
   keyword = '',
 }: FriendCardProps) {
@@ -36,7 +38,16 @@ export function FriendCard({
   const { friend_avatar, friend_id, friend_username } = friendInfo;
 
   function handleClick() {
-    const selectSession: SelectSession = {
+    if (selectSession) {
+      const { sessionId } = selectSession;
+
+      if (friend_id === sessionId) {
+        isMobile && history.push(`/chat/conversation/${sessionId}`);
+        return;
+      }
+    }
+
+    const newSelectSession: SelectSession = {
       type: 'private',
       sessionId: friend_id,
       name: friend_username,
@@ -44,9 +55,9 @@ export function FriendCard({
 
     dispatch({
       type: SELECT_SESSION,
-      payload: selectSession,
+      payload: newSelectSession,
     });
-    isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
+    isMobile && history.push(`/chat/conversation/${newSelectSession.sessionId}`);
   }
 
   function handleDeleteFriend(e: any) {

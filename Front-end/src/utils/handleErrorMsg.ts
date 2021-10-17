@@ -1,4 +1,4 @@
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 import { message } from 'antd';
 
 export const handleErrorMsg = (errorMsg: string, delay = 200) =>

@@ -182,6 +182,7 @@ function ChatPage(props: ChatPageProps) {
           socket={socket}
           username={userInfo?.username || ''}
           keyword={searchData.keyword}
+          selectSession={selectSession}
         />
       ));
     }
@@ -223,13 +224,19 @@ function ChatPage(props: ChatPageProps) {
                 friendInfo={friendInfo}
                 dispatch={dispatch}
                 deleteFriend={deleteFriend}
+                selectSession={selectSession}
               />
             ))}
           <FoldingPanel handleFold={handleGroupsListFold} foldState={groupsListFold} textContent="群组" />
           {!groupsListFold &&
             groupsList?.length &&
             groupsList.map((groupInfo) => (
-              <RoomCard key={groupInfo.room_id} roomInfo={groupInfo} dispatch={dispatch} />
+              <RoomCard
+                key={groupInfo.room_id}
+                roomInfo={groupInfo}
+                dispatch={dispatch}
+                selectSession={selectSession}
+              />
             ))}
         </>
       );
@@ -263,7 +270,13 @@ function ChatPage(props: ChatPageProps) {
             <div className="chat-page__left-btn-text">发起群聊</div>
           </Button>
           {sessionsList.map((sessionInfo, index) => (
-            <SessionCard key={index} sessionInfo={sessionInfo} activeSession={activeSession} dispatch={dispatch} />
+            <SessionCard
+              key={index}
+              sessionInfo={sessionInfo}
+              activeSession={activeSession}
+              dispatch={dispatch}
+              selectSession={selectSession}
+            />
           ))}
         </>
       );
@@ -592,6 +605,7 @@ function ChatPage(props: ChatPageProps) {
     sessionsList,
     sessionsLoading,
     activeSession,
+    selectSession,
   };
 
   const chatContractsMobileProps: ChatContractsMobileProps = {
@@ -605,6 +619,7 @@ function ChatPage(props: ChatPageProps) {
     handleGroupsListFold,
     dispatch,
     deleteFriend,
+    selectSession,
   };
 
   const addFriendsMobileProps: AddFriendsMobileProps = {
@@ -614,6 +629,7 @@ function ChatPage(props: ChatPageProps) {
     friendsList,
     socket,
     username: userInfo?.username || '',
+    selectSession,
   };
 
   const launchGroupChatProps: LaunchGroupChatProps = {

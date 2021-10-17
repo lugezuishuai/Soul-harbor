@@ -4,7 +4,7 @@ import Plus from '@/assets/icon/plus.svg';
 import AddFriends from '@/assets/icon/add-friends.svg';
 import CreateGroupChat from '@/assets/icon/create-group-chat.svg';
 import { Icon, Dropdown, Menu } from 'antd';
-import { SessionsListState } from '@/redux/reducers/state';
+import { SelectSessionState, SessionsListState } from '@/redux/reducers/state';
 import { SessionCardSkeletonMobile } from '../../components/session-card-skeleton';
 import { SessionCard } from '@/pages/chat/component/sessionCard';
 import { Action } from '@/redux/actions';
@@ -16,6 +16,7 @@ export interface ChatSessionsMobileProps {
   sessionsLoading: boolean;
   sessionsList: SessionsListState;
   activeSession: string[];
+  selectSession: SelectSessionState;
 }
 
 export function ChatSessionsMobile({
@@ -23,6 +24,7 @@ export function ChatSessionsMobile({
   sessionsList,
   sessionsLoading,
   activeSession,
+  selectSession,
   dispatch,
 }: ChatSessionsMobileProps) {
   function renderSessionsList() {
@@ -39,7 +41,13 @@ export function ChatSessionsMobile({
       return (
         <>
           {sessionsList.map((sessionInfo, index) => (
-            <SessionCard key={index} sessionInfo={sessionInfo} activeSession={activeSession} dispatch={dispatch} />
+            <SessionCard
+              key={index}
+              sessionInfo={sessionInfo}
+              activeSession={activeSession}
+              dispatch={dispatch}
+              selectSession={selectSession}
+            />
           ))}
         </>
       );

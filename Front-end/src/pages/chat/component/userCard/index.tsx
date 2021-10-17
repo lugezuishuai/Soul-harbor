@@ -2,7 +2,7 @@ import React from 'react';
 import { SearchMemberInfo } from '@/interface/chat/searchMember';
 import { Avatar, Modal, message } from 'antd';
 import defaultAvatar from '@/assets/image/default-avatar.png';
-import { FriendListState, SelectSession, SocketState } from '@/redux/reducers/state';
+import { FriendListState, SelectSession, SelectSessionState, SocketState } from '@/redux/reducers/state';
 import { apiPost } from '@/utils/request';
 import { AddFriendRequest } from '@/interface/chat/addFriend';
 import { ADD_FRIEND } from '@/constants/urls';
@@ -28,6 +28,7 @@ interface UserCardProps {
   getFriendsList(): void;
   socket: SocketState;
   username: string;
+  selectSession: SelectSessionState;
   needHighLight?: boolean;
   keyword?: string;
 }
@@ -39,6 +40,7 @@ export function UserCard({
   dispatch,
   socket,
   username,
+  selectSession,
   keyword = '',
   needHighLight = true,
 }: UserCardProps) {
@@ -89,16 +91,29 @@ export function UserCard({
       });
     } else {
       // 设置选定的会话，进入聊天页面
-      const selectSession: SelectSession = {
+      if (selectSession) {
+        const { sessionId } = selectSession;
+        if (userInfo?.uid === sessionId) {
+          isMobile && history.push(`/chat/conversation/${sessionId}`);
+          return;
+        }
+      }
+
+      if (!userInfo?.uid || !userInfo.username) {
+        return;
+      }
+
+      const { uid, username } = userInfo;
+      const newSelectSession: SelectSession = {
         type: 'private',
-        sessionId: userInfo?.uid || '',
-        name: userInfo?.username || '',
+        sessionId: uid,
+        name: username,
       };
       dispatch({
         type: SELECT_SESSION,
-        payload: selectSession,
+        payload: newSelectSession,
       });
-      isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
+      isMobile && history.push(`/chat/conversation/${newSelectSession.sessionId}`);
     }
   }
 

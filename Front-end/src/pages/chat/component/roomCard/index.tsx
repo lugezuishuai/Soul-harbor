@@ -1,7 +1,7 @@
 import React from 'react';
 import { Avatar } from 'antd';
 import defaultGroup from '@/assets/image/default-group.png';
-import { SelectSession } from '@/redux/reducers/state';
+import { SelectSession, SelectSessionState } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
 import { RoomInfo } from '@/interface/chat/getGroupsList';
@@ -14,14 +14,23 @@ const { isMobile } = screen;
 interface RoomCardProps {
   roomInfo: RoomInfo;
   dispatch(action: Action): void;
+  selectSession: SelectSessionState;
 }
 
-export function RoomCard({ roomInfo, dispatch }: RoomCardProps) {
+export function RoomCard({ roomInfo, dispatch, selectSession }: RoomCardProps) {
   const history = useHistory();
   const { room_id, room_name, room_avatar } = roomInfo;
 
   function handleClick() {
-    const selectSession: SelectSession = {
+    if (selectSession) {
+      const { sessionId } = selectSession;
+      if (room_id === sessionId) {
+        isMobile && history.push(`/chat/conversation/${sessionId}`);
+        return;
+      }
+    }
+
+    const newSelectSession: SelectSession = {
       type: 'room',
       sessionId: room_id,
       name: room_name,
@@ -29,9 +38,9 @@ export function RoomCard({ roomInfo, dispatch }: RoomCardProps) {
 
     dispatch({
       type: SELECT_SESSION,
-      payload: selectSession,
+      payload: newSelectSession,
     });
-    isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
+    isMobile && history.push(`/chat/conversation/${newSelectSession.sessionId}`);
   }
 
   return (

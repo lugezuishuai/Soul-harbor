@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode } from 'react';
 import CopyBtnIcon from '@/assets/icon/copy-btn.svg';
 import { Icon, Tooltip, message } from 'antd';
 import classnames from 'classnames';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 import copy from 'copy-to-clipboard';
 import './index.less';
 

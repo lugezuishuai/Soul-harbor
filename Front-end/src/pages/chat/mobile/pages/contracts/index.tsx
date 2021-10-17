@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Button, Drawer, Icon } from 'antd';
 import Danger from '@/assets/icon/danger.svg';
 import { FriendInfo } from '@/interface/chat/getFriendsList';
-import { FriendListState, GroupsListState } from '@/redux/reducers/state';
+import { FriendListState, GroupsListState, SelectSessionState } from '@/redux/reducers/state';
 import { FriendCard } from '@/pages/chat/component/friendCard';
 import { RoomCard } from '@/pages/chat/component/roomCard';
 import { Action } from '@/redux/actions';
@@ -24,6 +24,7 @@ export interface ChatContractsMobileProps {
   handleGroupsListFold(): void;
   dispatch(action: Action): void;
   deleteFriend(id: string): Promise<void>;
+  selectSession: SelectSessionState;
 }
 
 export function ChatContractsMobile({
@@ -37,6 +38,7 @@ export function ChatContractsMobile({
   handleGroupsListFold,
   dispatch,
   deleteFriend,
+  selectSession,
 }: ChatContractsMobileProps) {
   const [visible, setVisible] = useState(false); // drawer显示与否
   const [deleteFriendInfo, setDeleteFriendInfo] = useState<FriendInfo | null>(null); // 要删除的好友信息
@@ -93,13 +95,19 @@ export function ChatContractsMobile({
                 friendInfo={friendInfo}
                 dispatch={dispatch}
                 deleteFriend={deleteFriend}
+                selectSession={selectSession}
               />
             ))}
           <FoldingPanel handleFold={handleGroupsListFold} foldState={groupsListFold} textContent="群组" />
           {!groupsListFold &&
             groupsList &&
             groupsList.map((groupInfo) => (
-              <RoomCard key={groupInfo.room_id} roomInfo={groupInfo} dispatch={dispatch} />
+              <RoomCard
+                key={groupInfo.room_id}
+                roomInfo={groupInfo}
+                dispatch={dispatch}
+                selectSession={selectSession}
+              />
             ))}
         </>
       );
@@ -166,7 +174,11 @@ export function ChatContractsMobile({
         width={window.innerWidth}
         getContainer={document.getElementsByClassName('home__container')[0] as HTMLElement}
       >
-        <SearchContracts handleHideSearchContracts={handleHideSearchContracts} dispatch={dispatch} />
+        <SearchContracts
+          handleHideSearchContracts={handleHideSearchContracts}
+          dispatch={dispatch}
+          selectSession={selectSession}
+        />
       </Drawer>
     </div>
   );
