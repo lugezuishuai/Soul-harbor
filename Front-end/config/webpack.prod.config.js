@@ -25,9 +25,7 @@ module.exports = {
           minChunks: 1, // 模块被引用1次及以上的才抽离
         },
         reactBase: {
-          test: module => {
-            return /react|redux/.test(module.context);
-          },
+          test: module => /react|redux/.test(module.context),
           name: 'reactBase',
           chunks: 'initial',
           priority: 10,

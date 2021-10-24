@@ -84,7 +84,7 @@ module.exports = {
     'app': './src/index.tsx'
   },
   output: {
-    filename: isEnvProduction ? 'js/[name].[chunkhash:8].js' : '[name].[hash:8].js',
+    filename: isEnvProduction ? 'js/[name].[contenthash:8].js' : '[name].[hash:8].js',
     path: resolve('dist'),
     publicPath: isEnvProduction ? process.env.SERVICE_URL : '/', // 这里后续还要改为线上服务器的地址，在打包后的index.html中，资源统一会加上的路径
   },
@@ -93,7 +93,7 @@ module.exports = {
     alias: { '@': resolve('src') }
   },
   module: {
-    noParse:/jquery|chartjs/,
+    noParse: /jquery|chartjs/,
     rules: [
       {
         test: /\.(js|jsx|ts|tsx)$/i, // 要想babel-import-plugin生效，babel-loader要加上ts|tsx
