@@ -1,9 +1,11 @@
 /* eslint-disable */
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = {
   plugins: [
-    new CleanWebpackPlugin()
+    new CleanWebpackPlugin(),
+    new BundleAnalyzerPlugin()
   ],
   optimization: {
     splitChunks: {

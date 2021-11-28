@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { remove, findIndex } from 'lodash-es';
 import { department, level } from '../../constants/options';
 import { GET_EMPLOYEE, CREATE_EMPLOYEE, DELETE_EMPLOYEE, UPDATE_EMPLOYEE } from '../actions/action_types';
 import { EmployeeInfo, UpdateRequest } from '../../interface/employee';
@@ -21,7 +21,7 @@ export default function (state = initialEmployeeState, action: Action) {
     }
     case DELETE_EMPLOYEE: {
       const reducedList = [...(state.employeeList as EmployeeInfo[])];
-      _.remove(reducedList, (item: EmployeeInfo) => {
+      remove(reducedList, (item: EmployeeInfo) => {
         return item.id === action.payload;
       });
       return {
@@ -32,7 +32,7 @@ export default function (state = initialEmployeeState, action: Action) {
     case UPDATE_EMPLOYEE: {
       const updatedList = [...(state.employeeList as EmployeeInfo[])];
       const item: UpdateRequest = action.payload;
-      const index = _.findIndex(updatedList, {
+      const index = findIndex(updatedList, {
         id: item.id,
       });
       updatedList[index] = {

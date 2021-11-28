@@ -81,10 +81,11 @@ const sassLoader = {
 
 module.exports = {
   entry: {
-    'app': './src/index.tsx'
+    app: './src/index.tsx'
   },
   output: {
     filename: isEnvProduction ? 'js/[name].[contenthash:8].js' : '[name].[hash:8].js',
+    chunkFilename: isEnvProduction ? 'js/[name].[contenthash:8].js' : '[name].[hash:8].js',
     path: resolve('dist'),
     publicPath: isEnvProduction ? process.env.SERVICE_URL : '/', // 这里后续还要改为线上服务器的地址，在打包后的index.html中，资源统一会加上的路径
   },

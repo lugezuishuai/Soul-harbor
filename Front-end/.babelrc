@@ -3,7 +3,7 @@
     ["@babel/preset-env", {
       "corejs": "3",
       "useBuiltIns": "usage",
-      "modules": "auto"
+      "modules": false
     }],
     "@babel/preset-react"
   ],
@@ -17,7 +17,8 @@
       }
     ],
     [
-      "import",{
+      "import",
+      {
         "libraryName": "antd",
         "libraryDirectory": "es",
         "style": true // 默认使用less，若使用css则改为'css'
