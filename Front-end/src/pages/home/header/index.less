@@ -1,127 +1,124 @@
-@import '~antd/lib/style/themes/default.less';
-:global {
-  .home_header {
-    background: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-sizing: border-box;
-    width: 100%;
-    padding: 0 20px;
-    height: 64px;
-    .home_menu {
-      line-height: 64px;
-      margin-bottom: 2px;
-      &_item {
-        padding: 0 30px;
-        @media screen and (max-width: 1100px) and (min-width: 960px) {
-          padding: 0 20px; // iPad Pro
-        }
-        @media screen and (max-width: 960px) {
-          padding: 0 16px; // iPad
-        }
-      }
-      &_little_icon {
-        font-size: 24px;
-      }
-    }
-    .back_to_home {
-      display: flex;
-      align-items: center;
-      height: 64px;
-      font-size: 24px;
-      font-weight: 500;
-      &_icon {
-        margin-right: 24px;
-        @media screen and (max-width: 480px) {
-          margin-right: 12px;
-        }
-      }
-      &_text {
-        display: inline-block;
-        line-height: 32px;
-        transition: 0.5s;
-        &:hover {
-          color: rgb(255, 174, 191);
-        }
-        @media screen and (max-width: 480px) {
-          color: rgb(255, 174, 191);
-        }
-      }
-    }
-    .home_user {
-      display: flex;
-      height: 32px;
-      &_login {
-        height: 32px;
-        width: 80px;
-        margin-right: 16px;
-        &:last-child {
-          margin-right: 0;
-        }
-        &__mobile {
-          font-size: 16px;
-          line-height: 24px;
-          font-weight: 500;
-          height: 40px;
-          border-radius: 20px;
-        }
-      }
-    }
-    @media screen and (max-width: 480px) {
-      padding: 0 10px;
-    }
-  }
-  .little_screen_menu {
-    font-size: 16px;
-    top: 16px;
-    .ant-dropdown-menu-item-divider {
-      margin: 0;
-    }
-    &_item {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-  }
-  .user-skeleton__mobile {
-    display: flex;
-    flex-flow: column;
-    justify-content: center;
-  }
-  .email-skeleton {
-    width: 100px;
-    height: 22px;
-    margin-right: 12px;
-    &__mobile {
-      width: 100px;
-      height: 24px;
-      margin: 2px 0;
-    }
-  }
-  .avatar-skeleton {
-    height: 48px;
-    width: 48px;
-    border-radius: 50%;
-    margin-right: 10px;
-    &__mobile {
-      height: 36px;
-      width: 36px;
-      border-radius: 50%;
-      margin: 0 auto;
-    }
-  }
-  .dropdown-skeleton {
-    width: 20px;
-    height: 20px;
-  }
-  .menu-skeleton {
-    height: 64px;
+.home-header {
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 20px;
+  height: 64px;
+  .home-menu {
+    line-height: 64px;
+    margin-bottom: 2px;
     &__item {
-      height: 40px;
+      padding: 0 30px;
+      @media screen and (max-width: 1100px) and (min-width: 960px) {
+        padding: 0 20px; // iPad Pro
+      }
+      @media screen and (max-width: 960px) {
+        padding: 0 16px; // iPad
+      }
+    }
+    &__little-icon {
+      font-size: 24px;
+    }
+  }
+  .back-to-home {
+    display: flex;
+    align-items: center;
+    height: 64px;
+    font-size: 24px;
+    font-weight: 500;
+    &__icon {
+      margin-right: 24px;
+      @media screen and (max-width: 480px) {
+        margin-right: 12px;
+      }
+    }
+    &__text {
+      display: inline-block;
+      line-height: 32px;
+      transition: 0.5s;
+      &:hover {
+        color: rgb(255, 174, 191);
+      }
+      @media screen and (max-width: 480px) {
+        color: rgb(255, 174, 191);
+      }
+    }
+  }
+  .home-user {
+    display: flex;
+    height: 32px;
+    &__login {
+      height: 32px;
       width: 80px;
       margin-right: 16px;
-      border-radius: 4px;
+      &:last-child {
+        margin-right: 0;
+      }
+      &__mobile {
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: 500;
+        height: 40px;
+        border-radius: 20px;
+      }
     }
+  }
+  @media screen and (max-width: 480px) {
+    padding: 0 10px;
+  }
+}
+.little-screen-menu {
+  font-size: 16px;
+  top: 16px;
+  .ant-dropdown-menu-item-divider {
+    margin: 0;
+  }
+  &__item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+.user-skeleton__mobile {
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+}
+.email-skeleton {
+  width: 100px;
+  height: 22px;
+  margin-right: 12px;
+  &__mobile {
+    width: 100px;
+    height: 24px;
+    margin: 2px 0;
+  }
+}
+.avatar-skeleton {
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
+  margin-right: 10px;
+  &__mobile {
+    height: 36px;
+    width: 36px;
+    border-radius: 50%;
+    margin: 0 auto;
+  }
+}
+.dropdown-skeleton {
+  width: 20px;
+  height: 20px;
+}
+.menu-skeleton {
+  height: 64px;
+  &__item {
+    height: 40px;
+    width: 80px;
+    margin-right: 16px;
+    border-radius: 4px;
   }
 }

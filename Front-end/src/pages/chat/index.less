@@ -1,84 +1,82 @@
 @import '~@/variable.less';
-:global {
-  .chat-page {
+.chat-page {
+  position: relative;
+  display: flex;
+  flex-flow: row;
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(100vh - 106px);
+  min-height: 500px;
+  background: #fff;
+  &__left {
+    height: 100%;
+    width: 300px;
+    min-width: 300px;
+    border-right: 1px solid @N300;
+    background: @N100;
+    @media screen and (max-width: 1200px) {
+      width: 256px;
+      min-width: 256px;
+    }
+    &-container {
+      height: calc(100% - 62px);
+      width: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    &-contracts {
+      height: 100%;
+      width: 100%;
+      background: @N100;
+      &__item {
+        width: 100%;
+        height: auto;
+        padding: 12px;
+      }
+    }
+    &-content {
+      box-sizing: border-box;
+      height: 100%;
+      width: 100%;
+      background: @N100;
+      padding: 12px;
+    }
+    &-session {
+      box-sizing: border-box;
+      height: calc(100% - 12px);
+      width: 100%;
+      background: @N100;
+    }
+    &-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 276px;
+      height: 40px;
+      margin: 12px;
+      border-radius: 8px;
+      @media screen and (max-width: 1200px) {
+        width: 232px;
+      }
+      &-icon {
+        font-size: 20px;
+        margin-right: 12px;
+      }
+      &-text {
+        font-size: 18px;
+        line-height: 26px;
+        font-weight: 500;
+        color: #fff;
+      }
+    }
+  }
+  &__mobile {
     position: relative;
     display: flex;
-    flex-flow: row;
+    flex-flow: column;
     box-sizing: border-box;
     width: 100%;
     height: calc(100vh - 106px);
-    min-height: 500px;
     background: #fff;
-    &__left {
-      height: 100%;
-      width: 300px;
-      min-width: 300px;
-      border-right: 1px solid @N300;
-      background: @N100;
-      @media screen and (max-width: 1200px) {
-        width: 256px;
-        min-width: 256px;
-      }
-      &-container {
-        height: calc(100% - 62px);
-        width: 100%;
-        overflow-x: hidden;
-        overflow-y: auto;
-      }
-      &-contracts {
-        height: 100%;
-        width: 100%;
-        background: @N100;
-        &__item {
-          width: 100%;
-          height: auto;
-          padding: 12px;
-        }
-      }
-      &-content {
-        box-sizing: border-box;
-        height: 100%;
-        width: 100%;
-        background: @N100;
-        padding: 12px;
-      }
-      &-session {
-        box-sizing: border-box;
-        height: calc(100% - 12px);
-        width: 100%;
-        background: @N100;
-      }
-      &-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 276px;
-        height: 40px;
-        margin: 12px;
-        border-radius: 8px;
-        @media screen and (max-width: 1200px) {
-          width: 232px;
-        }
-        &-icon {
-          font-size: 20px;
-          margin-right: 12px;
-        }
-        &-text {
-          font-size: 18px;
-          line-height: 26px;
-          font-weight: 500;
-          color: #fff;
-        }
-      }
-    }
-    &__mobile {
-      position: relative;
-      display: flex;
-      flex-flow: column;
-      box-sizing: border-box;
-      width: 100%;
-      height: calc(100vh - 106px);
-      background: #fff;
-    }
   }
 }

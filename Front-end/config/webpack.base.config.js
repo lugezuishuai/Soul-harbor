@@ -2,82 +2,88 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin"); // 单独抽离css文件
 const PurgecssPlugin = require('purgecss-webpack-plugin'); // 去除无用的css
-const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
+const WebpackBar = require('webpackbar');
 const resolve = require('./helper/resolve');
 const webpack = require('webpack');
-const px2rem = require('postcss-px2rem-exclude');
 const dotenv = require('dotenv');
-const path = require('path');
-const glob = require('glob')
-dotenv.config({ path: '.env' });
+const glob = require('glob');
+const { isEnvProduction, publicPath, srcPath, distPath } = require('./helper/constant');
+dotenv.config({ path: '.env' })
 
-const isEnvProduction = process.env.NODE_ENV === 'production'; // 是否是生产环境
-const sourceMap = !isEnvProduction; // 生产模式不开启sourceMap
-const miniCssLoader = isEnvProduction ? { 
-  loader: MiniCssExtractPlugin.loader, 
-  options: {
-    publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
-    modules: { namedExport: true }
-  }
-} : 'style-loader';
+const miniCssLoader = isEnvProduction ? MiniCssExtractPlugin.loader : 'style-loader';
 
 const cssLoader = {
   loader: 'css-loader',
   options: {
-    sourceMap,
-  }
-}
+    modules: false, // 禁用css Modules
+  },
+};
 
 const postcssPlugins = [
-  require('postcss-import'),
-  require('postcss-url'),
-  require('postcss-flexbugs-fixes'),
-  require('postcss-preset-env')({
+  'postcss-import',
+  'postcss-url',
+  'postcss-flexbugs-fixes',
+  ['postcss-preset-env', {
     autoprefixer: {
       flexbox: 'no-2009',
     },
     stage: 3,
-  }),
+  }],
   // 移动端适配
-  px2rem({
-    remUnit: 53.99, // 1rem = 53.99px
-    include: resolve('src'),
-  }),
-]
+  ['postcss-pxtorem', {
+    rootValue: 53.99, // 1rem = 53.99px
+    include: srcPath,
+  }],
+];
 
 const postcssLoader = {
   loader: 'postcss-loader',
   options: {
-    sourceMap,
-    ident: 'postcss',
-    plugins: () => isEnvProduction ? [...postcssPlugins, require('cssnano')] : postcssPlugins, // 生产环境压缩css代码
+    postcssOptions: () => {
+      if (isEnvProduction) {
+        postcssPlugins.push('cssnano');
+      }
+
+      return {
+        plugins: postcssPlugins,
+      };
+    },
   },
 };
 
 const lessLoader = {
   loader: 'less-loader', 
   options: {
-    sourceMap,
     lessOptions: {
-      javascriptEnabled: true, // javascriptEnabled: true  ------  在less里面可以使用JavaScript表达式
+      javascriptEnabled: true,
       modifyVars: {
         // 以下两个配置使用前提是必须在按需引入那里配置"style": true，否则不起作用，因为这里要是用less变量
         // @primary-color是设置antd的主题色，默认是蓝色的
         // "@primary-color": "red",
         // @ant-prefix是自定义antd组件类名前缀的，需要配合<ConfigProvider prefixCls="ant">使用
-        "@ant-prefix": "ant",
+        '@ant-prefix': 'ant',
       },
-    }
-  }
-}
+    },
+  },
+};
 
-const sassLoader = {
-  loader: 'sass-loader',
+const styleResourceLoader = {
+  loader: 'style-resources-loader',
   options: {
-    sourceMap,
-  }
-}
+    patterns: resolve('src/variable.less'),
+    injector: 'append',
+  },
+};
+
+const babelLoader = {
+  loader: 'babel-loader',
+  options: {
+    cacheDirectory: true,
+    cacheCompression: false,
+    compact: isEnvProduction,
+  },
+};
 
 module.exports = {
   entry: {
@@ -86,28 +92,30 @@ module.exports = {
   output: {
     filename: isEnvProduction ? 'js/[name].[contenthash:8].js' : '[name].[hash:8].js',
     chunkFilename: isEnvProduction ? 'js/[name].[contenthash:8].js' : '[name].[hash:8].js',
-    path: resolve('dist'),
-    publicPath: isEnvProduction ? process.env.SERVICE_URL : '/', // 这里后续还要改为线上服务器的地址，在打包后的index.html中，资源统一会加上的路径
+    path: distPath,
+    publicPath,
   },
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    alias: { '@': resolve('src') }
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    alias: {
+      '@': srcPath,
+    },
+  },
+  cache: {
+    type: 'filesystem',
+    buildDependencies: {
+      defaultWebpack: ['webpack/lib/'],
+      config: [__filename],
+      tsconfig: [resolve('tsconfig.json')],
+    },
   },
   module: {
     noParse: /jquery|chartjs/,
     rules: [
       {
-        test: /\.(js|jsx|ts|tsx)$/i, // 要想babel-import-plugin生效，babel-loader要加上ts|tsx
-        use: ['babel-loader'],
-        include: resolve('src')
-      },
-      {
-        test: /\.(ts|tsx)$/i,
-        loader: 'ts-loader',
-        options: {
-          transpileOnly: true, // 关闭类型检查，只进行转译
-        },
-        include: resolve('src')
+        test: /\.(js|jsx|ts|tsx)$/i,
+        use: [babelLoader],
+        include: srcPath,
       },
       {
         test: /\.css$/i,
@@ -123,76 +131,65 @@ module.exports = {
           miniCssLoader,
           cssLoader,
           postcssLoader,
-          sassLoader,
-        ]
+          'sass-loader',
+        ],
       },
       {
         test: /\.less$/i,
         include: /node_modules/,
         use: [
           miniCssLoader,
-          { loader: 'css-loader', options: { sourceMap, modules: false } },
+          cssLoader,
           postcssLoader,
           lessLoader,
-        ]
+        ],
       },
       {
         test: /\.less$/i,
-        include: resolve('src'),
+        include: srcPath,
         use: [
           miniCssLoader,
-          { loader: 'css-loader', options: { sourceMap, modules: true, import: true } },
+          cssLoader,
           postcssLoader,
           lessLoader,
-          {
-            loader: 'style-resources-loader',
-            options: {
-              patterns: path.resolve(__dirname, '../src/variable.less'),
-              injector: 'append'
-            }
-          }
-        ]
+          styleResourceLoader,
+        ],
       },
       {
         test: /\.(png|jpe?g|gif)(\?.*)?$/,
-        use: [{
-          loader: 'url-loader',
-          options: {
-            publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
-            name: "image/[name].[hash:8].[ext]",
-            limit: 500000,
-          }
-        }],
+        type: 'asset', // url-loader
+        generator: {
+          filename: 'image/[name].[hash:8][ext]',
+        },
+        parser: {
+          dataUrlCondition: {
+            maxSize: 10 * 1024,
+          },
+        },
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-        use: [{
-          loader: 'url-loader',
-          options: {
-            publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
-            name: "font/[name].[hash:8].[ext]",
-            limit: 10000,
-          }
-        }],
+        type: 'asset/resource', // file-loader
+        generator: {
+          filename: 'font/[name].[hash:8][ext]',
+        },
       },
       {
         test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-        use: [{
-          loader: 'url-loader',
-          options: {
-            publicPath: isEnvProduction ? process.env.SERVICE_URL : '/',
-            name: "media/[name].[hash:8].[ext]",
-            limit: 10000,
-          }
-        }],
+        type: 'asset/resource', // file-loader
+        generator: {
+          filename: 'media/[name].[hash:8][ext]',
+        },
       },
       {
         test: /\.svg$/,
         use: ['@svgr/webpack'],
+        issuer: /\.[jt]sx?$/,
       },
       {
-        test: /\.md$/,
-        use: "raw-loader"
+        test: /\.(md|txt)(\?.*)?$/,
+        include: srcPath,
+        type: 'asset/source', // raw-loader
       },
     ]
   },
@@ -210,18 +207,15 @@ module.exports = {
       minify: true,
     }),
     new MiniCssExtractPlugin({
-      filename: isEnvProduction ? 'css/[name].[contenthash:8].css' : '[name].[hash:8].css'
+      filename: 'css/[name].[contenthash:8].css',
+      chunkFilename: 'css/[name].[contenthash:8].css',
     }),
     new PurgecssPlugin({
       paths: glob.sync('src/**/*',  { nodir: true }),
     }),
-    new OptimizeCSSPlugin({
-      cssProcessorOptions: isEnvProduction
-      ? { safe: true }
-      : { safe: true, map: { inline: false } },
-    }),
     new AntdDayjsWebpackPlugin({
       preset: 'antdv3'
-    })
+    }),
+    new WebpackBar(),
   ],
 }

@@ -1,6 +1,7 @@
 module.exports = {
   extends: "stylelint-config-standard",
   plugins: "stylelint-less",
+  customSyntax: "postcss-less",
   rules: {
     // 不要使用已被 autoprefixer 支持的浏览器前缀
     "media-feature-name-no-vendor-prefix": true,
@@ -19,6 +20,9 @@ module.exports = {
     "at-rule-empty-line-before": "never",
     "selector-list-comma-newline-after": "always-multi-line",
     "declaration-colon-newline-after": "always-multi-line",
+    "string-quotes": "single",
+    "selector-class-pattern": "^([a-z][a-z0-9]*)((?:-|--|_|__)[a-z0-9]+)*$",
+    "color-function-notation": "legacy",
   },
   // 忽略其他文件，只校验样式相关的文件
   ignoreFiles: [

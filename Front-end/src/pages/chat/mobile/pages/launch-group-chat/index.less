@@ -1,112 +1,110 @@
-:global {
-  .launch-group-chat {
+.launch-group-chat {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  &__header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    height: 100%;
-    background: #fff;
-    &__header {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 64px;
-      background: @N200;
-      &__text {
-        user-select: none;
-        color: @N900;
-        font-size: 24px;
-        line-height: 64px;
-        font-weight: 500;
-      }
-      &__back {
-        position: absolute;
-        font-size: 24px;
-        left: 16px;
-        top: 20px;
-        bottom: 20px;
+    height: 64px;
+    background: @N200;
+    &__text {
+      user-select: none;
+      color: @N900;
+      font-size: 24px;
+      line-height: 64px;
+      font-weight: 500;
+    }
+    &__back {
+      position: absolute;
+      font-size: 24px;
+      left: 16px;
+      top: 20px;
+      bottom: 20px;
+    }
+  }
+  &__skeleton {
+    width: 100%;
+    height: calc(100% - 64px);
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+  &__search {
+    box-sizing: border-box;
+    width: 100%;
+    height: 80px;
+    border-bottom: 1px solid @N400;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &__form {
+      width: 90%;
+    }
+    &__icon {
+      font-size: 28px;
+      pointer-events: none;
+      @media screen and (max-width: 480px) {
+        font-size: 40px;
       }
     }
-    &__skeleton {
-      width: 100%;
-      height: calc(100% - 64px);
-      overflow-x: hidden;
-      overflow-y: scroll;
+    .ant-form-item {
+      line-height: 1;
+      margin-bottom: 0;
     }
-    &__search {
-      box-sizing: border-box;
-      width: 100%;
-      height: 80px;
-      border-bottom: 1px solid @N400;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      &__form {
-        width: 90%;
-      }
-      &__icon {
-        font-size: 28px;
-        pointer-events: none;
-        @media screen and (max-width: 480px) {
-          font-size: 40px;
-        }
-      }
-      .ant-form-item {
-        line-height: 1;
-        margin-bottom: 0;
-      }
-      .ant-form-item-control {
-        line-height: 1;
-      }
-      .ant-input-affix-wrapper .ant-input-prefix {
-        left: 4px;
-      }
+    .ant-form-item-control {
+      line-height: 1;
     }
-    &__selected {
-      box-sizing: border-box;
-      width: 100%;
-      height: 64px;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      background: @N200;
-      &__text {
-        text-align: center;
-        font-size: 18px;
-        font-weight: 500;
-        line-height: 40px;
-        height: 40px;
-        color: @N900;
-        margin-right: 12px;
-      }
-      &__container {
-        flex: 1;
-        height: 100%;
-        overflow-y: hidden;
-        overflow-x: scroll;
-      }
-      &__content {
-        display: flex;
-        align-items: center;
-      }
-      &__img {
-        width: 40px;
-        height: 40px;
-        margin-right: 12px;
-        &:last-child {
-          margin-right: 0;
-        }
-      }
+    .ant-input-affix-wrapper .ant-input-prefix {
+      left: 4px;
     }
-    &__list {
-      width: 100%;
-      height: calc(100% - 248px);
-      overflow-x: hidden;
-      overflow-y: scroll;
-    }
-    &__confirm {
-      width: 100%;
+  }
+  &__selected {
+    box-sizing: border-box;
+    width: 100%;
+    height: 64px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    background: @N200;
+    &__text {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 40px;
       height: 40px;
-      border-radius: 0;
+      color: @N900;
+      margin-right: 12px;
     }
+    &__container {
+      flex: 1;
+      height: 100%;
+      overflow-y: hidden;
+      overflow-x: scroll;
+    }
+    &__content {
+      display: flex;
+      align-items: center;
+    }
+    &__img {
+      width: 40px;
+      height: 40px;
+      margin-right: 12px;
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+  &__list {
+    width: 100%;
+    height: calc(100% - 248px);
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+  &__confirm {
+    width: 100%;
+    height: 40px;
+    border-radius: 0;
   }
 }

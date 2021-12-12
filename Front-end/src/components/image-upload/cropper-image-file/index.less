@@ -1,31 +1,29 @@
-:global {
-  .image-cropper-modal {
-    .ant-modal-header {
-      padding: 0;
-      border-bottom: 0;
+.image-cropper-modal {
+  .ant-modal-header {
+    padding: 0;
+    border-bottom: 0;
+  }
+  .ant-modal-body {
+    padding: 0 32px;
+  }
+  .ant-modal-footer {
+    padding: 0;
+  }
+  &-header {
+    padding: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    &-text {
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 24px;
     }
-    .ant-modal-body {
-      padding: 0 32px;
-    }
-    .ant-modal-footer {
-      padding: 0;
-    }
-    &-header {
-      padding: 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-      &-text {
-        font-weight: 600;
-        font-size: 16px;
-        line-height: 24px;
-      }
-      &-close {
-        font-size: 20px;
-        &:hover {
-          cursor: pointer;
-        }
+    &-close {
+      font-size: 20px;
+      &:hover {
+        cursor: pointer;
       }
     }
   }

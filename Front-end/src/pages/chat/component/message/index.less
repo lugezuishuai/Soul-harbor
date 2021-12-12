@@ -9,42 +9,38 @@
     background-color: #fff;
   }
 }
-:global {
-  .chat-message {
+.chat-message {
+  display: flex;
+  flex-flow: row;
+  width: 100%;
+  margin-bottom: 16px;
+  &--active {
+    animation: active-message 300ms 6;
+  }
+  &-user {
     display: flex;
-    flex-flow: row;
-    width: 100%;
-    margin-bottom: 16px;
-    &--active {
-      :local {
-        animation: active-message 300ms 6;
-      }
-    }
-    &-user {
-      display: flex;
-      flex-flow: column;
-    }
-    &-avatar {
-      width: 36px;
-      height: 36px;
-      margin: 0 auto 16px;
-    }
-    &-time {
-      font-size: 14px;
-      line-height: 20px;
-      color: @N650;
-    }
-    &-content {
-      margin-top: 20px;
-      margin-bottom: auto;
-      padding: 8px;
-      border-radius: 8px;
-      max-width: 300px;
-      font-size: 14px;
-      line-height: 20px;
-      @media screen and (max-width: 1200px) {
-        max-width: 256px;
-      }
+    flex-flow: column;
+  }
+  &-avatar {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 16px;
+  }
+  &-time {
+    font-size: 14px;
+    line-height: 20px;
+    color: @N650;
+  }
+  &-content {
+    margin-top: 20px;
+    margin-bottom: auto;
+    padding: 8px;
+    border-radius: 8px;
+    max-width: 300px;
+    font-size: 14px;
+    line-height: 20px;
+    @media screen and (max-width: 1200px) {
+      max-width: 256px;
     }
   }
 }

@@ -1,29 +1,26 @@
-:global {
-  .basic-info {
-    width: 100%;
-    &__title {
+.basic-info {
+  width: 100%;
+  &__title {
+    display: flex;
+    margin-bottom: 24px;
+    height: 30px;
+    align-items: center;
+    &__text {
+      font-weight: 500;
+      font-size: 22px;
+      line-height: 30px;
+    }
+    &__icon {
+      width: 26px;
+      height: 26px;
+      font-size: 20px;
       display: flex;
-      margin-bottom: 24px;
-      height: 30px;
+      justify-content: center;
       align-items: center;
-      &__text {
-        font-weight: 500;
-        font-weight: 500;
-        font-size: 22px;
-        line-height: 30px;
-      }
-      &__icon {
-        width: 26px;
-        height: 26px;
-        font-size: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 24px;
-        &:hover {
-          cursor: pointer;
-          color: #3370ff !important;
-        }
+      margin-left: 24px;
+      &:hover {
+        cursor: pointer;
+        color: #3370ff !important;
       }
     }
   }

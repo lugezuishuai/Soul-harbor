@@ -1,57 +1,54 @@
-@import '~@/variable.less';
-:global {
-  .chat-search {
-    width: 100%;
-    height: 64px;
-    background: #fff;
+.chat-search {
+  width: 100%;
+  height: 64px;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &-icon {
+    font-size: 24px;
+    pointer-events: none;
+  }
+  &-input {
+    width: 240px;
+    height: 32px;
+    background: @N200;
+    @media screen and (max-width: 1200px) {
+      width: 232px;
+    }
+  }
+  &-no-result {
     display: flex;
+    flex-flow: row;
     justify-content: center;
-    align-items: center;
-    &-icon {
-      font-size: 24px;
-      pointer-events: none;
-    }
-    &-input {
-      width: 240px;
-      height: 32px;
-      background: @N200;
-      @media screen and (max-width: 1200px) {
-        width: 232px;
-      }
-    }
-    &-no-result {
+    height: 100%;
+    width: 100%;
+    background: @N100;
+    &__content {
       display: flex;
       flex-flow: row;
-      justify-content: center;
-      height: 100%;
-      width: 100%;
-      background: @N100;
-      &__content {
-        display: flex;
-        flex-flow: row;
-        align-items: center;
-        height: 32px;
-        margin-top: 32px;
-      }
-      &-icon {
-        font-size: 20px;
-        margin-right: 16px;
-      }
-      &-text {
-        font-size: 20px;
-        line-height: 32px;
-        color: @N650;
-      }
+      align-items: center;
+      height: 32px;
+      margin-top: 32px;
     }
-    .ant-form-item {
-      line-height: 1;
-      margin-bottom: 0;
+    &-icon {
+      font-size: 20px;
+      margin-right: 16px;
     }
-    .ant-form-item-control {
-      line-height: 1;
+    &-text {
+      font-size: 20px;
+      line-height: 32px;
+      color: @N650;
     }
-    .ant-input-affix-wrapper .ant-input-prefix {
-      left: 4px;
-    }
+  }
+  .ant-form-item {
+    line-height: 1;
+    margin-bottom: 0;
+  }
+  .ant-form-item-control {
+    line-height: 1;
+  }
+  .ant-input-affix-wrapper .ant-input-prefix {
+    left: 4px;
   }
 }

@@ -1,150 +1,148 @@
-:global {
-  .carousel_horizontal {
-    color: #fff;
+.carousel_horizontal {
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  .carousel_content {
     position: relative;
-    overflow: hidden;
-    .carousel_content {
-      position: relative;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      // transition-duration: 1s; // 可以不用配置
-      transform-style: preserve-3d;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    // transition-duration: 1s; // 可以不用配置
+    transform-style: preserve-3d;
+    transform: translate3d(0, 0, 0);
+    transition-property: all;
+    transition-timing-function: ease;
+    &_item {
+      backface-visibility: hidden;
       transform: translate3d(0, 0, 0);
-      transition-property: all;
-      transition-timing-function: ease;
-      &_item {
-        backface-visibility: hidden;
-        transform: translate3d(0, 0, 0);
-        box-sizing: border-box;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: absolute;
-      }
-    }
-    &_point {
-      position: absolute;
-      height: 8px;
-      bottom: 24px;
-      left: 50%; // 垂直居中
-      transform: translateX(-50%);
-      &_item {
-        position: absolute;
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 12px;
-        background-color: rgba(31, 35, 41, 0.3);
-        &:hover {
-          cursor: pointer;
-        }
-      }
-    }
-    &_arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: transparent; // 背景颜色为透明
-      width: 100%;
-      height: 40px;
+      box-sizing: border-box;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      &_left,
-      &_right {
-        background: rgba(0, 0, 0, 0.3);
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        font-size: 32px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        &:hover {
-          cursor: pointer;
-          background: rgba(0, 0, 0, 0.5);
-        }
-      }
-    }
-  }
-  .carousel_vertical {
-    position: relative;
-    overflow: hidden;
-    .carousel_content {
-      position: relative;
-      width: 100%;
-      transform-style: preserve-3d;
-      transition-duration: 1s;
-      transform: translate3d(0, 0, 0);
-      transition-property: all;
-      transition-timing-function: ease;
-      &_item {
-        backface-visibility: hidden;
-        transform: translate3d(0, 0, 0);
-        box-sizing: border-box;
-        position: absolute;
-        display: flex; // 让子元素居中
-        justify-content: center;
-        align-items: center;
-      }
-    }
-    &_point {
-      width: 8px;
-      position: absolute;
-      left: 24px; // 这里还需要做调整
-      top: 50%;
-      transform: translateY(-50%);
-      &_item {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-bottom: 12px;
-        background-color: rgba(31, 35, 41, 0.3);
-        &:last-child {
-          margin-bottom: 0;
-        }
-        &:hover {
-          cursor: pointer;
-        }
-      }
-    }
-    &_arrow {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: transparent; // 背景颜色为透明
-      width: 40px;
-      height: 100%;
-      display: flex;
-      flex-flow: column;
       justify-content: center;
-      &_up,
-      &_down {
-        position: absolute;
-        background: rgba(0, 0, 0, 0.3);
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        font-size: 32px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        &:hover {
-          cursor: pointer;
-          background: rgba(0, 0, 0, 0.6);
-        }
-      }
-      &_up {
-        top: 0;
-      }
-      &_down {
-        bottom: 0;
+      align-items: center;
+      position: absolute;
+    }
+  }
+  &_point {
+    position: absolute;
+    height: 8px;
+    bottom: 24px;
+    left: 50%; // 垂直居中
+    transform: translateX(-50%);
+    &_item {
+      position: absolute;
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 12px;
+      background-color: rgba(31, 35, 41, 30%);
+      &:hover {
+        cursor: pointer;
       }
     }
   }
-  .carousel_point_item_active {
-    background-color: #3370ff;
+  &_arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent; // 背景颜色为透明
+    width: 100%;
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    &_left,
+    &_right {
+      background: rgba(0, 0, 0, 30%);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      font-size: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &:hover {
+        cursor: pointer;
+        background: rgba(0, 0, 0, 50%);
+      }
+    }
   }
+}
+.carousel_vertical {
+  position: relative;
+  overflow: hidden;
+  .carousel_content {
+    position: relative;
+    width: 100%;
+    transform-style: preserve-3d;
+    transition-duration: 1s;
+    transform: translate3d(0, 0, 0);
+    transition-property: all;
+    transition-timing-function: ease;
+    &_item {
+      backface-visibility: hidden;
+      transform: translate3d(0, 0, 0);
+      box-sizing: border-box;
+      position: absolute;
+      display: flex; // 让子元素居中
+      justify-content: center;
+      align-items: center;
+    }
+  }
+  &_point {
+    width: 8px;
+    position: absolute;
+    left: 24px; // 这里还需要做调整
+    top: 50%;
+    transform: translateY(-50%);
+    &_item {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-bottom: 12px;
+      background-color: rgba(31, 35, 41, 30%);
+      &:last-child {
+        margin-bottom: 0;
+      }
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+  &_arrow {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: transparent; // 背景颜色为透明
+    width: 40px;
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    &_up {
+      top: 0;
+    }
+    &_down {
+      bottom: 0;
+    }
+    &_up,
+    &_down {
+      position: absolute;
+      background: rgba(0, 0, 0, 30%);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      font-size: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &:hover {
+        cursor: pointer;
+        background: rgba(0, 0, 0, 60%);
+      }
+    }
+  }
+}
+.carousel_point_item_active {
+  background-color: #3370ff;
 }

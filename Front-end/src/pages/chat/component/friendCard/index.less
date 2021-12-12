@@ -1,49 +1,46 @@
-@import '~@/variable.less';
-:global {
-  .chat-friend-card {
-    position: relative;
-    z-index: 1;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 65px;
-    padding: 12px;
-    background: @N100;
-    border-bottom: 1px solid @N400;
+.chat-friend-card {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 65px;
+  padding: 12px;
+  background: @N100;
+  border-bottom: 1px solid @N400;
+  &:hover {
+    cursor: pointer;
+  }
+  &__avatar {
+    user-select: none;
+    pointer-events: none;
+    width: 36px;
+    height: 36px;
+    margin-right: 20px;
+  }
+  &__name {
+    user-select: none;
+    max-width: 180px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: @N900;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    @media screen and (max-width: 1200px) {
+      max-width: 136px;
+    }
+  }
+  &__delete {
+    position: absolute;
+    z-index: 2;
+    font-size: 20px;
+    top: 22px;
+    right: 12px;
     &:hover {
       cursor: pointer;
-    }
-    &__avatar {
-      user-select: none;
-      pointer-events: none;
-      width: 36px;
-      height: 36px;
-      margin-right: 20px;
-    }
-    &__name {
-      user-select: none;
-      max-width: 180px;
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 20px;
-      color: @N900;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      @media screen and (max-width: 1200px) {
-        max-width: 136px;
-      }
-    }
-    &__delete {
-      position: absolute;
-      z-index: 2;
-      font-size: 20px;
-      top: 22px;
-      right: 12px;
-      &:hover {
-        cursor: pointer;
-      }
     }
   }
 }

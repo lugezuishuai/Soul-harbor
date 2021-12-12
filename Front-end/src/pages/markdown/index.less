@@ -1,77 +1,75 @@
-:global {
-  .markdown-com {
-    position: relative;
-    box-sizing: border-box;
-    width: 100%;
-    padding: 32px;
-    // display: flex;
-    // &__editor {
-    //   width: 50%;
-    //   height: 100%;
-    //   overflow: scroll;
-    // }
-    // &__renderer {
-    //   width: calc(50% - 250px);
-    //   height: 100%;
-    //   overflow: scroll;
-    // }
-    &__renderer {
-      width: 1000px;
-      height: 100%;
-      margin: 0 auto;
-      overflow: scroll;
-      font-size: 16px;
-      line-height: 26px;
+.markdown-com {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 32px;
+  // display: flex;
+  // &__editor {
+  //   width: 50%;
+  //   height: 100%;
+  //   overflow: scroll;
+  // }
+  // &__renderer {
+  //   width: calc(50% - 250px);
+  //   height: 100%;
+  //   overflow: scroll;
+  // }
+  &__renderer {
+    width: 1000px;
+    height: 100%;
+    margin: 0 auto;
+    overflow: scroll;
+    font-size: 16px;
+    line-height: 26px;
+    img {
+      border-radius: 4px;
+      max-width: 100%;
+    }
+    p {
+      margin: 8px 0;
+      font-weight: 400;
+      color: @N900;
+      word-break: break-word;
+      hyphens: auto;
       img {
         border-radius: 4px;
-        max-width: 100%;
       }
-      p {
+      // 这个比较特殊，普通文本中的code块是14像素
+      code {
+        font-size: 14px;
+      }
+      & > img {
         margin: 8px 0;
-        font-weight: 400;
-        color: @N900;
-        word-break: break-word;
-        hyphens: auto;
-        img {
-          border-radius: 4px;
-        }
-        // 这个比较特殊，普通文本中的code块是14像素
-        code {
-          font-size: 14px;
-        }
-        & > img {
-          margin: 8px 0;
-        }
       }
-      a {
-        margin: 0 2px;
-      }
-      pre {
-        white-space: inherit;
-      }
-      h1,
-      h2,
-      h3,
-      h4 {
-        margin-top: 32px; // 默认块元素之间的间距是32像素
-        margin-bottom: 16px;
-        color: @N900;
-      }
-      h1 {
-        font-weight: 600;
-        font-size: 30px;
-        line-height: 38px;
-      }
-      h2 {
-        font-size: 24px;
-        line-height: 32px;
-      }
-      h3 {
-        font-size: 20px;
-      }
-      h4 {
-        font-size: 16px;
-      }
+    }
+    a {
+      margin: 0 2px;
+    }
+    pre {
+      white-space: inherit;
+    }
+    h1,
+    h2,
+    h3,
+    h4 {
+      margin-top: 32px; // 默认块元素之间的间距是32像素
+      margin-bottom: 16px;
+      color: @N900;
+    }
+    h1 {
+      font-weight: 600;
+      font-size: 30px;
+      line-height: 38px;
+    }
+    h2 {
+      font-size: 24px;
+      line-height: 32px;
+    }
+    h3 {
+      font-size: 20px;
+    }
+    h4 {
+      font-size: 16px;
     }
   }
 }

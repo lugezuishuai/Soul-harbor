@@ -120,14 +120,14 @@ function Header(props: HeaderProps) {
   function renderHomeMenu(config: MenuConfig[], isMobile = false) {
     return (
       <Menu
-        className={isMobile ? 'little_screen_menu' : 'home_menu'}
+        className={isMobile ? 'little-screen-menu' : 'home-menu'}
         mode={isMobile ? 'vertical' : 'horizontal'}
         selectedKeys={selectMenu ? [selectMenu] : []}
       >
         {isMobile
           ? config.map(({ key, to, text }, index, arr) => {
               return [
-                <Item key={key} className="little_screen_menu_item">
+                <Item key={key} className="little-screen-menu__item">
                   {typeof to === 'function' ? (
                     <Link to={() => to(userInfo?.uid || '')}>{text}</Link>
                   ) : (
@@ -139,7 +139,7 @@ function Header(props: HeaderProps) {
             })
           : config.map(({ key, to, text }) => {
               return (
-                <Item key={key} className="home_menu_item">
+                <Item key={key} className="home-menu__item">
                   {typeof to === 'function' ? (
                     <Link to={() => to(userInfo?.uid || '')}>{text}</Link>
                   ) : (
@@ -171,17 +171,17 @@ function Header(props: HeaderProps) {
     } else {
       if (screen.isLittleScreen) {
         return (
-          <Button type="primary" className="home_user_login__mobile" onClick={handleClickLogin}>
+          <Button type="primary" className="home-user__login__mobile" onClick={handleClickLogin}>
             登录/注册
           </Button>
         );
       } else {
         return (
-          <div className="home_user">
-            <Button type="primary" className="home_user_login" onClick={handleClickLogin}>
+          <div className="home-user">
+            <Button type="primary" className="home-user__login" onClick={handleClickLogin}>
               登录
             </Button>
-            <Button className="home_user_login" onClick={handleClickRegister}>
+            <Button className="home-user__login" onClick={handleClickRegister}>
               注册
             </Button>
           </div>
@@ -204,11 +204,11 @@ function Header(props: HeaderProps) {
   }, [location.pathname, dispatch]);
 
   return (
-    <div className="home_header">
+    <div className="home-header">
       {screen.isLittleScreen ? (
         <Dropdown overlay={mobileMenu} trigger={['click']}>
           <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
-            <Icon component={DropdownMenu as any} className="home_menu_little_icon" />
+            <Icon component={DropdownMenu as any} className="home-menu__little-icon" />
           </a>
         </Dropdown>
       ) : (
@@ -216,9 +216,9 @@ function Header(props: HeaderProps) {
           {renderHomeMenu(loginMenu)}
         </WrapWithLogin>
       )}
-      <Link to="/" className="back_to_home">
-        <Icon component={Heart as any} className="back_to_home_icon" />
-        <span className="back_to_home_text">Soul Harbor</span>
+      <Link to="/" className="back-to-home">
+        <Icon component={Heart as any} className="back-to-home__icon" />
+        <span className="back-to-home__text">Soul Harbor</span>
       </Link>
       {loading ? <UserSkeleton /> : renderUserState(login)}
       {visible && <WrapSignUp dispatch={dispatch} menu={signUpMenu} visible={visible} hide={hideModal} />}

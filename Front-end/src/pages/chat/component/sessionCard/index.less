@@ -1,149 +1,146 @@
-@import '~@/variable.less';
-:global {
-  .chat-session-card {
+.chat-session-card {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 64px;
+  padding: 12px;
+  background: @N100;
+  border-bottom: 1px solid @N400;
+  @media screen and (max-width: 760px) {
+    height: 80px;
+  }
+  &:hover {
+    cursor: pointer;
+  }
+  &__active {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    z-index: 2;
+    background-color: red;
+    border-radius: 50%;
+    top: 16px;
+    left: 42px;
+  }
+  &-avatar {
     position: relative;
+    z-index: 1;
+    user-select: none;
+    pointer-events: none;
+    width: 36px;
+    height: 36px;
+    margin-right: 20px;
+    @media screen and (max-width: 760px) {
+      height: 40px;
+      width: 40px;
+    }
+  }
+  &-info {
+    user-select: none;
+    pointer-events: none;
+    width: calc(100% - 36px - 20px);
+    overflow: hidden;
+    font-size: 14px;
+    @media screen and (max-width: 760px) {
+      width: calc(100% - 40px - 20px);
+      font-size: 16px;
+    }
+    &__top {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      height: 20px;
+      @media screen and (max-width: 760px) {
+        height: 24px;
+        margin-bottom: 4px;
+      }
+    }
+    &-name {
+      color: @N900;
+      font-weight: 500;
+      width: 150px;
+      line-height: 20px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      @media screen and (max-width: 1200px) {
+        width: 106px;
+      }
+      @media screen and (max-width: 760px) {
+        line-height: 24px;
+        width: 250px;
+      }
+    }
+    &-time {
+      color: @N500;
+      line-height: 20px;
+      @media screen and (max-width: 760px) {
+        line-height: 24px;
+      }
+    }
+    &-msg {
+      color: @N500;
+      width: 100%;
+      height: 20px;
+      line-height: 20px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      @media screen and (max-width: 760px) {
+        height: 24px;
+        line-height: 24px;
+      }
+    }
+  }
+  &-skeleton {
     box-sizing: border-box;
-    display: flex;
     align-items: center;
-    width: 100%;
+    width: 276px;
     height: 64px;
     padding: 12px;
-    background: @N100;
-    border-bottom: 1px solid @N400;
-    @media screen and (max-width: 760px) {
-      height: 80px;
+    border-radius: 4px;
+    background: #fff;
+    margin-bottom: 12px;
+    @media screen and (max-width: 1200px) {
+      width: 232px;
     }
-    &:hover {
-      cursor: pointer;
-    }
-    &__active {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      z-index: 2;
-      background-color: red;
-      border-radius: 50%;
-      top: 16px;
-      left: 42px;
+    &:last-child {
+      margin-bottom: 0;
     }
     &-avatar {
-      position: relative;
-      z-index: 1;
-      user-select: none;
-      pointer-events: none;
       width: 36px;
       height: 36px;
       margin-right: 20px;
-      @media screen and (max-width: 760px) {
-        height: 40px;
-        width: 40px;
-      }
+      border-radius: 50%;
     }
     &-info {
-      user-select: none;
-      pointer-events: none;
-      width: calc(100% - 36px - 20px);
-      overflow: hidden;
-      font-size: 14px;
-      @media screen and (max-width: 760px) {
-        width: calc(100% - 40px - 20px);
-        font-size: 16px;
-      }
+      flex: 1;
       &__top {
         display: flex;
         justify-content: space-between;
         width: 100%;
-        height: 20px;
-        @media screen and (max-width: 760px) {
-          height: 24px;
-          margin-bottom: 4px;
-        }
+        height: 18px;
+        margin-bottom: 4px;
       }
       &-name {
-        color: @N900;
-        font-weight: 500;
-        width: 150px;
-        line-height: 20px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        width: 120px;
+        height: 100%;
         @media screen and (max-width: 1200px) {
-          width: 106px;
-        }
-        @media screen and (max-width: 760px) {
-          line-height: 24px;
-          width: 250px;
+          width: 90px;
         }
       }
       &-time {
-        color: @N500;
-        line-height: 20px;
-        @media screen and (max-width: 760px) {
-          line-height: 24px;
+        width: 40px;
+        height: 100%;
+        @media screen and (max-width: 1200px) {
+          width: 26px;
         }
       }
       &-msg {
-        color: @N500;
         width: 100%;
-        height: 20px;
-        line-height: 20px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        @media screen and (max-width: 760px) {
-          height: 24px;
-          line-height: 24px;
-        }
-      }
-    }
-    &-skeleton {
-      box-sizing: border-box;
-      align-items: center;
-      width: 276px;
-      height: 64px;
-      padding: 12px;
-      border-radius: 4px;
-      background: #fff;
-      margin-bottom: 12px;
-      @media screen and (max-width: 1200px) {
-        width: 232px;
-      }
-      &:last-child {
-        margin-bottom: 0;
-      }
-      &-avatar {
-        width: 36px;
-        height: 36px;
-        margin-right: 20px;
-        border-radius: 50%;
-      }
-      &-info {
-        flex: 1;
-        &__top {
-          display: flex;
-          justify-content: space-between;
-          width: 100%;
-          height: 18px;
-          margin-bottom: 4px;
-        }
-        &-name {
-          width: 120px;
-          height: 100%;
-          @media screen and (max-width: 1200px) {
-            width: 90px;
-          }
-        }
-        &-time {
-          width: 40px;
-          height: 100%;
-          @media screen and (max-width: 1200px) {
-            width: 26px;
-          }
-        }
-        &-msg {
-          width: 100%;
-          height: 18px;
-        }
+        height: 18px;
       }
     }
   }

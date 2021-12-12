@@ -1,79 +1,76 @@
-@import '~@/variable.less';
-:global {
-  .user_operation {
-    margin-right: 24px;
+.user_operation {
+  margin-right: 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  &_nick_name {
+    font-size: 16px;
+    font-weight: 500;
+    color: @N900;
+    display: inline-block;
+    line-height: 22px;
+    margin-right: 12px;
+  }
+  &_avatar {
     height: 64px;
     display: flex;
     align-items: center;
+    &_icon {
+      margin-left: 12px;
+      font-size: 18px !important;
+    }
+    &_img {
+      width: 48px;
+      height: 48px;
+      &__small {
+        width: 32px;
+        height: 32px;
+      }
+    }
+  }
+  &_menu {
+    position: relative;
+    top: 18px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    &_item {
+      padding: 8px 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &_text {
+        font-size: 16px;
+        line-height: 22px;
+      }
+    }
+  }
+  @media screen and (max-width: 480px) {
+    margin-right: 0;
+    height: 64px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     &_nick_name {
-      font-size: 16px;
-      font-weight: 500;
-      color: @N900;
-      display: inline-block;
-      line-height: 22px;
-      margin-right: 12px;
+      line-height: 24px;
+      margin: 2px 0;
+      overflow: hidden; //超出的文本隐藏
+      text-overflow: ellipsis; //溢出用省略号显示
+      white-space: nowrap; //溢出不换行
+      max-width: 200px;
+      text-align: center;
     }
     &_avatar {
-      height: 64px;
-      display: flex;
-      align-items: center;
-      &_icon {
-        margin-left: 12px;
-        font-size: 18px !important;
-      }
-      &_img {
-        width: 48px;
-        height: 48px;
-        &__small {
-          width: 32px;
-          height: 32px;
-        }
+      height: 36px;
+      &-icon {
+        font-size: 16px !important;
       }
     }
     &_menu {
-      position: relative;
-      top: 18px;
-      box-sizing: border-box;
-      border-radius: 4px;
+      top: 4px;
+      left: -12px;
+      border-radius: 2px;
       &_item {
-        padding: 8px 12px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        &_text {
-          font-size: 16px;
-          line-height: 22px;
-        }
-      }
-    }
-    @media screen and (max-width: 480px) {
-      margin-right: 0;
-      height: 64px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      &_nick_name {
-        line-height: 24px;
-        margin: 2px 0;
-        overflow: hidden; //超出的文本隐藏
-        text-overflow: ellipsis; //溢出用省略号显示
-        white-space: nowrap; //溢出不换行
-        max-width: 200px;
-        text-align: center;
-      }
-      &_avatar {
-        height: 36px;
-        &-icon {
-          font-size: 16px !important;
-        }
-      }
-      &_menu {
-        top: 4px;
-        left: -12px;
-        border-radius: 2px;
-        &_item {
-          padding: 4px 12px;
-        }
+        padding: 4px 12px;
       }
     }
   }

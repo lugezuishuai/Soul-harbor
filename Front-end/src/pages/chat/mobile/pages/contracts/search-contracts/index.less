@@ -1,46 +1,44 @@
-:global {
-  .search-contracts {
-    height: 100%;
+.search-contracts {
+  height: 100%;
+  width: 100%;
+  background: #fff;
+  &__header {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
-    background: #fff;
-    &__header {
-      box-sizing: border-box;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      height: 80px;
-      padding: 16px;
-      border-bottom: 1px solid @N400;
-      &__form {
-        width: 80%;
-      }
-      &__prefix {
-        font-size: 28px;
-        pointer-events: none;
-        @media screen and (max-width: 480px) {
-          font-size: 40px;
-        }
-      }
-      &__unfold {
-        font-size: 32px;
-      }
-      .ant-form-item {
-        line-height: 1;
-        margin-bottom: 0;
-      }
-      .ant-form-item-control {
-        line-height: 1;
-      }
-      .ant-input-affix-wrapper .ant-input-prefix {
-        left: 4px;
+    height: 80px;
+    padding: 16px;
+    border-bottom: 1px solid @N400;
+    &__form {
+      width: 80%;
+    }
+    &__prefix {
+      font-size: 28px;
+      pointer-events: none;
+      @media screen and (max-width: 480px) {
+        font-size: 40px;
       }
     }
-    &__content {
-      width: 100%;
-      height: calc(100% - 80px);
-      overflow-y: scroll;
-      overflow-x: hidden;
+    &__unfold {
+      font-size: 32px;
     }
+    .ant-form-item {
+      line-height: 1;
+      margin-bottom: 0;
+    }
+    .ant-form-item-control {
+      line-height: 1;
+    }
+    .ant-input-affix-wrapper .ant-input-prefix {
+      left: 4px;
+    }
+  }
+  &__content {
+    width: 100%;
+    height: calc(100% - 80px);
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 }

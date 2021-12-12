@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { State, UserInfoState } from '@/redux/reducers/state';
-import { UserInfo } from '@/interface/user/login';
 import { Action } from '@/redux/actions/index';
 import { BasicInfo } from './basic-info';
 import { WrapAccountInfo } from './account-info';
@@ -35,7 +34,7 @@ function UserInfo(props: UserInfoProps) {
       type: 'CHANGE_SHOW_EMAIL',
       payload: showEmail,
     });
-  }, [showUserId, showUserName, showEmail]);
+  }, [showUserId, showUserName, showEmail, dispatch]);
 
   // AccountInfo 配置
   const handleShowUserName = () => setShowUserName(!showUserName);
