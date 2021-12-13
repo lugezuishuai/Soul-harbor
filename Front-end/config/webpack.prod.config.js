@@ -16,7 +16,6 @@ module.exports = {
       '...',
       new CssMinimizerPlugin(),
     ],
-    moduleIds: 'deterministic',
     runtimeChunk: true,
     splitChunks: {
       chunks: 'initial',

@@ -81,12 +81,12 @@ function Home(props: HomeProps) {
 
   return (
     <>
-      <div className="home__header">
+      <div className="home-header">
         <Header dispatch={dispatch} selectMenu={selectMenu} userInfo={userInfo} login={login} socket={socket} />
-        <div className="home__divide" />
+        <div className="home-divide" />
       </div>
-      <div className="home__container">
-        <div className="home__content">
+      <div className="home-container">
+        <div className="home-content">
           <WrapScrollToTop>
             {route.routes?.length && !isNullOrUndefined(login) && renderRoutes(route.routes, authed)}
           </WrapScrollToTop>
