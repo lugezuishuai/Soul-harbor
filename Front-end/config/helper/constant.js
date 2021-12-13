@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const resolve = require("./resolve");
+const dotenv = require('dotenv');
+dotenv.config({ path: '.env' });
 
 const env = process.env;
 const isEnvProduction = env.NODE_ENV === 'production';

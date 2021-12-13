@@ -21,11 +21,14 @@ module.exports = {
       'Access-Control-Allow-Headers': '*',
     },
     historyApiFallback: true,
-    hot: true,
     open: true,
     port: 5000,
     proxy,
-    watchFiles: ['src/**/*', 'node_modules/**/*', 'public/**/*'],
+    watchFiles: {
+      options: {
+        ignored: process.env.WATCH_FILES_REG ? !new RegExp(process.env.WATCH_FILES_REG) : undefined,
+      },
+    },
     webSocketServer: 'ws',
   },
-}
+};

@@ -9,7 +9,7 @@ const webpack = require('webpack');
 const dotenv = require('dotenv');
 const glob = require('glob');
 const { isEnvProduction, publicPath, srcPath, distPath } = require('./helper/constant');
-dotenv.config({ path: '.env' })
+dotenv.config({ path: '.env' });
 
 const miniCssLoader = isEnvProduction ? MiniCssExtractPlugin.loader : 'style-loader';
 
@@ -95,7 +95,6 @@ module.exports = {
     path: distPath,
     publicPath,
   },
-  target: ['browserslist'],
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     alias: {
@@ -219,4 +218,4 @@ module.exports = {
     }),
     new WebpackBar(),
   ],
-}
+};
