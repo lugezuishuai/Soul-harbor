@@ -60,19 +60,19 @@ function Operation(props: OperationProps): any {
   };
 
   const menu = (
-    <Menu className="user_operation_menu" selectable={false}>
-      <Menu.Item key="0" onClick={handleClickItem} className="user_operation_menu_item">
-        <Link to={`/user/${uid}`} className="user_operation_menu_item_text">
+    <Menu className="user-operation-menu" selectable={false}>
+      <Menu.Item key="0" onClick={handleClickItem} className="user-operation-menu__item">
+        <Link to={`/user/${uid}`} className="user-operation-menu__item__text">
           个人信息
         </Link>
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="change-password" className="user_operation_menu_item">
-        <div className="user_operation_menu_item_text">修改密码</div>
+      <Menu.Item key="change-password" className="user-operation-menu__item">
+        <div className="user-operation-menu__item__text">修改密码</div>
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="logout" className="user_operation_menu_item">
-        <div className="user_operation_menu_item_text" onClick={handleLogout}>
+      <Menu.Item key="logout" className="user-operation-menu__item">
+        <div className="user-operation-menu__item__text" onClick={handleLogout}>
           退出登录
         </div>
       </Menu.Item>
@@ -80,11 +80,11 @@ function Operation(props: OperationProps): any {
   );
 
   return (
-    <div className="user_operation">
-      <span className="user_operation_nick_name">{username}</span>
-      <div className="user_operation_avatar">
+    <div className="user-operation">
+      <span className="user-operation__nick-name">{username}</span>
+      <div className="user-operation__avatar">
         <Avatar
-          className={screen.isLittleScreen ? 'user_operation_avatar_img__small' : 'user_operation_avatar_img'}
+          className={screen.isLittleScreen ? 'user-operation__avatar__img--small' : 'user-operation__avatar__img'}
           src={avatar || defaultAvatar}
         />
         <Dropdown overlay={menu} trigger={screen.isLittleScreen ? ['click'] : ['hover']}>
@@ -94,7 +94,7 @@ function Operation(props: OperationProps): any {
               e.preventDefault();
             }}
           >
-            <Icon type="down" className="user_operation_avatar_icon" />
+            <Icon type="down" className="user-operation__avatar__icon" />
           </a>
         </Dropdown>
       </div>

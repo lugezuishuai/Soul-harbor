@@ -40,7 +40,6 @@ export default function Content() {
 
   return (
     <div className="content-page">
-      <div className="content-page__div">首页数据放在此处</div>
       <canvas
         className="image-editor-canvas"
         style={{ width: 240, height: 240 }}
