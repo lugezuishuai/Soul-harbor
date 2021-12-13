@@ -20,9 +20,8 @@ module.exports = {
     splitChunks: {
       chunks: 'initial',
       cacheGroups: {
-        common: {
-          test: /[\\/]src[\\/]/,
-          name: 'common',
+        commons: {
+          name: 'commons',
           priority: -10, // 优先级，当模块符合多个规则时，采取优先级高的规则
           minChunks: 2, // 模块被引用2次及以上的才抽离
           reuseExistingChunk: true, // 已经被分离，被重用而不是生成新的模块
@@ -33,7 +32,7 @@ module.exports = {
           priority: 0,
         },
         reactBase: {
-          test: module => /react|redux/.test(module.context),
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|react-use|react-redux|redux|isomorphic-fetch|moment)[\\/]/,
           name: 'reactBase',
           priority: 10,
         },

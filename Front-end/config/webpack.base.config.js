@@ -95,6 +95,7 @@ module.exports = {
     path: distPath,
     publicPath,
   },
+  target: ['browserslist'],
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     alias: {

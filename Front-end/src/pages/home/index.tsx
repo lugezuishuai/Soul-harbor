@@ -81,7 +81,7 @@ function Home(props: HomeProps) {
 
   return (
     <>
-      <div className="home-header">
+      <div className="home-header__wrapper">
         <Header dispatch={dispatch} selectMenu={selectMenu} userInfo={userInfo} login={login} socket={socket} />
         <div className="home-divide" />
       </div>
