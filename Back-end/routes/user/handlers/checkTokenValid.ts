@@ -46,7 +46,7 @@ export async function checkTokenValid(req: Request, res: Response) {
         msg: 'no valid link or link expired',
       });
     }
-  } catch (e) {
+  } catch (e: any) {
     isDevelopment && console.error(e);
     return res.status(500).json({
       code: 1,

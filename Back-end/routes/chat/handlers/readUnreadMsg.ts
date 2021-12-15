@@ -37,7 +37,7 @@ export async function readUnreadMsg(req: Request, res: Response) {
       data: {},
       msg: 'update success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

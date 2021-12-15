@@ -258,7 +258,7 @@ router.get('/search', async (req, res) => {
       data: resData,
       msg: 'search success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -337,7 +337,7 @@ router.get('/searchChatRecords', async (req, res) => {
       data: searchChatRecordsRes,
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -391,7 +391,7 @@ router.get('/searchContracts', async (req, res) => {
       data: searchContractsRes,
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -446,7 +446,7 @@ router.get('/unread', async (req, res) => {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -486,7 +486,7 @@ router.get('/getHisMsg', async (req, res) => {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -524,7 +524,7 @@ router.post('/readUnreadMsg', async (req, res) => {
       data: {},
       msg: 'update success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -599,7 +599,7 @@ router.post('/addFriend', async (req, res) => {
         msg: 'add friend success',
       });
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -664,7 +664,7 @@ router.post('/deleteFriend', async (req, res) => {
         msg: 'success',
       });
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -699,7 +699,7 @@ router.get('/getFriendsList', async (req, res) => {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -742,7 +742,7 @@ router.get('/getSessionsList', async (req, res) => {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -804,7 +804,7 @@ router.get('/getSessionInfo', async (req, res) => {
         msg: 'success',
       });
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -904,7 +904,7 @@ router.post('/robotChat', async (req, res) => {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -940,7 +940,7 @@ router.post('/newGroupChat', async (req, res) => {
       data: {},
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -997,7 +997,7 @@ router.post('/addGroupMembers', async (req, res) => {
       data: {},
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -1053,7 +1053,7 @@ router.get('/getGroupsList', async (req, res) => {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -1097,7 +1097,7 @@ router.get('/getGroupMembers', async (req, res) => {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -1141,7 +1141,7 @@ router.post('/exitGroup', async (req, res) => {
       data: {},
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,
@@ -1193,7 +1193,7 @@ router.post('/deleteMember', async (req, res) => {
         msg: 'success',
       });
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

@@ -34,7 +34,7 @@ export async function getFriendsList(req: Request, res: Response) {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

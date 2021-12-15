@@ -1,13 +1,11 @@
 /* eslint-disable */
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin"); // 单独抽离css文件
-const PurgecssPlugin = require('purgecss-webpack-plugin'); // 去除无用的css
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const WebpackBar = require('webpackbar');
 const resolve = require('./helper/resolve');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
-const glob = require('glob');
 const { isEnvProduction, publicPath, srcPath, distPath } = require('./helper/constant');
 dotenv.config({ path: '.env' });
 
@@ -209,9 +207,6 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'css/[name].[contenthash:8].css',
       chunkFilename: 'css/[name].[contenthash:8].css',
-    }),
-    new PurgecssPlugin({
-      paths: glob.sync('src/**/*',  { nodir: true }),
     }),
     new AntdDayjsWebpackPlugin({
       preset: 'antdv3'

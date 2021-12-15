@@ -146,7 +146,7 @@ export async function changeBasicInfo(req: Request, res: Response) {
       },
       msg: 'success update basic info',
     });
-  } catch (e) {
+  } catch (e: any) {
     isDevelopment && console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

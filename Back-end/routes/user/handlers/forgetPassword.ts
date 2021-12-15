@@ -114,7 +114,7 @@ export async function forgetPassword(req: Request, res: Response) {
         }
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     isDevelopment && console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

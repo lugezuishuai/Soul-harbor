@@ -112,7 +112,7 @@ router.post('/uploadChunks', async (req, res) => {
         data: {},
         msg: 'receive file chunk',
       });
-    } catch (e) {
+    } catch (e: any) {
       res.status(500).json({
         code: 1,
         data: {},
@@ -140,7 +140,7 @@ router.get('/verifyChunks', async (req, res) => {
     let uploadedList: string[] = []; // 已经上传的切片hash
     try {
       uploadedList = await createUploadedList(fileHash as string); // 已经上传的chunkList
-    } catch (e) {
+    } catch (e: any) {
       res.status(500).json({
         code: 1,
         data: {},

@@ -125,7 +125,7 @@ export async function searchContracts(req: Request, res: Response) {
       data: searchContractsRes,
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

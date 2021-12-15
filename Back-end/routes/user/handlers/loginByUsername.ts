@@ -75,7 +75,7 @@ export function loginByUsername(req: Request, res: Response) {
             data: token,
             msg: 'user found & logged in',
           });
-        } catch (e) {
+        } catch (e: any) {
           isDevelopment && console.error('Error: ', e);
           return res.status(500).json({
             code: 1,

@@ -56,7 +56,7 @@ export function batchGetSessions(
         }
 
         resolve(result);
-      } catch (e) {
+      } catch (e: any) {
         reject(e);
       }
     });
@@ -90,7 +90,7 @@ export function batchGetSessions(
         }
 
         resolve(result);
-      } catch (e) {
+      } catch (e: any) {
         reject(e);
       }
     });
@@ -120,7 +120,7 @@ export async function batchSetSessionsAvatar(uid: string, avatar: string) {
         }
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     throw new Error(e);
   }
 }

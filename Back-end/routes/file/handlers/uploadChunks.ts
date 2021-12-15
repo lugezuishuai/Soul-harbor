@@ -46,7 +46,7 @@ export async function uploadChunks(req: Request, res: Response) {
         data: {},
         msg: 'receive file chunk',
       });
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error: ', e);
       return res.status(500).json({
         code: 1,

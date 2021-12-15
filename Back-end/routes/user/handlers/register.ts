@@ -67,7 +67,7 @@ export function register(req: Request, res: Response) {
             data: {},
             msg: 'user created success',
           });
-        } catch (e) {
+        } catch (e: any) {
           isDevelopment && console.error('Error: ', e);
           return res.status(500).json({
             code: 1,

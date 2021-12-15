@@ -144,7 +144,7 @@ export function createSocketIo(server: HttpServer) {
           ? `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}', 0)`
           : `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', 0)`;
         await query(insertMessage);
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
       }
     });
@@ -171,7 +171,7 @@ export function createSocketIo(server: HttpServer) {
             io.to(socketId).emit('delete friend', { msg: `您被 ${username} 删除好友`, uuid });
           }
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
       }
     });
@@ -223,7 +223,7 @@ export function createSocketIo(server: HttpServer) {
           ? `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}', 1)`
           : `insert into tb_room_chat (sender_id, receiver_id, message_id, type, time, message, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', 1)`;
         await query(insertMessage);
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
       }
     });

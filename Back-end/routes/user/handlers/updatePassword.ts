@@ -48,7 +48,7 @@ export async function updatePassword(req: Request, res: Response) {
         });
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     isDevelopment && console.error(e);
     return res.status(500).json({
       code: 1,

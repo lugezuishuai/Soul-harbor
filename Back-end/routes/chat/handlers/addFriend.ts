@@ -92,7 +92,7 @@ export async function addFriend(req: Request, res: Response) {
         msg: 'add friend success',
       });
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

@@ -23,7 +23,7 @@ export const setToken = (userInfo: UserInfo) => {
         token,
         userInfo,
       });
-    } catch (e) {
+    } catch (e: any) {
       reject(e.message);
     }
   });

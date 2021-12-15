@@ -64,7 +64,7 @@ export async function init(req: Request, res: Response) {
       },
       msg: 'init success',
     });
-  } catch (e) {
+  } catch (e: any) {
     isDevelopment && console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

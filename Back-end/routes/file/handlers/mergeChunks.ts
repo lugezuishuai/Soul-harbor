@@ -54,7 +54,7 @@ export async function mergeChunks(req: Request, res: Response) {
       data: {},
       msg: 'merge file success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

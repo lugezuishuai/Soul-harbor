@@ -89,7 +89,7 @@ export async function searchUsers(req: Request, res: Response) {
       data: resData,
       msg: 'search success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

@@ -60,7 +60,7 @@ export async function avatarUpload(req: Request, res: Response) {
       try {
         const file = req.file;
         const { userId } = req.body;
-        const { mimetype, originalname, path: filePath } = file;
+        const { mimetype, originalname, path: filePath } = file as any;
         const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
         const hostIP = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces()); // 获取主机IP地址
         const port = process.env.PORT || '4001'; // 获取当前的端口号
@@ -94,7 +94,7 @@ export async function avatarUpload(req: Request, res: Response) {
           },
           msg: 'upload success',
         });
-      } catch (e) {
+      } catch (e: any) {
         isDevelopment && console.error('Error: ', e);
         return res.status(500).json({
           code: 1,
@@ -103,7 +103,7 @@ export async function avatarUpload(req: Request, res: Response) {
         });
       }
     });
-  } catch (e) {
+  } catch (e: any) {
     isDevelopment && console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

@@ -44,7 +44,7 @@ export async function createNewGroupChat(req: Request, res: Response) {
       data: {},
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

@@ -133,7 +133,7 @@ router.post('/avatar-upload', avatarUpload);
 //           },
 //           msg: 'upload success',
 //         });
-//       } catch (e) {
+//       } catch (e: any) {
 //         console.error('Error: ', e);
 //         return res.status(500).json({
 //           code: 1,
@@ -142,7 +142,7 @@ router.post('/avatar-upload', avatarUpload);
 //         });
 //       }
 //     });
-//   } catch (e) {
+//   } catch (e: any) {
 //     console.error('Error: ', e);
 //     return res.status(500).json({
 //       code: 1,
@@ -268,7 +268,7 @@ router.post('/basic-info', changeBasicInfo);
 //       },
 //       msg: 'success update basic info',
 //     });
-//   } catch (e) {
+//   } catch (e: any) {
 //     console.error('Error: ', e);
 //     return res.status(500).json({
 //       code: 1,
@@ -411,7 +411,7 @@ router.post('/login', urlencodedParser, loginByUsername);
 //             data: token,
 //             msg: 'user found & logged in',
 //           });
-//         } catch (e) {
+//         } catch (e: any) {
 //           console.error('Error: ', e);
 //           return res.status(500).json({
 //             code: 1,
@@ -732,7 +732,7 @@ router.post('/updatePassword', updatePassword);
 //         });
 //       }
 //     }
-//   } catch (e) {
+//   } catch (e: any) {
 //     console.error(e);
 //     return res.status(500).json({
 //       code: 1,
@@ -939,7 +939,7 @@ router.post('/loginByEmail', loginByEmail);
 //             data: token,
 //             msg: 'user found & logged in',
 //           });
-//         } catch (e) {
+//         } catch (e: any) {
 //           console.error('Error: ', e);
 //           return res.status(500).json({
 //             code: 1,
@@ -1002,7 +1002,7 @@ router.get('/init', init);
 //       },
 //       msg: 'init success',
 //     });
-//   } catch (e) {
+//   } catch (e: any) {
 //     console.error('Error: ', e);
 //     return res.status(500).json({
 //       code: 1,

@@ -27,7 +27,7 @@ router.get('/getEmployee', async (req, res) => {
       data: result,
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     res.json({
       code: 1,
       msg: e.toString(),
@@ -49,7 +49,7 @@ router.post('/createEmployee', urlencodedParser, async (req, res) => {
       },
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     res.json({
       code: 1,
       msg: e.toString(),
@@ -67,7 +67,7 @@ router.post('/deleteEmployee', async (req, res) => {
       code: 0,
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     res.json({
       code: 1,
       msg: e.toString(),
@@ -85,7 +85,7 @@ router.post('/updateEmployee', async (req, res) => {
       code: 0,
       msg: 'success',
     });
-  } catch (e) {
+  } catch (e: any) {
     res.json({
       code: 1,
       msg: e.toString(),
@@ -116,7 +116,7 @@ router.get('/downloadEmployee', async (req, res) => {
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=Employee.xlsx');
     res.end(excel, 'binary');
-  } catch (e) {
+  } catch (e: any) {
     res.send(e.toString());
   }
 });
