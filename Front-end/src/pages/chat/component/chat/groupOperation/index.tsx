@@ -29,8 +29,8 @@ export function GroupOperation({
         <div className="group-operation__content__label">群成员</div>
         <div className="group-operation__content__member">
           <div className="group-operation__content__member__add" onClick={handleAddMember}>
-            <Icon className="group-operation__content-member__add__icon" component={AddMember as any} />
-            <div className="group-operation__content-member__add__text">添加成员</div>
+            <Icon className="group-operation__content__member__add__icon" component={AddMember as any} />
+            <div className="group-operation__content__member__add__text">添加成员</div>
           </div>
           {membersList.length > 0 &&
             membersList.map((memberInfo, index) => (
