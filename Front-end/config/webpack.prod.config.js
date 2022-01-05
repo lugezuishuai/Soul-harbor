@@ -18,23 +18,24 @@ module.exports = {
     ],
     runtimeChunk: true,
     splitChunks: {
-      chunks: 'initial',
+      chunks: 'all',
       cacheGroups: {
         commons: {
           name: 'commons',
-          priority: -10, // 优先级，当模块符合多个规则时，采取优先级高的规则
+          priority: -20, // 优先级，当模块符合多个规则时，采取优先级高的规则
           minChunks: 2, // 模块被引用2次及以上的才抽离
           reuseExistingChunk: true, // 已经被分离，被重用而不是生成新的模块
         },
         defaultVendors: {
+          chunks: 'initial',
           test: /[\\/]node_modules[\\/]/,
           name: 'vendors',
-          priority: 0,
+          priority: -10,
         },
         reactBase: {
-          test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|react-use|react-redux|redux|isomorphic-fetch|moment)[\\/]/,
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|react-use|react-redux|redux)[\\/]/,
           name: 'reactBase',
-          priority: 10,
+          priority: 0,
         },
       },
     },
