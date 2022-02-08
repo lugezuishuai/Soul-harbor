@@ -7,7 +7,9 @@ import { imageCutting } from '@/components/image-cutting';
 import { Utils } from '../../../components/change-svg-color';
 import { Link } from 'react-router-dom';
 import { SideMenu } from '@/components/side-menu';
+import { ImgViewerProvider } from '@/components/img-viewer/components/img-viewer-provider';
 import './index.less';
+import { ImgViewerConsumer } from '@/components/img-viewer/components/img-viewer-consumer';
 
 const CANVAS_WIDTH = 240;
 const CANVAS_HEIGHT = 240;
@@ -62,6 +64,12 @@ export default function Content() {
           </Button>
         </Link>
         <Utils />
+        <ImgViewerProvider imgNodeFilter={() => false}>
+          <ImgViewerConsumer src={testImg}>
+            <img src={testImg} className="content-page__img" alt="test-image" />
+          </ImgViewerConsumer>
+          <img src={testImg} className="content-page__img" alt="test-image" />
+        </ImgViewerProvider>
       </div>
     </div>
   );

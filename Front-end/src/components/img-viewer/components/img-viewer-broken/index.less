@@ -1,0 +1,40 @@
+@keyframes img-viewer-broken-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes img-viewer-broken-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.img-viewer-broken {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 240px;
+  height: 240px;
+  background: @N100;
+  transition: all 0.2s ease-in-out 0s;
+  &--fadeIn {
+    opacity: 0;
+    animation: img-viewer-broken-in 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+  }
+  &--fadeOut {
+    opacity: 1;
+    animation: img-viewer-broken-out 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+  }
+  & > svg {
+    font-size: 120px;
+  }
+}
