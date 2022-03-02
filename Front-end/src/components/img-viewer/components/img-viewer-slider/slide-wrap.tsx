@@ -1,4 +1,4 @@
-import React, { HTMLAttributes, PropsWithChildren, useEffect, useRef } from 'react';
+import React, { forwardRef, HTMLAttributes, PropsWithChildren, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import classnames from 'classnames';
 import './index.less';
@@ -9,11 +9,10 @@ interface SlideWrapBaseProps extends HTMLAttributes<HTMLDivElement> {
 
 export type SlideWrapProps = PropsWithChildren<SlideWrapBaseProps>;
 
-export function SlideWrap(props: SlideWrapProps) {
+export const SlideWrap = forwardRef<HTMLDivElement, SlideWrapProps>((props, ref) => {
   const { container, className, children, ...restProps } = props;
   const dialogNode = useRef<HTMLElement>(document.createElement('section'));
   const originalOverflow = useRef(''); // 缓存容器原来的overflow属性
-  const ref = useRef<HTMLDivElement>();
 
   useEffect(() => {
     const wrapContainer: HTMLElement = container || document.body;
@@ -29,26 +28,10 @@ export function SlideWrap(props: SlideWrapProps) {
     };
   }, [container]);
 
-  useEffect(() => {
-    // 阻止默认行为
-    function preventDefault(e: WheelEvent) {
-      e.preventDefault();
-    }
-
-    const slider = ref.current;
-    if (!slider) {
-      return;
-    }
-
-    slider.addEventListener('wheel', preventDefault);
-
-    return () => slider.removeEventListener('wheel', preventDefault);
-  }, []);
-
   return createPortal(
     <div ref={ref as any} className={classnames('img-viewer-slider__wrap', className)} {...restProps}>
       {children}
     </div>,
     dialogNode.current,
   );
-}
+});

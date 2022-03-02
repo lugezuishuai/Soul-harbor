@@ -1,0 +1,81 @@
+.img-viewer-toolbar {
+  user-select: none;
+  z-index: 1;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 75%);
+  opacity: 1;
+  border-radius: 8px;
+  transition: opacity 0.5s;
+  height: 48px;
+  padding: 0 12px;
+  color: #ebebeb;
+  &--hidden {
+    opacity: 0;
+  }
+  &__tooltip {
+    z-index: 9999;
+    .ant-tooltip-inner {
+      background: #505050;
+    }
+    .ant-tooltip-arrow::before {
+      background: #505050;
+    }
+  }
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 100%;
+    font-size: 16px;
+  }
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    &--disabled {
+      &:hover {
+        cursor: not-allowed;
+      }
+    }
+    &--enabled {
+      &:hover {
+        cursor: pointer;
+        background: rgba(255, 255, 255, 20%);
+      }
+      &:active {
+        background: rgba(255, 255, 255, 30%);
+      }
+    }
+  }
+  &__node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 4px;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  &__divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 100%;
+    &__content {
+      width: 1px;
+      height: 18px;
+      background: rgba(255, 255, 255, 20%);
+    }
+  }
+}
