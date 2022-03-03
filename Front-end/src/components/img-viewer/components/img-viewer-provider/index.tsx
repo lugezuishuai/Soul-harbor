@@ -10,7 +10,7 @@ export interface ImageInfo {
 }
 
 export interface ImgViewerProviderBaseProps extends ImgViewerProviderBase {
-  imgNodeFilter?: (node: JSX.Element) => boolean; // 图片节点筛选
+  imgNodeFilter?: ((node: JSX.Element) => boolean) | boolean; // 图片节点筛选
   onIndexChange?: (imageInfo: ImageInfo) => void; // 图片切换时的回调
   onVisibleChange?: (visible: boolean, imageInfo: ImageInfo) => void; // 预览组件显示隐藏时的回调
 }
@@ -114,7 +114,10 @@ export function ImgViewerProvider({
 
   const newChildren = useMemo<ReactNode>(() => {
     return React.Children.map(children, (child) => {
-      if (React.isValidElement(child) && imgNodeFilter(child)) {
+      if (
+        React.isValidElement(child) &&
+        ((typeof imgNodeFilter === 'function' && imgNodeFilter(child)) || imgNodeFilter)
+      ) {
         const src = child.props.src;
 
         if (src) {

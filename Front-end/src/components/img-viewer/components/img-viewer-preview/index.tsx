@@ -4,16 +4,17 @@ import { brokenElementType, ShowAnimateEnum } from '../../types';
 import { useMountedState } from '../../utils/use-mounted-state';
 import classnames from 'classnames';
 import { ImgViewerBroken } from '../img-viewer-broken';
-import { ImgParams, TransformInfo } from '../img-viewer-slider';
+import { ImgClass, ImgParams, TransformInfo } from '../img-viewer-slider';
 import './index.less';
 
 export interface ImgViewerPreviewProps extends HTMLAttributes<any> {
   src: string; // 图片url
   imgParams: ImgParams; // 图片宽高相关信息
   transformInfo: TransformInfo; // 图片变换相关信息
-  imgMoveClass: boolean; // 图片移动的样式
+  imgMoveClass: ImgClass; // 图片移动的样式
   onImageLoaded: (params: Partial<ImgParams>) => void; // 图片加载完成回调
-  updateTransformStyle: (debounceTransition?: boolean, transformParams?: Partial<TransformInfo>) => void; // 更新transition动画
+  updateImgParams: (params: Partial<ImgParams>) => void; // 更新图片宽高相关信息
+  updateTransformInfo: (transformParams: Partial<TransformInfo>) => void; // 更新transition动画
   className?: string; // 图片类名
   intro?: ReactNode; // 图片介绍
   loadingElement?: JSX.Element; // 加载中组件
@@ -29,7 +30,8 @@ export const ImgViewerPreview = memo(
       transformInfo,
       imgMoveClass,
       onImageLoaded,
-      updateTransformStyle,
+      updateImgParams,
+      updateTransformInfo,
       className,
       intro,
       loadingElement,
@@ -42,11 +44,12 @@ export const ImgViewerPreview = memo(
     const style = useMemo<CSSProperties>(() => {
       const { offsetX, offsetY, transition, rotate, scale } = transformInfo;
 
-      let transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`;
+      let transform = `translate(-50%, -50%)`;
 
       if (offsetX || offsetY) {
         transform += ` translate(${offsetX}px, ${offsetY}px)`;
       }
+      transform += ` rotate(${rotate}deg) scale(${scale})`;
 
       return {
         transform,
@@ -79,6 +82,9 @@ export const ImgViewerPreview = memo(
 
     // 图片src改变触发重新加载
     useEffect(() => {
+      updateImgParams({
+        loaded: false,
+      });
       const currImg = new Image();
       currImg.onload = handleImageLoaded;
       currImg.onerror = handleImageBroken;
@@ -90,7 +96,7 @@ export const ImgViewerPreview = memo(
       if (showAnimateType === ShowAnimateEnum.Out) {
         // 退出动画，重置旋转角度、缩放比例和偏移量
         setTimeout(() => {
-          updateTransformStyle(true, {
+          updateTransformInfo({
             offsetX: 0,
             offsetY: 0,
             scale: 1,
@@ -98,7 +104,7 @@ export const ImgViewerPreview = memo(
           });
         }, 200);
       }
-    }, [showAnimateType, updateTransformStyle]);
+    }, [showAnimateType, updateTransformInfo]);
 
     const { broken, loaded, naturalHeight, naturalWidth } = imgParams;
 
@@ -110,7 +116,11 @@ export const ImgViewerPreview = memo(
             style={style}
             className={classnames(
               'img-viewer-preview',
-              imgMoveClass ? 'img-viewer-preview--out' : 'img-viewer-preview--move',
+              imgMoveClass === ImgClass.GRAB
+                ? 'img-viewer-preview--grab'
+                : imgMoveClass === ImgClass.GRABBING
+                ? 'img-viewer-preview--grabbing'
+                : 'img-viewer-preview--zoom-out',
               className,
               {
                 'img-viewer-preview--fadeIn': loaded && showAnimateType === ShowAnimateEnum.In,

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import testImg from '@/assets/image/test.png';
+import testImg2 from '@/assets/image/test2.png';
 import { getImageInfo } from '@/utils/getImageInfo';
 import { dataURLtoFile } from '@/utils/dataUrlToFile';
 import { Button } from 'antd';
@@ -64,13 +65,9 @@ export default function Content() {
           </Button>
         </Link>
         <Utils />
-        <ImgViewerProvider imgNodeFilter={() => false}>
-          <ImgViewerConsumer src={testImg}>
-            <img src={testImg} className="content-page__img" alt="test-image" />
-          </ImgViewerConsumer>
-          <ImgViewerConsumer src={testImg}>
-            <img src={testImg} className="content-page__img" alt="test-image" />
-          </ImgViewerConsumer>
+        <ImgViewerProvider>
+          <img src={testImg} className="content-page__img" alt="test-image" />
+          <img src={testImg2} className="content-page__img" alt="test-image" />
         </ImgViewerProvider>
         <div className="content-page__container" />
       </div>

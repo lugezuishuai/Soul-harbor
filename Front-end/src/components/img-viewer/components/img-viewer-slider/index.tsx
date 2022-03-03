@@ -6,11 +6,7 @@ import Close from '../../assets/close.svg';
 import { AnimationHandler } from './animation-handler';
 import {
   DEBOUNCE_TIMEOUT,
-  EVENT_POINTER_DOWN,
-  EVENT_POINTER_MOVE,
-  EVENT_POINTER_UP,
-  EVENT_RESIZE,
-  EVENT_WHEEL,
+  LONG_PRESS_TO_DRAG_TIMEOUT,
   MAX_ZOOM_RATE,
   MIN_ZOOM_RATE,
   THROTTLE_SCROLL_TIMEOUT,
@@ -19,8 +15,6 @@ import {
 } from '../../constant';
 import { debounce, throttle } from 'lodash-es';
 import { getViewportSize } from '../../utils/get-viewport-size';
-import { ImageDragManager, OffsetPosition } from './image-drag-manager';
-import { preventDefault } from '../../utils/prevent-default';
 import { isCtrlOrCommandPressed } from '../../utils/is-ctrl-or-command-pressed';
 import { getScrollEdgeStatus } from '../../utils/get-scroll-edge-status';
 import { isMouseInContainer } from '../../utils/is-mouse-in-container';
@@ -39,6 +33,22 @@ import ZoomOutSVG from '../../assets/zoom-out.svg';
 import { calcMaxZoomRatio } from '../../utils/calc-max-zoom-ratio';
 import { calcBasicScale } from '../../utils/calc-basic-scale';
 import './index.less';
+
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface OffsetPosition {
+  offsetX: number;
+  offsetY: number;
+}
+
+export enum ImgClass {
+  GRAB = 'grab',
+  GRABBING = 'grabbing',
+  ZOOM_OUT = 'zoom_out',
+}
 
 export interface ImgViewerSliderProps extends ImgViewerProviderBase {
   images: imgData[]; // 图片列表
@@ -95,8 +105,14 @@ export function ImgViewerSlider({
   });
   const [imgIndex, setImgIndex] = useState(index); // 图片索引
   const [showToolBar, setShowToolBar] = useState(true); // 是否显示工具栏
-  const [imgMoveClass, setImgMoveClass] = useState(false); // 图片移动className
+  const [imgMoveClass, setImgMoveClass] = useState<ImgClass>(ImgClass.ZOOM_OUT); // 图片移动className
   const [isOriginSize, setIsOriginSize] = useState(false); // 图片是否是原始大小
+  const position = useRef<Position>({
+    x: 0,
+    y: 0,
+  }); // 鼠标位置信息
+  const drag = useRef(false); // 是否拖拽
+  const timer = useRef<number | null>(null); // 定时器，用作判断是否是拖拽
 
   const totalLength = useMemo(() => images.length, [images]);
 
@@ -157,16 +173,6 @@ export function ImgViewerSlider({
       return current;
     });
   }, [imgIndex, onIndexChange]);
-
-  // 点击蒙层
-  function handleMaskTap() {
-    maskClosable && onClose();
-  }
-
-  // 点击图片
-  const handleImgTap = useCallback(() => {
-    imgClosable && onClose();
-  }, [imgClosable, onClose]);
 
   // 点击旋转(需要重置偏移量)
   const handleRotate = useCallback(() => {
@@ -234,23 +240,23 @@ export function ImgViewerSlider({
 
   // 缩放到指定比例
   const zoomTo = useCallback(
-    (scale: number, forbiddenTransition = false) => {
-      setTransformInfo((prev) => ({
-        ...prev,
+    (scale: number, forbiddenTransition = false, extraParams?: Partial<TransformInfo>) => {
+      const params: Partial<TransformInfo> = {
+        ...extraParams,
         scale,
-      }));
+      };
 
       onScaleChange?.(scale);
 
       const { width, height } = getViewportSize(container);
       const { naturalWidth, naturalHeight } = imgParams;
       if (naturalHeight * scale > height || naturalWidth * scale > width) {
-        setImgMoveClass(true);
+        setImgMoveClass(ImgClass.GRAB);
       } else {
-        setImgMoveClass(false);
+        setImgMoveClass(ImgClass.ZOOM_OUT);
       }
 
-      updateTransformStyle(forbiddenTransition);
+      updateTransformStyle(forbiddenTransition, params);
     },
     [container, imgParams, onScaleChange, updateTransformStyle],
   );
@@ -284,77 +290,46 @@ export function ImgViewerSlider({
 
   // 计算图片移动偏移量
   const handleImageMove = useCallback(
-    ({ offsetX, offsetY }: OffsetPosition) => {
+    ({ offsetX, offsetY }: OffsetPosition = { offsetX: 0, offsetY: 0 }) => {
       const imageDom = imgRef.current;
       if (!imageDom) {
         return;
       }
 
-      const { width: viewportWidth, height: viewportHeight } = getViewportSize(container);
-      const { width, height, left, right, bottom, top } = imageDom.getBoundingClientRect() || {
-        width: 0,
-        height: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        top: 0,
-      };
+      const { width: viewportWidth, height: viewportHeight } = getViewportSize(container); // 视口宽高
+      const { width, height } = imageDom.getBoundingClientRect(); // 图片宽高
       const { offsetX: prevOffsetX, offsetY: prevOffsetY } = transformInfo;
       let newOffsetX = prevOffsetX,
         newOffsetY = prevOffsetY;
 
       const xMovable = width > viewportWidth; // x轴可移动
       const yMovable = height > viewportHeight; // y轴可移动
-
       if (xMovable) {
-        if (offsetX < 0) {
-          if (right > viewportWidth) {
-            offsetX = Math.max(viewportWidth - right, offsetX);
-          } else {
-            offsetX = 0;
-          }
-        } else if (offsetX > 0) {
-          if (left < 0) {
-            offsetX = Math.min(-left, offsetX);
-          } else {
-            offsetX = 0;
-          }
-        } else {
-          offsetX = 0;
+        const maxOffsetX = (width - viewportWidth) / 2; // x轴最大偏移量
+        const currentOffsetX = prevOffsetX + offsetX; // 当前x轴偏移量
+
+        if (offsetX > 0) {
+          newOffsetX = Math.min(maxOffsetX, currentOffsetX);
         }
 
-        newOffsetX += offsetX;
-      } else {
-        if (prevOffsetX !== 0) {
-          newOffsetX = offsetX = 0;
+        if (offsetX < 0) {
+          newOffsetX = Math.max(-maxOffsetX, currentOffsetX);
         }
       }
 
       if (yMovable) {
-        if (offsetY < 0) {
-          if (bottom > viewportHeight) {
-            offsetY = Math.max(viewportHeight - bottom, offsetY);
-          } else {
-            offsetY = 0;
-          }
-        } else if (offsetY > 0) {
-          if (top < 0) {
-            offsetY = Math.min(-top, offsetY);
-          } else {
-            offsetY = 0;
-          }
-        } else {
-          offsetY = 0;
+        const maxOffsetY = (height - viewportHeight) / 2; // y轴最大偏移量
+        const currentOffsetY = prevOffsetY + offsetY; // 当前y轴偏移量
+
+        if (offsetY > 0) {
+          newOffsetY = Math.min(maxOffsetY, currentOffsetY);
         }
 
-        newOffsetY += offsetY;
-      } else {
-        if (prevOffsetY !== 0) {
-          newOffsetY = offsetY = 0;
+        if (offsetY < 0) {
+          newOffsetY = Math.max(-maxOffsetY, currentOffsetY);
         }
       }
 
-      console.log('newOffset', newOffsetX, newOffsetY);
       updateTransformStyle(true, { offsetX: newOffsetX, offsetY: newOffsetY });
     },
     [container, transformInfo, updateTransformStyle],
@@ -402,7 +377,8 @@ export function ImgViewerSlider({
   // 滚轮事件回调
   const handleWheel = useCallback(
     (e: WheelEvent) => {
-      preventDefault(e);
+      e.preventDefault();
+      e.stopPropagation();
       const { loaded } = imgParams;
       if (!loaded) {
         return;
@@ -435,28 +411,94 @@ export function ImgViewerSlider({
     [imgParams, handleScrollByWheel, scrollThrottle],
   );
 
-  const imageDragManager = useMemo(() => new ImageDragManager(handleImageMove), [handleImageMove]);
+  // 鼠标离开回调
+  const handleMouseLeave = useCallback(() => {
+    if (timer.current) {
+      // 清除定时器
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
 
-  // 点击图片回调
-  const handlePointerDown = useCallback<EventListener>(
-    (e) => {
-      imageDragManager.pointerdown(e as PointerEvent);
-    },
-    [imageDragManager],
-  );
+    if (drag.current) {
+      drag.current = false;
+    }
+  }, []);
 
-  // 移动图片回调
-  const handlePointerMove = useCallback<EventListener>(
-    (e) => {
-      imageDragManager.pointermove(e as PointerEvent);
+  // 鼠标点击回调
+  const handleMouseDown = useCallback((e: MouseEvent) => {
+    timer.current = window.setTimeout(() => {
+      drag.current = true;
+    }, LONG_PRESS_TO_DRAG_TIMEOUT);
+    const { clientX, clientY } = e;
+    position.current = {
+      x: clientX,
+      y: clientY,
+    };
+  }, []);
+
+  // 鼠标移动回调
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!drag.current) {
+        return;
+      }
+
+      setImgMoveClass(ImgClass.GRABBING);
+      const { clientX, clientY } = e;
+      const { x, y } = position.current;
+      const offsetX = clientX - x;
+      const offsetY = clientY - y;
+      handleImageMove({ offsetX, offsetY });
+
+      position.current = {
+        x: clientX,
+        y: clientY,
+      };
     },
-    [imageDragManager],
+    [handleImageMove],
   );
 
   // 鼠标抬起回调
-  const handlePointerUp = useCallback<EventListener>(() => {
-    imageDragManager.pointerup();
-  }, [imageDragManager]);
+  const handleMouseUp = useCallback(() => {
+    if (timer.current) {
+      // 清除定时器
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+
+    if (drag.current) {
+      // mouseup 先于 click 事件，setTimeout 的目的是在 click 逻辑执行完成后再更新 isDragging 的值
+      setTimeout(() => {
+        setImgMoveClass(ImgClass.GRAB);
+        position.current = {
+          x: 0,
+          y: 0,
+        };
+        drag.current = false;
+      }, 0);
+    }
+  }, []);
+
+  // 拖拽事件
+  const handleDragStart = useCallback((e) => {
+    if ((e.target as Element)?.tagName.toLowerCase() === 'img') {
+      e.preventDefault();
+    }
+  }, []);
+
+  // 点击图片
+  const handleImgTap = useCallback(() => {
+    if (!drag.current && imgClosable) {
+      onClose();
+    }
+  }, [imgClosable, onClose]);
+
+  // 点击蒙层
+  const handleMaskTap = useCallback(() => {
+    if (!drag.current && maskClosable) {
+      onClose();
+    }
+  }, [maskClosable, onClose]);
 
   // resize事件回调
   const handleResize = useCallback(() => {
@@ -479,7 +521,11 @@ export function ImgViewerSlider({
       const { rotate, scale } = transformInfo;
 
       if (naturalWidth && naturalHeight) {
-        zoomTo(Math.min(scale, calcMaxZoomRatio(naturalWidth, naturalHeight, rotate, container)));
+        zoomTo(Math.min(scale, calcMaxZoomRatio(naturalWidth, naturalHeight, rotate, container)), false, {
+          offsetX: 0,
+          offsetY: 0,
+          rotate: 0,
+        });
       }
 
       updateImgParams(params);
@@ -489,12 +535,11 @@ export function ImgViewerSlider({
 
   // 重置offset
   const resetOffset = useCallback(() => {
-    setTransformInfo((prev) => ({
-      ...prev,
+    updateTransformInfo({
       offsetX: 0,
       offsetY: 0,
-    }));
-  }, []);
+    });
+  }, [updateTransformInfo]);
 
   // 根据图片尺寸设置合适的初始缩放值
   const calcAppropriateScale = useCallback(() => {
@@ -601,14 +646,6 @@ export function ImgViewerSlider({
   ]);
 
   useEffect(() => {
-    // 图片索引改变，重置旋转角度、缩放比例、偏移量和图片索引
-    setTransformInfo((prev) => ({
-      ...prev,
-      offsetX: 0,
-      offsetY: 0,
-      scale: 1,
-      rotate: 0,
-    }));
     setImgIndex(index);
   }, [index]);
 
@@ -618,20 +655,24 @@ export function ImgViewerSlider({
       return;
     }
 
-    window.addEventListener(EVENT_RESIZE, resizeDebounce);
-    slideWrap.addEventListener(EVENT_WHEEL, handleWheel);
-    slideWrap.addEventListener(EVENT_POINTER_DOWN, handlePointerDown);
-    slideWrap.addEventListener(EVENT_POINTER_MOVE, handlePointerMove);
-    slideWrap.addEventListener(EVENT_POINTER_UP, handlePointerUp);
+    window.addEventListener('resize', resizeDebounce);
+    slideWrap.addEventListener('wheel', handleWheel);
+    slideWrap.addEventListener('dragstart', handleDragStart);
+    slideWrap.addEventListener('mousedown', handleMouseDown as any as EventListener);
+    slideWrap.addEventListener('mousemove', handleMouseMove as any as EventListener);
+    slideWrap.addEventListener('mouseup', handleMouseUp);
+    slideWrap.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
-      window.removeEventListener(EVENT_RESIZE, resizeDebounce);
-      slideWrap.removeEventListener(EVENT_WHEEL, handleWheel);
-      slideWrap.removeEventListener(EVENT_POINTER_DOWN, handlePointerDown);
-      slideWrap.removeEventListener(EVENT_POINTER_MOVE, handlePointerMove);
-      slideWrap.removeEventListener(EVENT_POINTER_UP, handlePointerUp);
+      window.removeEventListener('resize', resizeDebounce);
+      slideWrap.removeEventListener('wheel', handleWheel);
+      slideWrap.removeEventListener('dragstart', handleDragStart);
+      slideWrap.removeEventListener('mousedown', handleMouseDown as any as EventListener);
+      slideWrap.removeEventListener('mousemove', handleMouseMove as any as EventListener);
+      slideWrap.removeEventListener('mouseup', handleMouseUp);
+      slideWrap.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [handlePointerDown, handlePointerMove, handlePointerUp, handleWheel, resizeDebounce]);
+  }, [handleDragStart, handleMouseDown, handleMouseLeave, handleMouseMove, handleMouseUp, handleWheel, resizeDebounce]);
 
   return (
     <AnimationHandler visible={visible} currentImage={images.length ? images[imgIndex] : undefined}>
@@ -643,7 +684,6 @@ export function ImgViewerSlider({
             role="dialog"
             id="img-viewer-slider"
             container={container}
-            onClick={(e) => e.stopPropagation()}
             onMouseEnter={() => setShowToolBar(true)}
             onMouseLeave={() => setShowToolBar(false)}
           >
@@ -675,7 +715,8 @@ export function ImgViewerSlider({
               onClick={handleImgTap}
               onImageLoaded={onImageLoaded}
               showAnimateType={showAnimateType}
-              updateTransformStyle={updateTransformStyle}
+              updateImgParams={updateImgParams}
+              updateTransformInfo={updateTransformInfo}
             />
           </SlideWrap>
         ) : (
