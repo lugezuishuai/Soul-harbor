@@ -8,8 +8,7 @@ import { imageCutting } from '@/components/image-cutting';
 import { Utils } from '../../../components/change-svg-color';
 import { Link } from 'react-router-dom';
 import { SideMenu } from '@/components/side-menu';
-import { ImgViewerProvider } from '@/components/img-viewer/components/img-viewer-provider';
-import { ImgViewerConsumer } from '@/components/img-viewer/components/img-viewer-consumer';
+import { ImgViewerProvider } from '@/components/img-viewer';
 import './index.less';
 
 const CANVAS_WIDTH = 240;

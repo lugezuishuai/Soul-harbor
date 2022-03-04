@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { imgData, OriginRectType, ShowAnimateEnum } from '../../types';
+import { imgData, ShowAnimateEnum } from '../../types';
+
+type OriginRectType = { clientX: number; clientY: number } | undefined;
 
 interface ChildrenProps {
   imgVisible: boolean;

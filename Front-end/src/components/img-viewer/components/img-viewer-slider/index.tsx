@@ -6,6 +6,7 @@ import Close from '../../assets/close.svg';
 import { AnimationHandler } from './animation-handler';
 import {
   DEBOUNCE_TIMEOUT,
+  KeyCode,
   LONG_PRESS_TO_DRAG_TIMEOUT,
   MAX_ZOOM_RATE,
   MIN_ZOOM_RATE,
@@ -32,6 +33,7 @@ import ZoomInSVG from '../../assets/zoom-in.svg';
 import ZoomOutSVG from '../../assets/zoom-out.svg';
 import { calcMaxZoomRatio } from '../../utils/calc-max-zoom-ratio';
 import { calcBasicScale } from '../../utils/calc-basic-scale';
+import { filterEvent } from '../../utils/filter-event';
 import './index.less';
 
 interface Position {
@@ -54,8 +56,8 @@ export interface ImgViewerSliderProps extends ImgViewerProviderBase {
   images: imgData[]; // 图片列表
   visible: boolean; // 可见
   onClose: (e?: MouseEvent | TouchEvent) => void; // 关闭事件
-  index?: number; // 图片当前索引
-  onIndexChange?: (index: number) => void; // 索引改变回调
+  index: number; // 图片当前索引
+  onIndexChange: (index: number) => void; // 索引改变回调
 }
 
 export interface ImgParams {
@@ -76,17 +78,20 @@ export interface TransformInfo {
 export function ImgViewerSlider({
   images,
   visible,
-  index = 0,
+  index,
   maskClosable = true,
   imgClosable = true,
+  toolbarRender,
   onClose,
   onIndexChange,
   onScaleChange,
   onRotateChange,
-  container, // 挂载容器
-  className, // 容器类名
-  maskClassName, // 蒙层类名
-  imageClassName, // 图片类名
+  container,
+  className,
+  maskClassName,
+  imageClassName,
+  loadingElement,
+  brokenElement,
 }: ImgViewerSliderProps) {
   const ref = useRef<HTMLDivElement>();
   const imgRef = useRef<HTMLImageElement>();
@@ -103,7 +108,6 @@ export function ImgViewerSlider({
     rotate: 0,
     transition: 'all 0.2s ease-in-out',
   });
-  const [imgIndex, setImgIndex] = useState(index); // 图片索引
   const [showToolBar, setShowToolBar] = useState(true); // 是否显示工具栏
   const [imgMoveClass, setImgMoveClass] = useState<ImgClass>(ImgClass.ZOOM_OUT); // 图片移动className
   const [isOriginSize, setIsOriginSize] = useState(false); // 图片是否是原始大小
@@ -150,45 +154,45 @@ export function ImgViewerSlider({
 
   // 点击下一张
   const handleNext = useCallback(() => {
-    if (imgIndex >= totalLength - 1) {
+    if (index >= totalLength - 1) {
       return;
     }
 
-    setImgIndex((prev) => {
-      const current = prev + 1;
-      onIndexChange?.(current);
-      return current;
-    });
-  }, [imgIndex, onIndexChange, totalLength]);
+    onIndexChange(index + 1);
+  }, [index, onIndexChange, totalLength]);
 
   // 点击上一张
   const handlePrev = useCallback(() => {
-    if (imgIndex <= 0) {
+    if (index <= 0) {
       return;
     }
 
-    setImgIndex((prev) => {
-      const current = prev - 1;
-      onIndexChange?.(current);
-      return current;
-    });
-  }, [imgIndex, onIndexChange]);
+    onIndexChange(index - 1);
+  }, [index, onIndexChange]);
 
   // 点击旋转(需要重置偏移量)
-  const handleRotate = useCallback(() => {
-    setTransformInfo((prev) => {
-      const { rotate: prevRotate } = prev;
-      const rotate = prevRotate - 90;
-      onRotateChange?.(rotate);
+  const handleRotate = useCallback(
+    (params?: number) => {
+      setTransformInfo((prev) => {
+        let rotate: number;
+        if (params) {
+          rotate = params;
+        } else {
+          const { rotate: prevRotate } = prev;
+          rotate = prevRotate - 90;
+        }
+        onRotateChange?.(rotate);
 
-      return {
-        ...prev,
-        offsetX: 0,
-        offsetY: 0,
-        rotate,
-      };
-    });
-  }, [onRotateChange]);
+        return {
+          ...prev,
+          offsetX: 0,
+          offsetY: 0,
+          rotate,
+        };
+      });
+    },
+    [onRotateChange],
+  );
 
   // 缩放时动态调整偏移量
   const adjustOffsetPositionByScale = useCallback(
@@ -560,10 +564,97 @@ export function ImgViewerSlider({
     setIsOriginSize((prev) => !prev);
   }, [calcAppropriateScale, isOriginSize, resetOffset, zoomTo]);
 
+  // 键盘点击事件
+  const handleKeydown = useCallback(
+    (e: KeyboardEvent) => {
+      e.stopPropagation();
+      const keyCode = e.keyCode || e.which || e.charCode;
+      const { naturalHeight, naturalWidth } = imgParams;
+      const { scale, rotate } = transformInfo;
+
+      console.log('keyCode', keyCode);
+      switch (keyCode) {
+        case KeyCode.Escape: // 关闭
+          e.preventDefault();
+          onClose();
+          break;
+        case KeyCode.ArrowLeft: // 上一张
+          handlePrev();
+          break;
+        case KeyCode.ArrowUp: // 放大
+          e.preventDefault();
+          handleZoom(undefined, true);
+          break;
+        case KeyCode.ArrowRight: // 下一张
+          handleNext();
+          break;
+        case KeyCode.ArrowDown: // 缩小
+          e.preventDefault();
+          handleZoom();
+          break;
+        case KeyCode.F: // 还原原始比例
+          if (e.ctrlKey && e.metaKey) {
+            e.preventDefault();
+            zoomTo(1);
+          }
+          break;
+        case KeyCode.S: // 下载图片
+          // 没有下载入口
+          break;
+        case KeyCode.R: // 旋转
+          if (!isCtrlOrCommandPressed(e)) {
+            e.preventDefault();
+            handleRotate();
+          }
+          break;
+        case KeyCode.Plus:
+        case KeyCode.Add: // 放大
+          if (isCtrlOrCommandPressed(e)) {
+            e.preventDefault();
+            handleZoom(undefined, true);
+          }
+          break;
+        case KeyCode.Minus:
+        case KeyCode.Subtract: // 缩小
+          if (isCtrlOrCommandPressed(e)) {
+            e.preventDefault();
+            handleZoom();
+          }
+          break;
+        case KeyCode.Space: // 适应页面
+          zoomTo(Math.min(scale, calcMaxZoomRatio(naturalWidth, naturalHeight, rotate, container)));
+          break;
+        case KeyCode.Zero:
+        case KeyCode.One:
+        case KeyCode.Numpad_0:
+        case KeyCode.Numpad_1: // 切换模式
+          if (isCtrlOrCommandPressed(e)) {
+            e.preventDefault();
+            switchMode();
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      container,
+      handleNext,
+      handlePrev,
+      handleRotate,
+      handleZoom,
+      imgParams,
+      onClose,
+      switchMode,
+      transformInfo,
+      zoomTo,
+    ],
+  );
+
   const toolList = useMemo<ToolbarItem[]>(() => {
     const { scale } = transformInfo;
-    const prevDisabled = imgIndex === 0,
-      nextDisabled = imgIndex === totalLength - 1,
+    const prevDisabled = index === 0,
+      nextDisabled = index === totalLength - 1,
       zoomOutDisabled = scale <= MIN_ZOOM_RATE,
       zoomInDisabled = scale >= MAX_ZOOM_RATE;
 
@@ -578,7 +669,7 @@ export function ImgViewerSlider({
       },
       {
         key: 'info',
-        content: `${imgIndex + 1}/${totalLength}`,
+        content: `${index + 1}/${totalLength}`,
         type: 'node',
       },
       {
@@ -633,21 +724,7 @@ export function ImgViewerSlider({
         type: 'button',
       },
     ];
-  }, [
-    handleNext,
-    handlePrev,
-    handleRotate,
-    imgIndex,
-    isOriginSize,
-    switchMode,
-    totalLength,
-    transformInfo,
-    triggerZoom,
-  ]);
-
-  useEffect(() => {
-    setImgIndex(index);
-  }, [index]);
+  }, [handleNext, handlePrev, handleRotate, index, isOriginSize, switchMode, totalLength, transformInfo, triggerZoom]);
 
   useEffect(() => {
     const slideWrap = ref.current;
@@ -656,6 +733,9 @@ export function ImgViewerSlider({
     }
 
     window.addEventListener('resize', resizeDebounce);
+    document.documentElement.addEventListener('keydown', handleKeydown, { capture: true });
+    document.documentElement.addEventListener('keyup', filterEvent, { capture: true });
+    document.documentElement.addEventListener('keypress', filterEvent, { capture: true });
     slideWrap.addEventListener('wheel', handleWheel);
     slideWrap.addEventListener('dragstart', handleDragStart);
     slideWrap.addEventListener('mousedown', handleMouseDown as any as EventListener);
@@ -665,6 +745,9 @@ export function ImgViewerSlider({
 
     return () => {
       window.removeEventListener('resize', resizeDebounce);
+      document.documentElement.removeEventListener('keydown', handleKeydown, { capture: true });
+      document.documentElement.removeEventListener('keyup', filterEvent, { capture: true });
+      document.documentElement.removeEventListener('keypress', filterEvent, { capture: true });
       slideWrap.removeEventListener('wheel', handleWheel);
       slideWrap.removeEventListener('dragstart', handleDragStart);
       slideWrap.removeEventListener('mousedown', handleMouseDown as any as EventListener);
@@ -672,10 +755,19 @@ export function ImgViewerSlider({
       slideWrap.removeEventListener('mouseup', handleMouseUp);
       slideWrap.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [handleDragStart, handleMouseDown, handleMouseLeave, handleMouseMove, handleMouseUp, handleWheel, resizeDebounce]);
+  }, [
+    handleDragStart,
+    handleKeydown,
+    handleMouseDown,
+    handleMouseLeave,
+    handleMouseMove,
+    handleMouseUp,
+    handleWheel,
+    resizeDebounce,
+  ]);
 
   return (
-    <AnimationHandler visible={visible} currentImage={images.length ? images[imgIndex] : undefined}>
+    <AnimationHandler visible={visible} currentImage={images.length ? images[index] : undefined}>
       {({ imgVisible, showAnimateType, originRect, onShowAnimateEnd }) => {
         return imgVisible ? (
           <SlideWrap
@@ -703,11 +795,22 @@ export function ImgViewerSlider({
             >
               <Close />
             </div>
-            <ImgViewerToolbar showToolbar={showToolBar} items={toolList} />
+            {toolbarRender?.({
+              images,
+              index,
+              visible: showToolBar,
+              scale: transformInfo.scale,
+              rotate: transformInfo.rotate,
+              handlePrev,
+              handleNext,
+              handleZoom,
+              switchMode,
+              handleRotate,
+            }) || <ImgViewerToolbar showToolbar={showToolBar} items={toolList} />}
             <ImgViewerPreview
               ref={imgRef as any}
-              src={images[imgIndex]?.src || ''}
-              intro={images[imgIndex]?.intro}
+              src={images[index]?.src || ''}
+              intro={images[index]?.intro}
               className={imageClassName}
               imgMoveClass={imgMoveClass}
               imgParams={imgParams}
@@ -717,6 +820,8 @@ export function ImgViewerSlider({
               showAnimateType={showAnimateType}
               updateImgParams={updateImgParams}
               updateTransformInfo={updateTransformInfo}
+              loadingElement={loadingElement}
+              brokenElement={brokenElement}
             />
           </SlideWrap>
         ) : (

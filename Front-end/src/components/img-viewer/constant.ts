@@ -61,3 +61,27 @@ export const HORIZONTAL_PADDING = 40;
  * 垂直padding
  */
 export const VERTICAL_PADDING = 40;
+
+/**
+ * 键值
+ */
+export enum KeyCode {
+  Enter = 13,
+  Escape = 27,
+  Space = 32,
+  ArrowLeft = 37,
+  ArrowUp = 38,
+  ArrowRight = 39,
+  ArrowDown = 40,
+  Zero = 48,
+  One = 49,
+  F = 70,
+  R = 82,
+  S = 83,
+  Numpad_0 = 96,
+  Numpad_1 = 97,
+  Add = 107,
+  Subtract = 109,
+  Plus = 187,
+  Minus = 189,
+}
