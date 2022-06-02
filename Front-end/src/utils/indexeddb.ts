@@ -17,7 +17,7 @@ export function getDB() {
 
     // 数据库首次创建版本，或者window.indexedDB.open传递的新版本（版本数值要比现在的高）
     DBOpenRequest.onupgradeneeded = function (event: any) {
-      const db = event.target.result;
+      const db: IDBDatabase = event.target.result;
       if (db.objectStoreNames.contains('avatarTable')) {
         db.deleteObjectStore('avatarTable');
       }

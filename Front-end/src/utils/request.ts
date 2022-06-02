@@ -56,8 +56,10 @@ function removePendingRequest(config: AxiosRequestConfig) {
 axios.interceptors.request.use(
   function (config) {
     const { headers } = config;
-    headers.Authorization = Cookies.get('token')?.replace('%20', ' '); // 每个请求头带上Authorization
-    // headers['X-XSRF-TOKEN'] = Cookies.get('XSRF-TOKEN'); // 添加 X-XSRF-TOKEN 请求头
+    const authorization = Cookies.get('token')?.replace('%20', ' ');
+    if (authorization && headers) {
+      headers.Authorization = authorization;
+    } // 每个请求头带上Authorization
 
     removePendingRequest(config); // 检查是否存在重复请求，若存在则取消已发送的请求
     addPendingRequest(config); // 把当前请求信息添加到pendingRequest对象中
@@ -66,7 +68,7 @@ axios.interceptors.request.use(
   },
   function (error) {
     return Promise.reject(error);
-  }
+  },
 );
 
 // 响应拦截器
@@ -124,7 +126,7 @@ axios.interceptors.response.use(
       }
       return Promise.reject(errorData || error);
     }
-  }
+  },
 );
 
 //get请求

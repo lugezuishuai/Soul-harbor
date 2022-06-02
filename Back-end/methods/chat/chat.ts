@@ -139,6 +139,8 @@ export function createSocketIo(server: HttpServer) {
           io.to(socketId).emit('receive message', sendMessage); // 发送给对方
         }
 
+        // TODO: 这里还需要去校验信息是否发送成功
+
         socket.emit('send message success', sendMessage); // 发送给自己
         const insertMessage = sendMessage.sender_avatar
           ? `insert into tb_private_chat (sender_id, receiver_id, message_id, type, time, message, sender_avatar, private_chat) values ('${sendMessage.sender_id}', '${sendMessage.receiver_id}', ${sendMessage.message_id}, '${sendMessage.type}', '${sendMessage.time}', '${sendMessage.message}', '${sendMessage.sender_avatar}', 0)`

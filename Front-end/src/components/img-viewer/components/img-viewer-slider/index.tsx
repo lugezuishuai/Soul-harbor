@@ -556,9 +556,9 @@ export function ImgViewerSlider({
   const switchMode = useCallback(() => {
     resetOffset();
     if (isOriginSize) {
-      zoomTo(1);
-    } else {
       zoomTo(calcAppropriateScale());
+    } else {
+      zoomTo(1);
     }
 
     setIsOriginSize((prev) => !prev);
