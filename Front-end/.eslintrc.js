@@ -32,6 +32,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/ban-types': 0,
+    '@typescript-eslint/no-var-requires': 0,
     'promise/no-promise-in-callback': 'off',
     'react/prop-types': 'off',
     'react/display-name': 'off',

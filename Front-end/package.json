@@ -8,6 +8,8 @@
   },
   "main": "./src/index.tsx",
   "scripts": {
+    "dev": "vite",
+    "build:vite": "vite build",
     "start": "cross-env NODE_ENV=development webpack-dev-server --config ./config/webpack.config.js",
     "build": "cross-env NODE_ENV=production webpack --config ./config/webpack.config.js",
     "analyse": "cross-env ANALYSE_ENABLED=true NODE_ENV=production webpack --config ./config/webpack.config.js",
@@ -22,6 +24,9 @@
   "keywords": [],
   "author": "jackson huang",
   "license": "ISC",
+  "engines": {
+    "node": ">=14"
+  },
   "devDependencies": {
     "@babel/cli": "^7.16.0",
     "@babel/core": "^7.16.0",
@@ -37,6 +42,7 @@
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
+    "@rollup/pluginutils": "^4.2.1",
     "@svgr/webpack": "^6.1.1",
     "@types/hammerjs": "^2.0.39",
     "@types/js-cookie": "^2.2.6",
@@ -54,6 +60,8 @@
     "@types/spark-md5": "^3.0.2",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
+    "@vitejs/plugin-legacy": "^1.8.2",
+    "@vitejs/plugin-react": "^1.3.2",
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "babel-loader": "^8.2.3",
     "babel-plugin-import": "^1.13.3",
@@ -85,6 +93,8 @@
     "postcss-url": "^10.1.3",
     "prettier": "^2.3.2",
     "react-refresh": "^0.11.0",
+    "regenerator-runtime": "^0.13.9",
+    "rollup-plugin-visualizer": "^5.7.0",
     "sass-loader": "^12.3.0",
     "speed-measure-webpack-plugin": "^1.5.0",
     "style-loader": "^3.3.1",
@@ -94,6 +104,12 @@
     "stylelint-less": "^1.0.1",
     "type-fest": "^1.4.0",
     "typescript": "^4.5.2",
+    "vite": "^2.9.14",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-html": "^3.2.0",
+    "vite-plugin-importer": "^0.2.5",
+    "vite-plugin-svgr": "^2.1.1",
+    "vite-plugin-webpackchunkname": "0.0.12",
     "webpack": "^5.65.0",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.1",
@@ -132,9 +148,7 @@
   "browserslist": [
     "> 1%",
     "last 2 versions",
-    "not ie <= 8",
-    "iOS 7",
-    "last 3 iOS versions"
+    "not ie <= 11"
   ],
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
