@@ -13,14 +13,14 @@ module.exports = {
     '@babel/preset-typescript',
   ],
   plugins: [
-    // [
-    //   'import',
-    //   {
-    //     libraryName: 'antd',
-    //     libraryDirectory: 'es',
-    //     style: true, // 默认使用less，若使用css则改为'css'
-    //   },
-    // ],
+    [
+      'import',
+      {
+        libraryName: 'antd',
+        libraryDirectory: 'es',
+        style: true, // 默认使用less，若使用css则改为'css'
+      },
+    ],
     '@babel/plugin-transform-runtime', // helpers函数统一管理
     '@babel/plugin-syntax-dynamic-import', // 支持import懒加载
     '@babel/plugin-transform-arrow-functions', // 箭头函数处理

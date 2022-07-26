@@ -1,13 +1,14 @@
-import { defineConfig, loadEnv, splitVendorChunkPlugin } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import legacy from '@vitejs/plugin-legacy';
-import { createHtmlPlugin } from 'vite-plugin-html';
+// import legacy from '@vitejs/plugin-legacy';
+// import { createHtmlPlugin } from 'vite-plugin-html';
 import svg from 'vite-plugin-svgr';
-import compress from 'vite-plugin-compression';
-import { manualChunksPlugin } from 'vite-plugin-webpackchunkname';
+// import compress from 'vite-plugin-compression';
+// import { manualChunksPlugin } from 'vite-plugin-webpackchunkname';
 import usePluginImport from 'vite-plugin-importer';
 import markdown from './vite-config/plugins/vite-plugin-markdown';
-import visualizer from 'rollup-plugin-visualizer';
+// import proxy from 'vite-plugin-http2-proxy';
+// import visualizer from 'rollup-plugin-visualizer';
 import path from 'path';
 
 export default defineConfig(({ command, mode }) => {
@@ -36,7 +37,7 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     server: {
-      https: true,
+      // https: true,
       port: 5000,
       open: true,
       proxy: {
@@ -57,9 +58,9 @@ export default defineConfig(({ command, mode }) => {
         },
       },
     },
-    esbuild: {
-      logOverride: { 'this-is-undefined-in-esm': 'silent' },
-    },
+    // esbuild: {
+    //   logOverride: { 'this-is-undefined-in-esm': 'silent' },
+    // },
     build: {
       outDir: 'dist',
       assetsDir: 'assets', // 相对于build.outDir而言
@@ -82,49 +83,64 @@ export default defineConfig(({ command, mode }) => {
         : undefined,
     },
     plugins: [
-      react({
-        babel: {
-          babelrc: true,
-          
-        },
-      }),
+      // proxy({
+      //   '/api': {
+      //     target: 'http://localhost:4001',
+      //     headers: {
+      //       'Access-Control-Allow-Origin': '*',
+      //     },
+      //   },
+      //   // '/socket.io': {
+      //   //   target: 'http://localhost:4001',
+      //   //   headers: {
+      //   //     'Access-Control-Allow-Origin': '*',
+      //   //   },
+      //   //   ws: true,
+      //   // },
+      // }),
+      // react({
+      //   babel: {
+      //     babelrc: true,
+      //   },
+      // }),
+      react(),
       svg({
         exportAsDefault: true,
       }),
       markdown(),
-      usePluginImport({
-        libraryName: 'antd',
-        libraryDirectory: 'es',
-        style: true,
-      }),
-      manualChunksPlugin(),
-      splitVendorChunkPlugin(),
-      legacy({
-        targets: ['> 1%', 'last 2 versions', 'not ie <= 11'],
-        additionalLegacyPolyfills: ['regenerator-runtime/runtime'], // 面向IE11时需要此插件
-      }),
-      compress({
-        threshold: 1024 * 50,
-        algorithm: 'gzip',
-        ext: '.gz',
-      }),
-      createHtmlPlugin({
-        minify: true,
-        entry: '/src/index.tsx',
-        template: 'index.html',
-        inject: {
-          data: {
-            title: 'Soul Harbor',
-            favicon: `${process.env.VITE_PUBLIC_PATH}src/favicon.ico`,
-          },
-        },
-      }),
-      visualizer({
-        open: true,
-        template: 'treemap',
-        gzipSize: true,
-        brotliSize: true,
-      }),
+      // usePluginImport({
+      //   libraryName: 'antd',
+      //   libraryDirectory: 'es',
+      //   style: true,
+      // }),
+      // manualChunksPlugin(),
+      // splitVendorChunkPlugin(),
+      // legacy({
+      //   targets: ['> 1%', 'last 2 versions', 'not ie <= 11'],
+      //   additionalLegacyPolyfills: ['regenerator-runtime/runtime'], // 面向IE11时需要此插件
+      // }),
+      // compress({
+      //   threshold: 1024 * 50,
+      //   algorithm: 'gzip',
+      //   ext: '.gz',
+      // }),
+      // createHtmlPlugin({
+      //   minify: true,
+      //   entry: '/src/index.tsx',
+      //   template: 'index.html',
+      //   inject: {
+      //     data: {
+      //       title: 'Soul Harbor',
+      //       favicon: `${process.env.VITE_PUBLIC_PATH}src/favicon.ico`,
+      //     },
+      //   },
+      // }),
+      // visualizer({
+      //   open: true,
+      //   template: 'treemap',
+      //   gzipSize: true,
+      //   brotliSize: true,
+      // }),
     ],
   };
 });
