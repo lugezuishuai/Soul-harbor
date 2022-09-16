@@ -10,7 +10,8 @@ import { UserInfo, SessionInfo, MsgInfo, MessageBody, RoomInfo } from '../../typ
 import cookie from 'cookie';
 import dotenv from 'dotenv';
 import { stringifySessionInfo } from '../../helpers/fastJson';
-dotenv.config({ path: '.env' });
+import { ENV_PATH } from '../../config/constant';
+dotenv.config({ path: ENV_PATH });
 
 export function createSocketIo(server: HttpServer) {
   const corsOrigin = `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}:${

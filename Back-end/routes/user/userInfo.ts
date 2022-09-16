@@ -28,7 +28,8 @@ import { listFile } from '../../utils/listFile';
 import dotenv from 'dotenv';
 import { hasPermission } from '../../utils/hasPermission';
 import * as handler from './handlers/index';
-dotenv.config({ path: '.env' });
+import { ENV_PATH } from '../../config/constant';
+dotenv.config({ path: ENV_PATH });
 
 const { alreadyExit, noMatch, expiredOrUnValid, badAccount, invalidUuid, noPermission } = UnSuccessCodeType;
 const {

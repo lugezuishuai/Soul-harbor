@@ -11,7 +11,8 @@ import http from 'http';
 import dotenv from 'dotenv';
 import { createSocketIo } from '../methods/chat/chat';
 import { batchDelSockets } from '../utils/redis';
-dotenv.config({ path: '.env' });
+import { ENV_PATH } from '../config/constant';
+dotenv.config({ path: ENV_PATH });
 
 /**
  * Get port from environment and store in Express.

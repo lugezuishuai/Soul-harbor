@@ -2,7 +2,8 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import * as handlers from './handlers';
-dotenv.config({ path: '.env' });
+import { ENV_PATH } from '../../config/constant';
+dotenv.config({ path: ENV_PATH });
 
 const {
   avatarUpload,

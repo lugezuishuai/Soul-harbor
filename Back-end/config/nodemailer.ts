@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
-dotenv.config({ path: '.env' });
+import { ENV_PATH } from './constant';
+dotenv.config({ path: ENV_PATH });
 
 export const transporter = nodemailer.createTransport({
   host: 'smtp.163.com',

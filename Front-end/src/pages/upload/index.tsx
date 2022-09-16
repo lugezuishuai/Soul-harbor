@@ -3,6 +3,8 @@ import { Button, Progress, message, Spin } from 'antd';
 import { axiosList } from './utils/common';
 import { getFileMd5, createFileChunk, FileBlob } from './utils/fileProperty';
 import { checkUploadedChunks, uploadChunks } from './utils/fileRequest';
+import { apiGet } from '@/utils/request';
+import FileSaver from 'file-saver';
 import './index.less';
 
 interface FileUploadProps {}
@@ -53,7 +55,7 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
   };
 
   // 开始文件上传
-  startUpload = async() => {
+  startUpload = async () => {
     const uploadedFileInfo = await checkUploadedChunks(this.fileName, this.fileMd5Value); // 获取已经上传的文件信息
     if (!this.isFileUploadDone(uploadedFileInfo.fileExist) && uploadedFileInfo.uploadedList) {
       // 文件还没有上传完
@@ -62,7 +64,7 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
   };
 
   // input change变化时的回调
-  handleInputChange = async(event: React.ChangeEvent<HTMLInputElement>) => {
+  handleInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
     const file = target.files && target.files[0];
     if (file) {
@@ -78,7 +80,7 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
   handlePause = () => {
     if (axiosList.length !== 0) {
       // 如果还有切片没有上传完毕
-      axiosList.forEach(item => item.cancel('abort'));
+      axiosList.forEach((item) => item.cancel('abort'));
       axiosList.length = 0;
       message.error('上传暂停');
     }
@@ -87,6 +89,15 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
   // 重新上传文件
   handleReuse = () => {
     this.startUpload();
+  };
+
+  downloadFile = async () => {
+    // try {
+    //   await apiGet('/api/file/sendFile');
+    // } catch {
+    //   //
+    // }
+    FileSaver.saveAs('/api/file/sendFile');
   };
 
   render() {
@@ -98,27 +109,33 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
       <div className="file-upload">
         <div>
           <div className="file-upload__input">
-            <input
-              type="file"
-              name="file"
-              id="upload_file"
-              onChange={this.handleInputChange}
-            />
+            <input type="file" name="file" id="upload_file" onChange={this.handleInputChange} />
           </div>
+          <Button type="primary" className="file-upload__btn" onClick={this.downloadFile}>
+            下载文件
+          </Button>
           <div className="file-upload__operation">
-            <Button type="primary" className="file-upload__btn" onClick={this.handlePause}>暂停上传</Button>
-            <Button type="primary" className="file-upload__btn" onClick={this.handleReuse}>重新上传</Button>
+            <Button type="primary" className="file-upload__btn" onClick={this.handlePause}>
+              暂停上传
+            </Button>
+            <Button type="primary" className="file-upload__btn" onClick={this.handleReuse}>
+              重新上传
+            </Button>
           </div>
-          {startScan && 
+          {startScan && (
             <Spin spinning={!scanFileDone}>
-              <div className={scanFileDone ? 'file-upload-text__done' : 'file-upload-text__ing'}>{scanFileDone ? '文件扫描完成' : '文件扫描中...'}</div>  
+              <div className={scanFileDone ? 'file-upload-text__done' : 'file-upload-text__ing'}>
+                {scanFileDone ? '文件扫描完成' : '文件扫描中...'}
+              </div>
             </Spin>
-          }
-          {scanFileDone &&
+          )}
+          {scanFileDone && (
             <Spin spinning={!uploadFileDone}>
-              <div className={uploadFileDone ? 'file-upload-text__done' : 'file-upload-text__ing'}>{uploadFileDone ? '文件上传成功' : '文件上传中...'}</div>
+              <div className={uploadFileDone ? 'file-upload-text__done' : 'file-upload-text__ing'}>
+                {uploadFileDone ? '文件上传成功' : '文件上传中...'}
+              </div>
             </Spin>
-          }
+          )}
           <div className="file-upload__progress">
             <div className="file-upload__progress__text">文件扫描进度</div>
             <Progress type="circle" percent={scanPercent} className="file-upload__progress__circle" />
@@ -129,6 +146,6 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
           </div>
         </div>
       </div>
-    )
+    );
   }
 }

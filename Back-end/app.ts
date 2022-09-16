@@ -23,9 +23,10 @@ import { getIPAddress } from './utils/getIPAddress';
 import os from 'os';
 import dotenv from 'dotenv';
 import { accessLog, accessLogDev, accessLogErr } from './helpers/logger';
+import { ENV_PATH } from './config/constant';
 import './config/passport';
 
-dotenv.config({ path: '.env' });
+dotenv.config({ path: ENV_PATH });
 
 export const isDevelopment = process.env.NODE_ENV === 'development';
 

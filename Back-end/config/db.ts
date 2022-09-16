@@ -1,20 +1,21 @@
 import { PoolConfig } from 'mysql';
 import dotenv from 'dotenv';
 import { ClientOpts } from 'redis';
-dotenv.config({ path: '.env' });
+import { ENV_PATH } from './constant';
+dotenv.config({ path: ENV_PATH });
 
 // 数据库相关配置
 export const mysqlDbConfig: PoolConfig = {
-  host: process.env.DBHOST || 'localhost',
-  port: Number(process.env.DBPORT) || 3306,
-  user: process.env.DBUSER || 'jackson',
-  password: process.env.DBPASSWORD || '000008053927',
-  database: process.env.DATABASE || 'soul_harbor',
+  host: process.env.SERVICE_IP || 'localhost',
+  port: Number(process.env.SQL_PORT) || 3306,
+  user: process.env.SQL_USER,
+  password: process.env.SQL_PASSWORD,
+  database: process.env.SQL_DATABASE,
 };
 
 // redis 相关
 export const redisConfig: ClientOpts = {
-  host: process.env.DBHOST || 'localhost',
+  host: process.env.SERVICE_IP || 'localhost',
   port: Number(process.env.REDIS_PORT) || 6379,
 };
 
