@@ -2,6 +2,9 @@
   "name": "soul-harbor-back-end",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=14"
+  },
   "scripts": {
     "deploy:setup": "pm2 deploy production setup",
     "deploy": "pm2 deploy production update",
