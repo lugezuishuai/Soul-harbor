@@ -1,10 +1,10 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { hasPermission } from '../../../utils/hasPermission';
 import { UnSuccessCodeType } from '../code-type';
 
 const { noPermission } = UnSuccessCodeType;
 
-export async function logout(req: Request, res: Response) {
+export async function logout(req: Request, res: Response, next: NextFunction) {
   const { uuid } = req.cookies;
   // @ts-ignore
   const { token } = req.session;
@@ -15,7 +15,12 @@ export async function logout(req: Request, res: Response) {
       msg: 'no permission',
     });
   }
-  req.logout();
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect('/');
+  });
   res.cookie('token', '', {
     path: '/',
     maxAge: -1,

@@ -53,7 +53,7 @@ module.exports = {
       ref: process.env.REPO_REF, // 要拉取的git分支
       repo: process.env.REPO_URL, // 远程仓库地址
       path: process.env.SERVER_PATH, // 拉取到服务器某个目录下
-      'post-deploy': 'cd ./Back-end && npm i && npm build && npm reload', // 部署后执行
+      'post-deploy': 'cd ./Back-end && npm i && npm run build && npm run reload', // 部署后执行
     },
   },
 };
