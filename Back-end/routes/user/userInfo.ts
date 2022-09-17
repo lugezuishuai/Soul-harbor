@@ -102,7 +102,7 @@ router.post('/avatar-upload', avatarUpload);
 //         const { userId } = req.body;
 //         const { mimetype, originalname } = file;
 //         const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
-//         const hostIP = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces()); // 获取主机IP地址
+//         const hostIP = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces()); // 获取主机IP地址
 //         const port = process.env.PORT || '4001'; // 获取当前的端口号
 
 //         const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
@@ -385,7 +385,7 @@ router.post('/login', urlencodedParser, loginByUsername);
 
 //           if (soul_avatar) {
 //             const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-//             const newIPAddress = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces());
+//             const newIPAddress = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces());
 
 //             if (oldIPAddress !== newIPAddress) {
 //               // 如果IP地址发生了改变，要修改头像链接的IP地址
@@ -579,9 +579,9 @@ router.post('/forgetPassword', forgetPassword);
 //           html: `<div>
 //                 <h1>The link to reset your password is:</h1>
 //                 <br/>
-//                 <a href="http://${process.env.SERVICE_IP || 'localhost'}:${
+//                 <a href="http://${process.env.SERVER_HOST || 'localhost'}:${
 //             process.env.FRONT_END_PORT || 5000
-//           }/reset/${token}" target="_blank">http://${process.env.SERVICE_IP || 'localhost'}:${
+//           }/reset/${token}" target="_blank">http://${process.env.SERVER_HOST || 'localhost'}:${
 //             process.env.FRONT_END_PORT || 5000
 //           }/reset/${token}</a>
 //                 <br/>
@@ -901,7 +901,7 @@ router.post('/loginByEmail', loginByEmail);
 
 //           if (soul_avatar) {
 //             const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-//             const newIPAddress = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces());
+//             const newIPAddress = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces());
 
 //             if (oldIPAddress !== newIPAddress) {
 //               // 如果IP地址发生了改变，要修改头像链接的IP地址
@@ -976,7 +976,7 @@ router.get('/init', init);
 
 //     if (soul_avatar) {
 //       const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-//       const newIPAddress = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces());
+//       const newIPAddress = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces());
 
 //       if (oldIPAddress !== newIPAddress) {
 //         // 如果IP地址发生了改变，要修改头像链接的IP地址

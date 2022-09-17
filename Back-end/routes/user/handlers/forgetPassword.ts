@@ -43,9 +43,9 @@ export async function forgetPassword(req: Request, res: Response) {
           html: `<div>
                 <h1>The link to reset your password is:</h1>
                 <br/>
-                <a href="http://${process.env.SERVICE_IP || 'localhost'}:${
+                <a href="http://${process.env.SERVER_HOST || 'localhost'}:${
             process.env.FRONT_END_PORT || 5000
-          }/reset/${token}" target="_blank">http://${process.env.SERVICE_IP || 'localhost'}:${
+          }/reset/${token}" target="_blank">http://${process.env.SERVER_HOST || 'localhost'}:${
             process.env.FRONT_END_PORT || 5000
           }/reset/${token}</a>
                 <br/>

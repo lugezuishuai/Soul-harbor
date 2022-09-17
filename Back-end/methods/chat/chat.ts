@@ -14,7 +14,7 @@ import { ENV_PATH } from '../../config/constant';
 dotenv.config({ path: ENV_PATH });
 
 export function createSocketIo(server: HttpServer) {
-  const corsOrigin = `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}:${
+  const corsOrigin = `http://${process.env.SERVER_HOST || getIPAddress(os.networkInterfaces())}:${
     process.env.FRONT_END_PORT || 5000
   }`;
   const io = new Server(server, {

@@ -2,3 +2,4 @@
 # 不校验隐藏文件
 .*
 *.d.ts
+ecosystem.config.js

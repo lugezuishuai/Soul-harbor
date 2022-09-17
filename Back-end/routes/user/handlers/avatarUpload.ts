@@ -62,7 +62,7 @@ export async function avatarUpload(req: Request, res: Response) {
         const { userId } = req.body;
         const { mimetype, originalname, path: filePath } = file as any;
         const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
-        const hostIP = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces()); // 获取主机IP地址
+        const hostIP = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces()); // 获取主机IP地址
         const port = process.env.PORT || '4001'; // 获取当前的端口号
 
         const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀

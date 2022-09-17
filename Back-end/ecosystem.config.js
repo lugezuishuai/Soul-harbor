@@ -1,3 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const dotenv = require('dotenv');
+dotenv.config({ path: '.env' });
+
 module.exports = {
   apps: [
     {
@@ -44,12 +48,12 @@ module.exports = {
   ],
   deploy: {
     production: {
-      user: 'jackson',
-      host: '47.106.132.36',
-      ref: 'origin/master', // 要拉取的git分支
-      repo: 'https://github.com/lugezuishuai/Soul-harbor.git', // 远程仓库地址
-      path: '/home/jackson/Soul-harbor', // 拉取到服务器某个目录下
-      'post-deploy': 'cd ./Back-end && npm i && npm start', // 部署后执行
+      user: process.env.SERVER_USER,
+      host: process.env.SERVER_HOST,
+      ref: process.env.REPO_REF, // 要拉取的git分支
+      repo: process.env.REPO_URL, // 远程仓库地址
+      path: process.env.SERVER_PATH, // 拉取到服务器某个目录下
+      'post-deploy': 'cd ./Back-end && npm i && npm build && npm reload', // 部署后执行
     },
   },
 };

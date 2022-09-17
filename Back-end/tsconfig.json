@@ -1,6 +1,7 @@
 {
   "exclude": [
-    "copyStatic.ts"
+    "copyStatic.ts",
+    "ecosystem.config.js"
   ],
   "extends": "./ts-node.json",
   "compilerOptions": {

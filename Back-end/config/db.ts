@@ -6,7 +6,7 @@ dotenv.config({ path: ENV_PATH });
 
 // 数据库相关配置
 export const mysqlDbConfig: PoolConfig = {
-  host: process.env.SERVICE_IP || 'localhost',
+  host: process.env.SERVER_HOST || 'localhost',
   port: Number(process.env.SQL_PORT) || 3306,
   user: process.env.SQL_USER,
   password: process.env.SQL_PASSWORD,
@@ -15,7 +15,7 @@ export const mysqlDbConfig: PoolConfig = {
 
 // redis 相关
 export const redisConfig: ClientOpts = {
-  host: process.env.SERVICE_IP || 'localhost',
+  host: process.env.SERVER_HOST || 'localhost',
   port: Number(process.env.REDIS_PORT) || 6379,
 };
 

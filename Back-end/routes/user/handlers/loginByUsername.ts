@@ -45,7 +45,7 @@ export function loginByUsername(req: Request, res: Response) {
 
           if (soul_avatar) {
             const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-            const newIPAddress = process.env.SERVICE_IP || getIPAddress(os.networkInterfaces());
+            const newIPAddress = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces());
 
             if (oldIPAddress !== newIPAddress) {
               // 如果IP地址发生了改变，要修改头像链接的IP地址

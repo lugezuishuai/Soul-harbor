@@ -62,7 +62,7 @@ app.use(helmet());
 // 设置跨域（使用中间件）
 app.use(
   cors({
-    origin: `http://${process.env.SERVICE_IP || getIPAddress(os.networkInterfaces())}`, // Access-Control-Allow-Origin
+    origin: `http://${process.env.SERVER_HOST || getIPAddress(os.networkInterfaces())}`, // Access-Control-Allow-Origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Access-Control-Allow-Methods
     allowedHeaders: 'Origin,X-Requested-With,Content-Type,Accept,Authorization', // Access-Control-Allow-Headers
     preflightContinue: false, // Pass the CORS preflight response to the next handler
