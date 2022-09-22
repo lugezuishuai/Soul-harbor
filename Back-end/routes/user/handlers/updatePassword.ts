@@ -5,7 +5,7 @@ import { query } from '../../../utils/query';
 import { escape, format } from 'sqlstring';
 import { UnSuccessCodeType } from '../code-type';
 import { BCRYPT_SALT_ROUNDS } from '..';
-import { isDevelopment } from '../../../app';
+import { isDevelopment } from '../../../config/constant';
 
 const { expiredOrUnValid } = UnSuccessCodeType;
 

@@ -9,7 +9,7 @@ import { UnSuccessCodeType } from '../code-type';
 import { matchUrls } from '../../../utils/matchUrl';
 import { getIPAddress } from '../../../utils/getIPAddress';
 import { setToken } from '../../../config/token/token';
-import { isDevelopment } from '../../../app';
+import { isDevelopment } from '../../../config/constant';
 
 const { badAccount, noMatch, expiredOrUnValid } = UnSuccessCodeType;
 

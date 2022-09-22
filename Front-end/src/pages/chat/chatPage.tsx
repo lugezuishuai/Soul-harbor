@@ -529,7 +529,7 @@ function ChatPage(props: ChatPageProps) {
     const sessionId = pathnameArr[pathnameArr.length - 1];
 
     if (selectSession) {
-      historyRef.current.push(`/chat/${selectSession.sessionId}`);
+      historyRef.current.push(`/soul-harbor/chat/${selectSession.sessionId}`);
     } else {
       if (sessionId === 'chat' || sessionId === '') {
         return;

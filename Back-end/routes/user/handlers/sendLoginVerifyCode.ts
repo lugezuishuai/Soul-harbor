@@ -9,7 +9,7 @@ import { UnSuccessCodeType } from '../code-type';
 import { BCRYPT_SALT_ROUNDS } from '..';
 import { transporter } from '../../../config/nodemailer';
 import Mail from 'nodemailer/lib/mailer';
-import { isDevelopment } from '../../../app';
+import { isDevelopment } from '../../../config/constant';
 
 const { badAccount, clientError } = UnSuccessCodeType;
 

@@ -7,7 +7,7 @@ import { getIPAddress } from '../../../utils/getIPAddress';
 import { matchUrls } from '../../../utils/matchUrl';
 import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
-import { isDevelopment } from '../../../app';
+import { isDevelopment } from '../../../config/constant';
 
 const { clientError } = UnSuccessCodeType;
 

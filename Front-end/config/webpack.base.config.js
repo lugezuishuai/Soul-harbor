@@ -1,13 +1,13 @@
 /* eslint-disable */
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin"); // 单独抽离css文件
+const MiniCssExtractPlugin = require('mini-css-extract-plugin'); // 单独抽离css文件
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const WebpackBar = require('webpackbar');
 const resolve = require('./helper/resolve');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
 const { isEnvProduction, publicPath, srcPath, distPath } = require('./helper/constant');
-dotenv.config({ path: '.env' });
+dotenv.config({ path: isEnvProduction ? '.env' : '.env.development' });
 
 const miniCssLoader = isEnvProduction ? MiniCssExtractPlugin.loader : 'style-loader';
 
@@ -22,17 +22,23 @@ const postcssPlugins = [
   'postcss-import',
   'postcss-url',
   'postcss-flexbugs-fixes',
-  ['postcss-preset-env', {
-    autoprefixer: {
-      flexbox: 'no-2009',
+  [
+    'postcss-preset-env',
+    {
+      autoprefixer: {
+        flexbox: 'no-2009',
+      },
+      stage: 3,
     },
-    stage: 3,
-  }],
+  ],
   // 移动端适配
-  ['postcss-pxtorem', {
-    rootValue: 53.99, // 1rem = 53.99px
-    include: srcPath,
-  }],
+  [
+    'postcss-pxtorem',
+    {
+      rootValue: 53.99, // 1rem = 53.99px
+      include: srcPath,
+    },
+  ],
 ];
 
 const postcssLoader = {
@@ -51,7 +57,7 @@ const postcssLoader = {
 };
 
 const lessLoader = {
-  loader: 'less-loader', 
+  loader: 'less-loader',
   options: {
     lessOptions: {
       javascriptEnabled: true,
@@ -85,7 +91,7 @@ const babelLoader = {
 
 module.exports = {
   entry: {
-    app: './src/index.tsx'
+    app: './src/index.tsx',
   },
   output: {
     filename: isEnvProduction ? 'js/[name].[contenthash:8].js' : '[name].[hash:8].js',
@@ -117,41 +123,21 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: [
-          miniCssLoader,
-          cssLoader, 
-          postcssLoader,
-        ]
+        use: [miniCssLoader, cssLoader, postcssLoader],
       },
       {
         test: /\.(sa|sc)ss$/i,
-        use: [
-          miniCssLoader,
-          cssLoader,
-          postcssLoader,
-          'sass-loader',
-        ],
+        use: [miniCssLoader, cssLoader, postcssLoader, 'sass-loader'],
       },
       {
         test: /\.less$/i,
         include: /node_modules/,
-        use: [
-          miniCssLoader,
-          cssLoader,
-          postcssLoader,
-          lessLoader,
-        ],
+        use: [miniCssLoader, cssLoader, postcssLoader, lessLoader],
       },
       {
         test: /\.less$/i,
         include: srcPath,
-        use: [
-          miniCssLoader,
-          cssLoader,
-          postcssLoader,
-          lessLoader,
-          styleResourceLoader,
-        ],
+        use: [miniCssLoader, cssLoader, postcssLoader, lessLoader, styleResourceLoader],
       },
       {
         test: /\.(png|jpe?g|gif)(\?.*)?$/,
@@ -189,7 +175,7 @@ module.exports = {
         include: srcPath,
         type: 'asset/source', // raw-loader
       },
-    ]
+    ],
   },
   plugins: [
     // 如果需要web环境也能访问，必须用这个插件注入
@@ -209,7 +195,7 @@ module.exports = {
       chunkFilename: 'css/[name].[contenthash:8].css',
     }),
     new AntdDayjsWebpackPlugin({
-      preset: 'antdv3'
+      preset: 'antdv3',
     }),
     new WebpackBar(),
   ],

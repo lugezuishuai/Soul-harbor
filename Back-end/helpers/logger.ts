@@ -3,7 +3,7 @@ import path from 'path';
 import fse from 'fs-extra';
 // @ts-ignore
 import fileStreamRotator from 'file-stream-rotator';
-import { isDevelopment } from '../app';
+import { isDevelopment } from '../config/constant';
 
 export function getAccessLogStream(type: 'normal' | 'error' = 'normal') {
   try {

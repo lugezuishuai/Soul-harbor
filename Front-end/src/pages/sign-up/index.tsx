@@ -61,10 +61,13 @@ function SignUp(props: Props) {
         .then((res: LoginResponse) => {
           message.success('登录成功');
           const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
-          const socket = io(`${process.env.SERVICE_URL || 'http://localhost:5000'}`, { forceNew: true });
+          const socket = io(
+            process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : `http://${process.env.REMOTE_HOST}`,
+            { forceNew: true, path: '/soul-harbor/socket.io' },
+          );
           socket.emit('login', uid);
 
-          res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });
+          res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/soul-harbor' });
           // 建立socket连接
           dispatch({
             type: 'INSERT_SOCKET',
@@ -89,7 +92,7 @@ function SignUp(props: Props) {
           setLoading(false);
         });
     },
-    [dispatch, emailLogin, hide]
+    [dispatch, emailLogin, hide],
   );
 
   const changeMenu = useCallback(
@@ -101,7 +104,7 @@ function SignUp(props: Props) {
         setSelectMenu(value);
       }
     },
-    [resetFields]
+    [resetFields],
   );
 
   const handleRegister = useCallback(
@@ -126,7 +129,7 @@ function SignUp(props: Props) {
           setLoading(false);
         });
     },
-    [changeMenu]
+    [changeMenu],
   );
 
   const handleOk = useCallback(
@@ -142,7 +145,7 @@ function SignUp(props: Props) {
         }
       });
     },
-    [validateFields, selectMenu, handleLogin, handleRegister]
+    [validateFields, selectMenu, handleLogin, handleRegister],
   );
 
   // 忘记密码配置
@@ -195,7 +198,7 @@ function SignUp(props: Props) {
         console.error(e);
       }
     },
-    [handleOk]
+    [handleOk],
   );
 
   const PCFooter: ReactNode = (

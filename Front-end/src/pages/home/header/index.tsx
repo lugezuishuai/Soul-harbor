@@ -82,7 +82,10 @@ function Header(props: HeaderProps) {
     try {
       const res = await apiGet(INIT);
       const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
-      const socket = io(`${process.env.SERVICE_URL || 'http://localhost:5000'}`, { forceNew: true });
+      const socket = io(
+        process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : `http://${process.env.REMOTE_HOST}`,
+        { forceNew: true, path: '/soul-harbor/socket.io' },
+      );
       socket.emit('login', uid);
       // 建立socket连接
       dispatch({
@@ -216,7 +219,7 @@ function Header(props: HeaderProps) {
           {renderHomeMenu(loginMenu)}
         </WrapWithLogin>
       )}
-      <Link to="/" className="back-to-home">
+      <Link to="/soul-harbor" className="back-to-home">
         <Icon component={Heart as any} className="back-to-home__icon" />
         <span className="back-to-home__text">Soul Harbor</span>
       </Link>

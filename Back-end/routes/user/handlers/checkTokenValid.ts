@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { escape } from 'sqlstring';
 import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
-import { isDevelopment } from '../../../app';
+import { isDevelopment } from '../../../config/constant';
 
 const { expiredOrUnValid, clientError } = UnSuccessCodeType;
 

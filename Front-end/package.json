@@ -8,6 +8,7 @@
   },
   "main": "./src/index.tsx",
   "scripts": {
+    "deploy": "node deploy.js",
     "start": "cross-env NODE_ENV=development webpack-dev-server --config ./config/webpack.config.js",
     "build": "cross-env NODE_ENV=production webpack --config ./config/webpack.config.js",
     "analyse": "cross-env ANALYSE_ENABLED=true NODE_ENV=production webpack --config ./config/webpack.config.js",
@@ -20,7 +21,7 @@
     "server": "cd mock && hs -p 4000 -a localhost"
   },
   "keywords": [],
-  "author": "jackson huang",
+  "author": "Jackson Huang",
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.16.0",

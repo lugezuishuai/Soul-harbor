@@ -18,7 +18,7 @@ dotenv.config({ path: ENV_PATH });
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(process.env.PORT || '4001');
+const port = normalizePort('4001');
 app.set('port', port);
 
 /**

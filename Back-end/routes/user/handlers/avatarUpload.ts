@@ -10,7 +10,7 @@ import { hasPermission } from '../../../utils/hasPermission';
 import { UnSuccessCodeType } from '../code-type';
 import { getIPAddress } from '../../../utils/getIPAddress';
 import { extractExt } from '../../../utils/extractExt';
-import { isDevelopment } from '../../../app';
+import { isDevelopment } from '../../../config/constant';
 
 const { noPermission } = UnSuccessCodeType;
 const AVATAR_PATH = path.join(__dirname, '../../../public/user/avatar');
@@ -63,7 +63,6 @@ export async function avatarUpload(req: Request, res: Response) {
         const { mimetype, originalname, path: filePath } = file as any;
         const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
         const hostIP = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces()); // 获取主机IP地址
-        const port = process.env.PORT || '4001'; // 获取当前的端口号
 
         const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
         const tempAvatarDir = path.resolve(AVATAR_PATH, `${userId}`);
@@ -74,7 +73,9 @@ export async function avatarUpload(req: Request, res: Response) {
         }
         fse.renameSync(filePath, tempAvatarPath); // 重写头像的路径
 
-        const avatarSrc = `http://${hostIP}:${port}/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
+        const avatarSrc = `http://${
+          isDevelopment ? 'localhost:4001' : hostIP
+        }/soul-harbor/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
 
         schedule.scheduleJob(new Date(new Date().getTime() + 1800000), () => {
           // 临时文件夹的有效期为半个小时

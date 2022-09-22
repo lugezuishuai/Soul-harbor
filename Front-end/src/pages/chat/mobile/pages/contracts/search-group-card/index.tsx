@@ -30,7 +30,7 @@ export function SearchGroupCard({ roomInfo, keyword, dispatch }: SearchGroupChat
       type: SELECT_SESSION,
       payload: selectSession,
     });
-    history.push(`/chat/conversation/${selectSession.sessionId}`);
+    history.push(`/soul-harbor/chat/conversation/${selectSession.sessionId}`);
   }
 
   return (

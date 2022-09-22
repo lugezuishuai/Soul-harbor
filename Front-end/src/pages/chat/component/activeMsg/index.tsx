@@ -50,7 +50,7 @@ export function ActiveMsg({ msg, friendsList, groupsList, dispatch }: ActiveMsgP
       type: SELECT_SESSION,
       payload: selectSession,
     });
-    isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
+    isMobile && history.push(`/soul-harbor/chat/conversation/${selectSession.sessionId}`);
   }
 
   function getAvatar() {

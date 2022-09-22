@@ -21,36 +21,36 @@ const { isMobile } = screen;
 
 export const routes: RouteType[] = [
   {
-    path: '/exception/403',
+    path: '/soul-harbor/exception/403',
     component: NoPermission,
   },
   {
-    path: '/exception/404',
+    path: '/soul-harbor/exception/404',
     component: NotFound,
   },
   {
-    path: '/exception/500',
+    path: '/soul-harbor/exception/500',
     component: Error,
   },
   {
-    path: '/reset/:token',
+    path: '/soul-harbor/reset/:token',
     component: ResetPw,
   },
   {
-    path: '/',
+    path: '/soul-harbor',
     component: WrapHome,
     exact: false,
     routes: [
       {
-        path: '/',
+        path: '/soul-harbor',
         component: Content,
       },
       {
-        path: '/home',
-        redirect: '/',
+        path: '/soul-harbor/home',
+        redirect: '/soul-harbor',
       },
       {
-        path: '/chat',
+        path: '/soul-harbor/chat',
         component: WrapChatPage,
         auth: ['login'],
         exact: false,
@@ -58,31 +58,31 @@ export const routes: RouteType[] = [
         routes: isMobile
           ? [
               {
-                path: '/chat/sessions',
+                path: '/soul-harbor/chat/sessions',
                 component: ChatSessionsMobile,
                 auth: ['login'],
                 replaceComponent: WrapNoPermission,
               },
               {
-                path: '/chat/contracts',
+                path: '/soul-harbor/chat/contracts',
                 component: ChatContractsMobile,
                 auth: ['login'],
                 replaceComponent: WrapNoPermission,
               },
               {
-                path: '/chat/addFriends',
+                path: '/soul-harbor/chat/addFriends',
                 component: AddFriendsMobile,
                 auth: ['login'],
                 replaceComponent: WrapNoPermission,
               },
               {
-                path: '/chat/launchGroupChat',
+                path: '/soul-harbor/chat/launchGroupChat',
                 component: LaunchGroupChat,
                 auth: ['login'],
                 replaceComponent: WrapNoPermission,
               },
               {
-                path: '/chat/conversation/:id',
+                path: '/soul-harbor/chat/conversation/:id',
                 component: WrapConversationMobile,
                 auth: ['login'],
                 replaceComponent: WrapNoPermission,
@@ -91,21 +91,21 @@ export const routes: RouteType[] = [
           : [],
       },
       {
-        path: '/news',
+        path: '/soul-harbor/news',
         component: UploadFile,
       },
       {
-        path: '/blog',
+        path: '/soul-harbor/blog',
         component: Employee,
       },
       {
-        path: '/user/:id',
+        path: '/soul-harbor/user/:id',
         component: UserInfo,
         auth: ['login'],
         replaceComponent: WrapNoPermission,
       },
       {
-        path: '/markdown',
+        path: '/soul-harbor/markdown',
         component: MarkDownCom,
       },
     ],

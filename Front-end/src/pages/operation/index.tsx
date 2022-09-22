@@ -53,7 +53,7 @@ function Operation(props: OperationProps): any {
         type: 'CHANGE_SELECT_MENU',
         payload: '',
       });
-      history.push({ pathname: '/' });
+      history.push({ pathname: '/soul-harbor' });
     } catch (e) {
       console.error(e);
     }

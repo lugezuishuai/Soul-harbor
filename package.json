@@ -1,0 +1,22 @@
+{
+  "name": "soul-harbor",
+  "version": "1.0.0",
+  "description": "<font size = 6>**介绍**</font>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lugezuishuai/Soul-harbor.git"
+  },
+  "author": "Jackson Huang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lugezuishuai/Soul-harbor/issues"
+  },
+  "homepage": "https://github.com/lugezuishuai/Soul-harbor#readme",
+  "devDependencies": {
+    "node-ssh": "^13.0.0"
+  }
+}

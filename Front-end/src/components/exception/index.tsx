@@ -26,7 +26,7 @@ export function Exception(props: ExceptionProps) {
     desc,
     img,
     actions,
-    target = '/',
+    target = '/soul-harbor',
     linkProps = {},
   } = props;
 

@@ -3,7 +3,7 @@ import passport from 'passport';
 import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
 import { escape, format } from 'sqlstring';
-import { isDevelopment } from '../../../app';
+import { isDevelopment } from '../../../config/constant';
 
 const { alreadyExit, noMatch, expiredOrUnValid, clientError } = UnSuccessCodeType;
 

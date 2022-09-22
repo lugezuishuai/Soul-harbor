@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dotenv = require('dotenv');
-dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env.development' });
 
 module.exports = {
   apps: [
@@ -48,11 +48,11 @@ module.exports = {
   ],
   deploy: {
     production: {
-      user: process.env.SERVER_USER,
-      host: process.env.SERVER_HOST,
+      user: process.env.REMOTE_USER,
+      host: process.env.REMOTE_HOST,
       ref: process.env.REPO_REF, // 要拉取的git分支
       repo: process.env.REPO_URL, // 远程仓库地址
-      path: process.env.SERVER_PATH, // 拉取到服务器某个目录下
+      path: process.env.REMOTE_PATH, // 拉取到服务器某个目录下
       'post-deploy': 'cd ./Back-end && npm i && npm run build && npm run reload', // 部署后执行
     },
   },

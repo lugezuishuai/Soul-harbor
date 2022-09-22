@@ -5,8 +5,8 @@ import crypto from 'crypto';
 import dayjs from 'dayjs';
 import { transporter } from '../../../config/nodemailer';
 import { escape, format } from 'sqlstring';
-import { isDevelopment } from '../../../app';
 import Mail from 'nodemailer/lib/mailer';
+import { isDevelopment } from '../../../config/constant';
 
 const { badAccount, clientError } = UnSuccessCodeType;
 
@@ -43,11 +43,9 @@ export async function forgetPassword(req: Request, res: Response) {
           html: `<div>
                 <h1>The link to reset your password is:</h1>
                 <br/>
-                <a href="http://${process.env.SERVER_HOST || 'localhost'}:${
-            process.env.FRONT_END_PORT || 5000
-          }/reset/${token}" target="_blank">http://${process.env.SERVER_HOST || 'localhost'}:${
-            process.env.FRONT_END_PORT || 5000
-          }/reset/${token}</a>
+                <a href="http://${
+                  isDevelopment ? 'localhost:5000' : process.env.SERVER_HOST
+                }/soul-harbor/reset/${token}" target="_blank">Reset Your Password</a>
                 <br/>
                 <h2>Note: the IP address to send the link is:</h2>
                 <br/>

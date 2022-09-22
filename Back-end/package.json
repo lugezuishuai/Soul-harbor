@@ -8,6 +8,7 @@
   "scripts": {
     "deploy:setup": "pm2 deploy production setup",
     "deploy": "pm2 deploy production update",
+    "deploy:docker": "ts-node deploy-docker.ts",
     "predeploy": "ts-node deploy.ts",
     "start": "pm2 start ecosystem.config.js",
     "reload": "pm2 reload ecosystem.config.js",

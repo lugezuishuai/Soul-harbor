@@ -14,13 +14,12 @@ import { ENV_PATH } from '../../config/constant';
 dotenv.config({ path: ENV_PATH });
 
 export function createSocketIo(server: HttpServer) {
-  const corsOrigin = `http://${process.env.SERVER_HOST || getIPAddress(os.networkInterfaces())}:${
-    process.env.FRONT_END_PORT || 5000
-  }`;
+  const corsOrigin = `http://${process.env.SERVER_HOST || getIPAddress(os.networkInterfaces())}`;
   const io = new Server(server, {
     cors: {
       origin: corsOrigin,
     },
+    path: '/soul-harbor/socket.io',
   });
 
   io.on('connection', (socket: Socket) => {

@@ -2,22 +2,22 @@ import Client from 'ssh2-sftp-client';
 import dotenv from 'dotenv';
 import fse from 'fs-extra';
 import path from 'path';
-dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env.development' });
 
 const sftp = new Client();
 
 async function putEnv() {
   try {
     await sftp.connect({
-      host: process.env.SERVER_HOST,
+      host: process.env.REMOTE_HOST,
       port: 22,
-      username: process.env.SERVER_USER,
-      password: process.env.SERVER_PASSWORD,
+      username: process.env.REMOTE_USER,
+      password: process.env.REMOTE_PASSWORD,
     });
 
-    const targetDir = process.env.SERVER_SOURCE_PATH;
+    const targetDir = process.env.REMOTE_SOURCE_PATH;
     if (!targetDir) {
-      console.error('ENV SERVER_SOURCE_PATH not fount');
+      console.error('ENV REMOTE_SOURCE_PATH not fount');
       sftp.end();
       process.exit(1);
     }

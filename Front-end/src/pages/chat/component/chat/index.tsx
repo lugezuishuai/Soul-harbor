@@ -157,7 +157,7 @@ function ChatRoom({
         await apiPost(EXIT_GROUP, reqData);
         message.success('退出成功');
 
-        historyRef.current.push('/chat');
+        historyRef.current.push('/soul-harbor/chat');
         dispatch({
           type: SELECT_SESSION,
           payload: null,

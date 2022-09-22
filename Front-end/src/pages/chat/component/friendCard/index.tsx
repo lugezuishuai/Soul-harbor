@@ -42,7 +42,7 @@ export function FriendCard({
       const { sessionId } = selectSession;
 
       if (friend_id === sessionId) {
-        isMobile && history.push(`/chat/conversation/${sessionId}`);
+        isMobile && history.push(`/soul-harbor/chat/conversation/${sessionId}`);
         return;
       }
     }
@@ -57,7 +57,7 @@ export function FriendCard({
       type: SELECT_SESSION,
       payload: newSelectSession,
     });
-    isMobile && history.push(`/chat/conversation/${newSelectSession.sessionId}`);
+    isMobile && history.push(`/soul-harbor/chat/conversation/${newSelectSession.sessionId}`);
   }
 
   function handleDeleteFriend(e: any) {

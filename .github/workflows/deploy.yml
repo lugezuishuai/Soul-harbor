@@ -1,0 +1,52 @@
+name: deploy
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source codes # 检出仓库的代码到runner
+        uses: actions/checkout@v2
+      - name: Set node version # 设置node版本
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14.16.1"
+      - name: Upload back-end codes # 上传后端代码
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rltgoDzvO"
+          SOURCE: "Back-end/"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_BACK_END_TARGET }}
+          EXCLUDE: "deploy.ts, deploy-docker.ts"
+      - name: Install front-end dependencies # 安装前端依赖
+        run: cd ./Front-end && npm ci
+      - name: Package front-end dist # 打包前端代码
+        run: pwd && npm run build
+        env:
+          PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      - name: Build soul-harbor service # 部署soul-harbor服务
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: cd ~/apps && docker-compose up -d --build soul-harbor && docker image prune -f
+      - name: Upload front-end dist # 上传前端产物
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rltgoDzvO"
+          SOURCE: "Front-end/dist"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_FRONT_END_TARGET }}

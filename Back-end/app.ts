@@ -14,7 +14,7 @@ import rateLimit from 'express-rate-limit';
 
 import { jwtSecret } from './config/token/token';
 import { notTokenPath } from './config/token/path';
-import indexRouter from './routes/index';
+// import indexRouter from './routes/index';
 import { router as userRouter } from './routes/user'; // 用户相关
 import { router as fileRouter } from './routes/file'; // 文件相关
 import { router as chatRouter } from './routes/chat'; // 聊天相关
@@ -23,13 +23,10 @@ import { getIPAddress } from './utils/getIPAddress';
 import os from 'os';
 import dotenv from 'dotenv';
 import { accessLog, accessLogDev, accessLogErr } from './helpers/logger';
-import { ENV_PATH } from './config/constant';
+import { ENV_PATH, isDevelopment } from './config/constant';
 import './config/passport';
 
 dotenv.config({ path: ENV_PATH });
-
-export const isDevelopment = process.env.NODE_ENV === 'development';
-
 const app = express();
 
 // 限制请求数量5分钟内为100个
@@ -81,15 +78,15 @@ app.use(
 );
 
 app.set('trust proxy', true);
-app.use('/api/', apiLimiter);
-app.use('/api/user/register', createAccountLimiter);
+app.use('/soul-harbor/api/', apiLimiter);
+app.use('/soul-harbor/api/user/register', createAccountLimiter);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // 处理日志
-if (process.env.NODE_ENV === 'development') {
+if (isDevelopment) {
   // 开发环境打印日志不保存
   app.use(accessLogDev);
 } else {
@@ -111,12 +108,12 @@ app.use(
 app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
 app.use(passport.initialize()); // 初始化passport
 
-app.use('/', indexRouter);
-app.use('/static', express.static(path.join(__dirname, 'public')));
-app.use('/api/employee', employeeRouter); // TODO: 后续要换成博客的路由
-app.use('/api/user', userRouter);
-app.use('/api/file', fileRouter);
-app.use('/api/chat', chatRouter);
+// app.use('/', indexRouter);
+app.use('/soul-harbor/static', express.static(path.join(__dirname, 'public')));
+app.use('/soul-harbor/api/employee', employeeRouter); // TODO: 后续要换成博客的路由
+app.use('/soul-harbor/api/user', userRouter);
+app.use('/soul-harbor/api/file', fileRouter);
+app.use('/soul-harbor/api/chat', chatRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

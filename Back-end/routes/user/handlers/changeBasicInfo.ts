@@ -9,7 +9,7 @@ import { listFile } from '../../../utils/listFile';
 import { query } from '../../../utils/query';
 import { getAvatarUrl } from '../../../utils/getAvatarUrl';
 import { batchSetSessionsAvatar } from '../../../utils/redis';
-import { isDevelopment } from '../../../app';
+import { isDevelopment } from '../../../config/constant';
 
 const { noPermission, invalidUuid } = UnSuccessCodeType;
 const AVATAR_PATH = path.join(__dirname, '../../../public/user/avatar');

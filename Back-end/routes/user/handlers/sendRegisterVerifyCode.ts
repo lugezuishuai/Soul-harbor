@@ -8,8 +8,8 @@ import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
 import { BCRYPT_SALT_ROUNDS } from '..';
 import { transporter } from '../../../config/nodemailer';
-import { isDevelopment } from '../../../app';
 import Mail from 'nodemailer/lib/mailer';
+import { isDevelopment } from '../../../config/constant';
 
 const { badAccount, clientError } = UnSuccessCodeType;
 
