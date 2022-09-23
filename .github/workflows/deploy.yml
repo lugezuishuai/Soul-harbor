@@ -9,12 +9,12 @@ on:
   workflow_dispatch:
 jobs:
   deploy:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout source codes # 检出仓库的代码到runner
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set node version # 设置node版本
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "14.16.1"
       - name: Remove back-end codes # 删除后端代码
@@ -23,7 +23,9 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: cd ${{ secrets.REMOTE_BACK_END_TARGET }} && rm -rf *
+          script: |
+            cd ${{ secrets.REMOTE_BACK_END_TARGET }}
+            rm -rf *
       - name: Upload back-end codes # 上传后端代码
         uses: easingthemes/ssh-deploy@main
         env:
@@ -34,10 +36,11 @@ jobs:
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_BACK_END_TARGET }}
           EXCLUDE: "deploy.ts, deploy-docker.ts"
-      - name: Install front-end dependencies # 安装前端依赖
-        run: cd ./Front-end && npm ci
-      - name: Package front-end dist # 打包前端代码
-        run: cd ./Front-end && npm run build
+      - name: Install and build front-end # 安装前端依赖 && 构建
+        run: |
+          cd ./Front-end
+          npm ci
+          npm run build
         env:
           PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
@@ -47,7 +50,10 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: cd ~/apps && docker-compose up -d --build soul-harbor && docker image prune -f
+          script: |
+            cd ~/apps
+            docker-compose up -d --build soul-harbor
+            docker image prune -f
       - name: Upload front-end dist # 上传前端产物
         uses: easingthemes/ssh-deploy@main
         env:
