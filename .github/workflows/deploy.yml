@@ -54,12 +54,21 @@ jobs:
             cd ~/apps
             docker-compose up -d --build soul-harbor
             docker image prune -f
+      - name: Remove front-end dist # 删除前端产物
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.REMOTE_FRONT_END_TARGET }}
+            rm -rf *
       - name: Upload front-end dist # 上传前端产物
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rltgoDzvO"
-          SOURCE: "Front-end/dist"
+          SOURCE: "Front-end/dist/"
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_FRONT_END_TARGET }}

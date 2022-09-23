@@ -34,14 +34,23 @@ ssh
     }
 
     ssh
-      .putDirectory(distPath, remotePath)
+      .execCommand('rm -rf *', { cwd: remotePath })
       .then(() => {
-        console.log('dist 文件夹上传成功！');
-        ssh.dispose();
-        process.exit(0);
+        ssh
+          .putDirectory(distPath, remotePath)
+          .then(() => {
+            console.log('dist 文件夹上传成功！');
+            ssh.dispose();
+            process.exit(0);
+          })
+          .catch((err) => {
+            console.log('dist 文件夹上传失败！', err);
+            ssh.dispose();
+            process.exit(1);
+          });
       })
       .catch((err) => {
-        console.log('dist 文件夹上传失败！', err);
+        console.log(`${remotePath} 文件夹不存在！`, err);
         ssh.dispose();
         process.exit(1);
       });
