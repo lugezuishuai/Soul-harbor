@@ -13,10 +13,10 @@ jobs:
     steps:
       - name: Checkout source codes # 检出仓库的代码到runner
         uses: actions/checkout@v3
-      - name: Set node version # 设置node版本
-        uses: actions/setup-node@v3
-        with:
-          node-version: "14.16.1"
+      # - name: Set node version # 设置node版本
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: "14.16.1"
       - name: Remove back-end codes # 删除后端代码
         uses: appleboy/ssh-action@master
         with:
