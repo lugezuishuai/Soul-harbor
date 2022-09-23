@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - name: Checkout source codes # 检出仓库的代码到runner
         uses: actions/checkout@v2
@@ -17,6 +17,13 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "14.16.1"
+      - name: Remove back-end codes # 删除后端代码
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: cd ${{ secrets.REMOTE_BACK_END_TARGET }} && rm -rf *
       - name: Upload back-end codes # 上传后端代码
         uses: easingthemes/ssh-deploy@main
         env:

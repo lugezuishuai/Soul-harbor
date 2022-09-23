@@ -43,6 +43,7 @@ ssh
                 baseName !== 'logs' &&
                 baseName !== 'node_modules' &&
                 baseName !== '.DS_Store' &&
+                baseName !== 'public' &&
                 !/^\.env.*/.test(baseName) &&
                 !/^deploy.*/.test(baseName)
               );
