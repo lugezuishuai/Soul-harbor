@@ -30,7 +30,7 @@ jobs:
       - name: Install front-end dependencies # 安装前端依赖
         run: cd ./Front-end && npm ci
       - name: Package front-end dist # 打包前端代码
-        run: pwd && npm run build
+        run: cd ./Front-end && npm run build
         env:
           PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
