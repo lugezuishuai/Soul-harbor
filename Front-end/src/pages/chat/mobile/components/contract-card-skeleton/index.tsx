@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import { Skeleton } from '@/components/skeleton';
+import { Skeleton } from '@/components/custom-skeleton';
 import './index.less';
 
 const { Block, Avatar: AvatarSkeleton } = Skeleton;

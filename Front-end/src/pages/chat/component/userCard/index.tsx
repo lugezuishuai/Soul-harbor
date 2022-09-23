@@ -8,7 +8,7 @@ import { AddFriendRequest } from '@/interface/chat/addFriend';
 import { ADD_FRIEND } from '@/constants/urls';
 import { Action } from '@/redux/actions';
 import { SELECT_SESSION } from '@/redux/actions/action_types';
-import { Skeleton } from '@/components/skeleton';
+import { Skeleton } from '@/components/custom-skeleton';
 import classnames from 'classnames';
 import Cookies from 'js-cookie';
 import { screen } from '@/constants/screen';

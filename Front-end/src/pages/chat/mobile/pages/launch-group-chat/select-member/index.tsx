@@ -4,7 +4,7 @@ import Selected from '@/assets/icon/selected.svg';
 import { FriendsListInfo } from '..';
 import defaultAvatar from '@/assets/image/default-avatar.png';
 import classnames from 'classnames';
-import { Skeleton } from '@/components/skeleton';
+import { Skeleton } from '@/components/custom-skeleton';
 import './index.less';
 
 const { Block, Avatar: AvatarSkeleton } = Skeleton;

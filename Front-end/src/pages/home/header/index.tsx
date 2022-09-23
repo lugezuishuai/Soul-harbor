@@ -11,7 +11,7 @@ import { LoginState, SocketState, UserInfoState } from '@/redux/reducers/state';
 import { Action } from '@/redux/actions';
 import { screen } from '@/constants/screen';
 import { MenuItemType } from '@/pages/sign-up';
-import { Skeleton } from '@/components/skeleton';
+import { Skeleton } from '@/components/custom-skeleton';
 import { WrapWithLogin } from '@/components/with-login';
 import { SelectParam } from 'antd/lib/menu';
 import { MenuConfig, loginMenu, noLoginMenu } from './menu-config';

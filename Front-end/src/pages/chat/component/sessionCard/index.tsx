@@ -1,5 +1,5 @@
 import React from 'react';
-import { Skeleton } from '@/components/skeleton';
+import { Skeleton } from '@/components/custom-skeleton';
 import classnames from 'classnames';
 import { Avatar } from 'antd';
 import defaultAvatar from '@/assets/image/default-avatar.png';
