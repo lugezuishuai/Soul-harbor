@@ -3,7 +3,6 @@ import { Button, Progress, message, Spin } from 'antd';
 import { axiosList } from './utils/common';
 import { getFileMd5, createFileChunk, FileBlob } from './utils/fileProperty';
 import { checkUploadedChunks, uploadChunks } from './utils/fileRequest';
-import { apiGet } from '@/utils/request';
 import FileSaver from 'file-saver';
 import './index.less';
 

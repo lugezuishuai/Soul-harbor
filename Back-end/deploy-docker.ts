@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.development' });
 
 const ssh = new NodeSSH();
-
 const host = process.env.REMOTE_HOST;
 const username = process.env.REMOTE_USER;
 const privateKeyPath = process.env.PRIVATE_KEY_PATH;

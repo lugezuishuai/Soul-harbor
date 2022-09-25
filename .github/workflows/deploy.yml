@@ -57,7 +57,7 @@ jobs:
           PATTERNS: |
             Front-end/+(src|config|public)/*
       - name: Output Codes Diff # 输出codes diff
-        run: echo '${{ env.GIT_DIFF }}' | jq .
+        run: echo '${{ env.GIT_DIFF }}'
       - name: Build Dist # 构建dist
         run: npm run build
         if: env.GIT_DIFF
@@ -111,7 +111,7 @@ jobs:
             !Back-end/deploy.ts
             !Back-end/deploy-docker.ts
       - name: Output Codes Diff # 输出codes diff
-        run: echo '${{ env.GIT_DIFF }}' | jq .
+        run: echo '${{ env.GIT_DIFF }}'
       - name: Build And Push image # 构建和推送镜像
         run: |
           docker login --username=${{ secrets.DOCKER_USERNAME }} registry.cn-shenzhen.aliyuncs.com --password=${{ secrets.DOCKER_PASSWORD }}

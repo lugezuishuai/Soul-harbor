@@ -11,6 +11,8 @@ import helmet from 'helmet';
 import cookieSession from 'cookie-session';
 import md5 from 'md5';
 import rateLimit from 'express-rate-limit';
+import os from 'os';
+import dotenv from 'dotenv';
 
 import { jwtSecret } from './config/token/token';
 import { notTokenPath } from './config/token/path';
@@ -20,8 +22,6 @@ import { router as fileRouter } from './routes/file'; // 文件相关
 import { router as chatRouter } from './routes/chat'; // 聊天相关
 import employeeRouter from './routes/employee';
 import { getIPAddress } from './utils/getIPAddress';
-import os from 'os';
-import dotenv from 'dotenv';
 import { accessLog, accessLogDev, accessLogErr } from './helpers/logger';
 import { ENV_PATH, isDevelopment } from './config/constant';
 import './config/passport';
