@@ -1,5 +1,7 @@
 node_modules
 dist
 logs
+deploy.ts
+deploy-docker.ts
 .DS_Store
 .env*

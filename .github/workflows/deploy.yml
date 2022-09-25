@@ -116,9 +116,8 @@ jobs:
         run: echo '${{ env.GIT_DIFF }}'
       - name: Build And Push image # 构建和推送镜像
         run: |
-          cd Back-end
           docker login --username=${{ secrets.DOCKER_USERNAME }} registry.cn-shenzhen.aliyuncs.com --password=${{ secrets.DOCKER_PASSWORD }}
-          docker build -t soul-harbor:latest .
+          docker build -t soul-harbor:latest -f ./Back-end/Dockerfile ./Back-end
           docker tag soul-harbor registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
           docker push registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
         if: env.GIT_DIFF
