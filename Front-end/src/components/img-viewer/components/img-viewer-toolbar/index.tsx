@@ -25,10 +25,10 @@ export const ImgViewerToolbar = memo(({ showToolbar, items }: ImgViewerToolbarPr
         'img-viewer-toolbar--hidden': !showToolbar,
       })}
     >
-      {items.map(({ type, title, onClick, disabled, icon, key, content }) => {
+      {items.map(({ type, title, onClick, disabled, icon, key, content }, index) => {
         if (type === 'button') {
           return (
-            <div className="img-viewer-toolbar__btn">
+            <div className="img-viewer-toolbar__btn" key={index}>
               <Tooltip title={title} overlayClassName="img-viewer-toolbar__tooltip" arrowPointAtCenter={true} key={key}>
                 <div
                   className={classnames(

@@ -8,54 +8,74 @@ on:
       - master
   workflow_dispatch:
 jobs:
-  deploy:
+  deploy-front-end:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source codes # 检出仓库的代码到runner
+      - name: Checkout Source Codes # 检出仓库的代码到runner
         uses: actions/checkout@v3
-      - name: Set node version # 设置node版本
+      - name: Set Node Version # 设置node版本
         uses: actions/setup-node@v3
         with:
           node-version: "14.16.1"
-      - name: Remove back-end codes # 删除后端代码
-        uses: appleboy/ssh-action@master
+      # - name: Remove back-end codes # 删除后端代码
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.REMOTE_HOST }}
+      #     username: ${{ secrets.REMOTE_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       cd ${{ secrets.REMOTE_BACK_END_TARGET }}
+      #       rm -rf *
+      # - name: Upload back-end codes # 上传后端代码
+      #   uses: easingthemes/ssh-deploy@main
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     ARGS: "-rltgoDzvO"
+      #     SOURCE: "Back-end/"
+      #     REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      #     REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      #     TARGET: ${{ secrets.REMOTE_BACK_END_TARGET }}
+      #     EXCLUDE: "deploy.ts, deploy-docker.ts"
+      - name: Cache Node Modules # 使用 cache action 进行目录资源缓存
+        id: cache-node-modules
+        uses: actions/cache@v3
         with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ${{ secrets.REMOTE_BACK_END_TARGET }}
-            rm -rf *
-      - name: Upload back-end codes # 上传后端代码
-        uses: easingthemes/ssh-deploy@main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-rltgoDzvO"
-          SOURCE: "Back-end/"
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          TARGET: ${{ secrets.REMOTE_BACK_END_TARGET }}
-          EXCLUDE: "deploy.ts, deploy-docker.ts"
-      - name: Install and build front-end # 安装前端依赖 && 构建
+          path: Front-end/node_modules
+          key: node-modules-${{ hashFiles('Front-end/package-lock.json') }}
+          restore-keys: node-modules-
+      - name: Check Install/Build Cache # 查看缓存是否设置成功，输出 node_modules 目录
+        run: ls -lah Front-end/node_modules | head -5
+      - name: Install Dependencies # 安装依赖
+        # 如果命中 key，则直接跳过依赖安装
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
-          cd ./Front-end
+          cd Front-end
           npm ci
-          npm run build
+      - name: Get Codes Diff # 检查git diff
+        uses: technote-space/get-diff-action@v6
+        with:
+          PATTERNS: |
+            Front-end/+(src|config|public)/*
+        run: echo '${{ env.GIT_DIFF }}' | jq .
+      - name: Build Dist # 构建dist
+        run: npm run build
+        if: env.GIT_DIFF
         env:
           PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-      - name: Build soul-harbor service # 部署soul-harbor服务
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/apps
-            docker-compose up -d --build soul-harbor
-            docker image prune -f
+      # - name: Build soul-harbor service # 部署soul-harbor服务
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.REMOTE_HOST }}
+      #     username: ${{ secrets.REMOTE_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       cd ~/apps
+      #       docker-compose up -d --build soul-harbor
+      #       docker image prune -f
       - name: Remove front-end dist # 删除前端产物
         uses: appleboy/ssh-action@master
+        if: env.GIT_DIFF
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
@@ -65,6 +85,7 @@ jobs:
             rm -rf *
       - name: Upload front-end dist # 上传前端产物
         uses: easingthemes/ssh-deploy@main
+        if: env.GIT_DIFF
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rltgoDzvO"
@@ -72,3 +93,39 @@ jobs:
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_FRONT_END_TARGET }}
+  deploy-back-end:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Codes # 检出仓库的代码到runner
+        uses: actions/checkout@v3
+      - name: Set Node Version # 设置node版本
+        uses: actions/setup-node@v3
+        with:
+          node-version: "14.16.1"
+      - name: Get Codes Diff # 检查git diff
+        uses: technote-space/get-diff-action@v6
+        with:
+          PATTERNS: |
+            Back-end/*
+            !Back-end/deploy.ts
+            !Back-end/deploy-docker.ts
+        run: echo '${{ env.GIT_DIFF }}' | jq .
+      - name: Build And Push image # 构建和推送镜像
+        run: |
+          docker login --username=${{ secrets.DOCKER_USERNAME }} registry.cn-shenzhen.aliyuncs.com --password=${{ secrets.DOCKER_PASSWORD }}
+          docker build -t soul-harbor:latest -f ./Back-end/Dockerfile ./Back-end
+          docker tag soul-harbor registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
+          docker push registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
+        if: env.GIT_DIFF
+      - name: Pull Image And Restart Service # 拉取最新镜像和重启服务
+        uses: appleboy/ssh-action@master
+        if: env.GIT_DIFF
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/apps
+            docker login --username=${{ secrets.DOCKER_USERNAME }} registry.cn-shenzhen.aliyuncs.com --password=${{ secrets.DOCKER_PASSWORD }}
+            docker-compose up -d --build soul-harbor
+            docker image prune -f
