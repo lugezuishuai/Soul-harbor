@@ -51,11 +51,12 @@ jobs:
         run: |
           cd Front-end
           npm ci
-      - name: Get Codes Diff # 检查git diff
+      - name: Get Codes Diff # 检查codes diff
         uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
             Front-end/+(src|config|public)/*
+      - name: Output Codes Diff # 输出codes diff
         run: echo '${{ env.GIT_DIFF }}' | jq .
       - name: Build Dist # 构建dist
         run: npm run build
@@ -102,13 +103,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "14.16.1"
-      - name: Get Codes Diff # 检查git diff
+      - name: Get Codes Diff # 检查codes diff
         uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
             Back-end/*
             !Back-end/deploy.ts
             !Back-end/deploy-docker.ts
+      - name: Output Codes Diff # 输出codes diff
         run: echo '${{ env.GIT_DIFF }}' | jq .
       - name: Build And Push image # 构建和推送镜像
         run: |
