@@ -91,11 +91,6 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
   };
 
   downloadFile = async () => {
-    // try {
-    //   await apiGet('/api/file/sendFile');
-    // } catch {
-    //   //
-    // }
     FileSaver.saveAs('/api/file/sendFile');
   };
 

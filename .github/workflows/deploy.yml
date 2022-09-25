@@ -55,11 +55,13 @@ jobs:
         uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
-            Front-end/+(src|config|public)/*
+            Front-end/+(src|config|public)/**/*
       - name: Output Codes Diff # 输出codes diff
         run: echo '${{ env.GIT_DIFF }}'
       - name: Build Dist # 构建dist
-        run: npm run build
+        run: |
+          cd Front-end
+          npm run build
         if: env.GIT_DIFF
         env:
           PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }}
@@ -107,15 +109,16 @@ jobs:
         uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
-            Back-end/**/*.+(js|ts)
+            Back-end/**/*
             !Back-end/deploy.ts
             !Back-end/deploy-docker.ts
       - name: Output Codes Diff # 输出codes diff
         run: echo '${{ env.GIT_DIFF }}'
       - name: Build And Push image # 构建和推送镜像
         run: |
+          cd Back-end
           docker login --username=${{ secrets.DOCKER_USERNAME }} registry.cn-shenzhen.aliyuncs.com --password=${{ secrets.DOCKER_PASSWORD }}
-          docker build -t soul-harbor:latest -f ./Back-end/Dockerfile ./Back-end
+          docker build -t soul-harbor:latest .
           docker tag soul-harbor registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
           docker push registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
         if: env.GIT_DIFF
