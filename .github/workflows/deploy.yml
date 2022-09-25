@@ -107,7 +107,7 @@ jobs:
         uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
-            Back-end/*
+            Back-end/**/*.+(js|ts)
             !Back-end/deploy.ts
             !Back-end/deploy-docker.ts
       - name: Output Codes Diff # 输出codes diff

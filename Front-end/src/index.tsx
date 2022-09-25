@@ -5,6 +5,8 @@ import { App } from '@/pages/App';
 import store from './redux/store';
 import 'lib-flexible';
 
+// 随便修改一下
+
 ReactDOM.render(
   <Provider store={store}>
     <App />
