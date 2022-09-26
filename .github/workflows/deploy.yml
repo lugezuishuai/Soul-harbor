@@ -17,25 +17,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "14.16.1"
-      # - name: Remove back-end codes # 删除后端代码
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.REMOTE_HOST }}
-      #     username: ${{ secrets.REMOTE_USER }}
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     script: |
-      #       cd ${{ secrets.REMOTE_BACK_END_TARGET }}
-      #       rm -rf *
-      # - name: Upload back-end codes # 上传后端代码
-      #   uses: easingthemes/ssh-deploy@main
-      #   env:
-      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     ARGS: "-rltgoDzvO"
-      #     SOURCE: "Back-end/"
-      #     REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-      #     REMOTE_USER: ${{ secrets.REMOTE_USER }}
-      #     TARGET: ${{ secrets.REMOTE_BACK_END_TARGET }}
-      #     EXCLUDE: "deploy.ts, deploy-docker.ts"
       - name: Cache Node Modules # 使用 cache action 进行目录资源缓存
         id: cache-node-modules
         uses: actions/cache@v3
@@ -62,23 +43,13 @@ jobs:
         run: |
           cd Front-end
           npm run build
-        if: env.GIT_DIFF
+        # if: env.GIT_DIFF
         env:
           PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-      # - name: Build soul-harbor service # 部署soul-harbor服务
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.REMOTE_HOST }}
-      #     username: ${{ secrets.REMOTE_USER }}
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     script: |
-      #       cd ~/apps
-      #       docker-compose up -d --build soul-harbor
-      #       docker image prune -f
       - name: Remove front-end dist # 删除前端产物
         uses: appleboy/ssh-action@master
-        if: env.GIT_DIFF
+        # if: env.GIT_DIFF
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
@@ -88,7 +59,7 @@ jobs:
             rm -rf *
       - name: Upload front-end dist # 上传前端产物
         uses: easingthemes/ssh-deploy@main
-        if: env.GIT_DIFF
+        # if: env.GIT_DIFF
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rltgoDzvO"
@@ -120,10 +91,10 @@ jobs:
           docker build -t soul-harbor:latest -f ./Back-end/Dockerfile ./Back-end
           docker tag soul-harbor registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
           docker push registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
-        if: env.GIT_DIFF
+        # if: env.GIT_DIFF
       - name: Pull Image And Restart Service # 拉取最新镜像和重启服务
         uses: appleboy/ssh-action@master
-        if: env.GIT_DIFF
+        # if: env.GIT_DIFF
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
