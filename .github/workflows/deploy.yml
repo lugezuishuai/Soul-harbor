@@ -120,10 +120,10 @@ jobs:
           docker build -t soul-harbor:latest -f ./Back-end/Dockerfile ./Back-end
           docker tag soul-harbor registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
           docker push registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
-        # if: env.GIT_DIFF
+        if: env.GIT_DIFF
       - name: Pull Image And Restart Service # 拉取最新镜像和重启服务
         uses: appleboy/ssh-action@master
-        # if: env.GIT_DIFF
+        if: env.GIT_DIFF
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}

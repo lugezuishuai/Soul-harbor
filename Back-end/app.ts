@@ -24,7 +24,6 @@ import employeeRouter from './routes/employee';
 import { getIPAddress } from './utils/getIPAddress';
 import { accessLog, accessLogDev, accessLogErr } from './helpers/logger';
 import { ENV_PATH, isDevelopment } from './config/constant';
-
 import './config/passport';
 
 dotenv.config({ path: ENV_PATH });
