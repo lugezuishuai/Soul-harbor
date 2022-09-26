@@ -131,5 +131,6 @@ jobs:
           script: |
             cd ~/apps
             docker login --username=${{ secrets.DOCKER_USERNAME }} registry-vpc.cn-shenzhen.aliyuncs.com --password=${{ secrets.DOCKER_PASSWORD }}
+            docker-compose pull soul-harbor
             docker-compose up -d --build soul-harbor
             docker image prune -f
