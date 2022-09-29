@@ -36,7 +36,7 @@ export function renderRoutes(
                       <Component {...props} route={route} />
                     );
                   } else {
-                    return <Redirect to="/soul-harbor/exception/404" />;
+                    return <Redirect to="/exception/404" />;
                   }
                 }
 
@@ -48,7 +48,7 @@ export function renderRoutes(
                     return renderComponent();
                   } else {
                     // 没有权限
-                    return replaceComponent || <Redirect to="/soul-harbor/exception/403" />;
+                    return replaceComponent || <Redirect to="/exception/403" />;
                   }
                 } else {
                   return renderComponent();
@@ -57,7 +57,7 @@ export function renderRoutes(
             />
           );
         })}
-        <Redirect to={globalRedirect || '/soul-harbor/exception/404'} />
+        <Redirect to={globalRedirect || '/exception/404'} />
       </Switch>
     )
   );

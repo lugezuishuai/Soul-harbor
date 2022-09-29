@@ -25,7 +25,7 @@ export function RoomCard({ roomInfo, dispatch, selectSession }: RoomCardProps) {
     if (selectSession) {
       const { sessionId } = selectSession;
       if (room_id === sessionId) {
-        isMobile && history.push(`/soul-harbor/chat/conversation/${sessionId}`);
+        isMobile && history.push(`/chat/conversation/${sessionId}`);
         return;
       }
     }
@@ -40,7 +40,7 @@ export function RoomCard({ roomInfo, dispatch, selectSession }: RoomCardProps) {
       type: SELECT_SESSION,
       payload: newSelectSession,
     });
-    isMobile && history.push(`/soul-harbor/chat/conversation/${newSelectSession.sessionId}`);
+    isMobile && history.push(`/chat/conversation/${newSelectSession.sessionId}`);
   }
 
   return (

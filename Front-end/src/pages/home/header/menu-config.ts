@@ -7,22 +7,22 @@ export interface MenuConfig {
 export const loginMenu: MenuConfig[] = [
   {
     key: 'user',
-    to: (uid) => `/soul-harbor/user/${uid}`,
+    to: (uid) => `/user/${uid}`,
     text: '个人信息',
   },
   {
     key: 'chat',
-    to: '/soul-harbor/chat',
+    to: '/chat',
     text: '聊天',
   },
   {
     key: 'blog',
-    to: '/soul-harbor/blog',
+    to: '/blog',
     text: '博客',
   },
   {
     key: 'news',
-    to: '/soul-harbor/news',
+    to: '/news',
     text: '资讯',
   },
 ];
@@ -30,17 +30,17 @@ export const loginMenu: MenuConfig[] = [
 export const noLoginMenu: MenuConfig[] = [
   {
     key: 'chat',
-    to: '/soul-harbor/chat',
+    to: '/chat',
     text: '聊天',
   },
   {
     key: 'blog',
-    to: '/soul-harbor/blog',
+    to: '/blog',
     text: '博客',
   },
   {
     key: 'news',
-    to: '/soul-harbor/news',
+    to: '/news',
     text: '资讯',
   },
 ];

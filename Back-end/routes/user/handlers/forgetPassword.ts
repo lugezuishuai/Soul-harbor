@@ -45,7 +45,7 @@ export async function forgetPassword(req: Request, res: Response) {
                 <br/>
                 <a href="http://${
                   isDevelopment ? 'localhost:5000' : process.env.SERVER_HOST
-                }/soul-harbor/reset/${token}" target="_blank">Reset Your Password</a>
+                }/reset/${token}" target="_blank">Reset Your Password</a>
                 <br/>
                 <h2>Note: the IP address to send the link is:</h2>
                 <br/>

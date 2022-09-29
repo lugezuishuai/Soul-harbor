@@ -14,7 +14,7 @@ module.exports = {
   developServer: {
     proxy: [
       {
-        path: '/soul-harbor/api',
+        path: '/api',
         changeOrigin: true,
         target: 'http://localhost:4001',
         headers: { 'Access-Control-Allow-Origin': '*' },
@@ -23,12 +23,12 @@ module.exports = {
         // }
       },
       {
-        path: '/soul-harbor/socket.io',
+        path: '/socket.io',
         changeOrigin: true,
         target: 'http://localhost:4001',
         headers: { 'Access-Control-Allow-Origin': '*' },
         ws: true, // 支持WebSocket
-      }
+      },
     ],
-  }
-}
+  },
+};

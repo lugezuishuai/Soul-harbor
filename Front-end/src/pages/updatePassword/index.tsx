@@ -53,7 +53,7 @@ function ForgetPw(props: ForgetPwProps) {
           .then(() => {
             // 跳转回首页
             message.success('修改成功');
-            history.push({ pathname: '/soul-harbor' });
+            history.push('/');
           })
           .catch((e) => console.error(e))
           .finally(() => setBtnLoading(false));
@@ -131,7 +131,7 @@ function ForgetPw(props: ForgetPwProps) {
             <Button className={prefix('footer-btn')} type="primary" loading={btnLoading} onClick={handleResetPassword}>
               确认修改
             </Button>
-            <Link className={prefix('footer-back')} to="/soul-harbor">
+            <Link className={prefix('footer-back')} to="/">
               返回首页
             </Link>
           </div>
@@ -148,7 +148,7 @@ function ForgetPw(props: ForgetPwProps) {
             />
             <div className={prefix('invalid-back-text')}>该链接已失效或者过期，您可以选择：</div>
           </div>
-          <Link className={prefix('invalid-btn')} to="/soul-harbor">
+          <Link className={prefix('invalid-btn')} to="/">
             返回首页
           </Link>
         </div>

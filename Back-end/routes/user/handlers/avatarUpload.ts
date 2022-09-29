@@ -75,7 +75,7 @@ export async function avatarUpload(req: Request, res: Response) {
 
         const avatarSrc = `http://${
           isDevelopment ? 'localhost:4001' : hostIP
-        }/soul-harbor/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
+        }/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
 
         schedule.scheduleJob(new Date(new Date().getTime() + 1800000), () => {
           // 临时文件夹的有效期为半个小时

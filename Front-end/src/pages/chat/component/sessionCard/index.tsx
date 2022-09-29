@@ -34,7 +34,7 @@ export function SessionCard({ sessionInfo, activeSession, selectSession, dispatc
     if (selectSession) {
       const { sessionId: activeSessionId } = selectSession;
       if (sessionId === activeSessionId) {
-        isMobile && history.push(`/soul-harbor/chat/conversation/${activeSessionId}`);
+        isMobile && history.push(`/chat/conversation/${activeSessionId}`);
         return;
       }
     }
@@ -59,7 +59,7 @@ export function SessionCard({ sessionInfo, activeSession, selectSession, dispatc
       type: SELECT_SESSION,
       payload: newSelectSession,
     });
-    isMobile && history.push(`/soul-harbor/chat/conversation/${newSelectSession.sessionId}`);
+    isMobile && history.push(`/chat/conversation/${newSelectSession.sessionId}`);
   }
 
   function getAvatar() {

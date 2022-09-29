@@ -20,8 +20,8 @@ interface ChatFooterMobileProps {
 }
 
 export function ChatFooterMobile({ activeMenu, dispatch, history }: ChatFooterMobileProps) {
-  const isSessionsMenu = matchPath(location.pathname, { path: '/soul-harbor/chat/sessions', exact: true });
-  const isContractsMenu = matchPath(location.pathname, { path: '/soul-harbor/chat/contracts', exact: true });
+  const isSessionsMenu = matchPath(location.pathname, { path: '/chat/sessions', exact: true });
+  const isContractsMenu = matchPath(location.pathname, { path: '/chat/contracts', exact: true });
 
   function handleChangeMenu(type: string) {
     if (type !== activeMenu) {
@@ -30,7 +30,7 @@ export function ChatFooterMobile({ activeMenu, dispatch, history }: ChatFooterMo
         payload: type,
       });
 
-      history.push(`/soul-harbor/chat/${type}`);
+      history.push(`/chat/${type}`);
     }
   }
 

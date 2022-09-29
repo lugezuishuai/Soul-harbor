@@ -91,7 +91,7 @@ export default class FileUpload extends Component<FileUploadProps, FileUploadSta
   };
 
   downloadFile = async () => {
-    FileSaver.saveAs('/soul-harbor/api/file/sendFile');
+    FileSaver.saveAs('/api/file/sendFile');
   };
 
   render() {

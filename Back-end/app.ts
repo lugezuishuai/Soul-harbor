@@ -78,8 +78,8 @@ app.use(
 );
 
 app.set('trust proxy', true);
-app.use('/soul-harbor/api/', apiLimiter);
-app.use('/soul-harbor/api/user/register', createAccountLimiter);
+app.use('/api/', apiLimiter);
+app.use('/api/user/register', createAccountLimiter);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -109,11 +109,11 @@ app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
 app.use(passport.initialize()); // 初始化passport
 
 // app.use('/', indexRouter);
-app.use('/soul-harbor/static', express.static(path.join(__dirname, 'public')));
-app.use('/soul-harbor/api/employee', employeeRouter); // TODO: 后续要换成博客的路由
-app.use('/soul-harbor/api/user', userRouter);
-app.use('/soul-harbor/api/file', fileRouter);
-app.use('/soul-harbor/api/chat', chatRouter);
+app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use('/api/employee', employeeRouter); // TODO: 后续要换成博客的路由
+app.use('/api/user', userRouter);
+app.use('/api/file', fileRouter);
+app.use('/api/chat', chatRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

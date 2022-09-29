@@ -19,7 +19,6 @@ export function createSocketIo(server: HttpServer) {
     cors: {
       origin: corsOrigin,
     },
-    path: '/soul-harbor/socket.io',
   });
 
   io.on('connection', (socket: Socket) => {

@@ -8,7 +8,6 @@ import { XSRFINIT } from '@/constants/urls';
 import { connect } from 'react-redux';
 import { SocketState, State } from '@/redux/reducers/state';
 import Cookies from 'js-cookie';
-import { useHistory } from 'react-router-dom';
 import './index.less';
 
 interface LayoutProps {
@@ -16,8 +15,6 @@ interface LayoutProps {
 }
 
 function Layout({ socket }: LayoutProps) {
-  const history = useHistory();
-
   // 初始化xsrf
   const initXsrf = useCallback(async () => {
     try {
@@ -31,8 +28,6 @@ function Layout({ socket }: LayoutProps) {
     if (!Cookies.get('XSRF-TOKEN')) {
       initXsrf();
     }
-
-    history.push('/soul-harbor');
 
     return () => {
       if (socket) {

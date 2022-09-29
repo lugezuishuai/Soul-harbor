@@ -66,7 +66,7 @@ export function UserCard({
         type: SELECT_SESSION,
         payload: selectSession,
       });
-      isMobile && history.push(`/soul-harbor/chat/conversation/${selectSession.sessionId}`);
+      isMobile && history.push(`/chat/conversation/${selectSession.sessionId}`);
 
       if (socket) {
         socket.emit('update friend', Cookies.get('uuid') || '', userInfo?.uid || '', username, 'add');
@@ -94,7 +94,7 @@ export function UserCard({
       if (selectSession) {
         const { sessionId } = selectSession;
         if (userInfo?.uid === sessionId) {
-          isMobile && history.push(`/soul-harbor/chat/conversation/${sessionId}`);
+          isMobile && history.push(`/chat/conversation/${sessionId}`);
           return;
         }
       }
@@ -113,7 +113,7 @@ export function UserCard({
         type: SELECT_SESSION,
         payload: newSelectSession,
       });
-      isMobile && history.push(`/soul-harbor/chat/conversation/${newSelectSession.sessionId}`);
+      isMobile && history.push(`/chat/conversation/${newSelectSession.sessionId}`);
     }
   }
 
