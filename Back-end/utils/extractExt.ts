@@ -1,2 +1,4 @@
+import path from 'path';
+
 // 提取后缀名
-export const extractExt = (filename: string) => filename.slice(filename.lastIndexOf('.') + 1, filename.length);
+export const extractExt = (filename: string) => path.extname(filename);

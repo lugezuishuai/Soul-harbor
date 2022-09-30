@@ -57,12 +57,12 @@ export async function avatarUpload(req: Request, res: Response) {
         }
 
         const { userId } = req.body;
-        const { mimetype, originalname, buffer } = file;
+        const { originalname, buffer } = file;
 
         // 生成随机文件名
-        const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
-        const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
-        const fileKey = `${process.env.CDN_PREFIX}/${userId}/${suffix}.${fileType}`; // fileKey
+        const ext = extractExt(originalname);
+        const prefix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为文件前缀
+        const fileKey = `${process.env.CDN_PREFIX}/${userId}/${prefix}${ext}`; // fileKey
 
         // buffer to stream
         const bufferStream = new stream.PassThrough();
