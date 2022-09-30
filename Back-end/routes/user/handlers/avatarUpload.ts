@@ -1,24 +1,20 @@
 import { Request, Response } from 'express';
-import path from 'path';
-import fse from 'fs-extra';
 import multer from 'multer';
-import os from 'os';
 import crypto from 'crypto';
-import schedule from 'node-schedule';
-import rimraf from 'rimraf';
 import { hasPermission } from '../../../utils/hasPermission';
 import { UnSuccessCodeType } from '../code-type';
-import { getIPAddress } from '../../../utils/getIPAddress';
 import { extractExt } from '../../../utils/extractExt';
-import { isDevelopment } from '../../../config/constant';
+import { ENV_PATH, isDevelopment } from '../../../config/constant';
+import { uploadFile } from '../../../utils/uploadFile';
+import dotenv from 'dotenv';
+import stream from 'stream';
 
+dotenv.config({ path: ENV_PATH });
 const { noPermission } = UnSuccessCodeType;
-const AVATAR_PATH = path.join(__dirname, '../../../public/user/avatar');
 
 // 头像上传
 const acceptType = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/bmp'];
 const avatarUploadConfig = multer({
-  dest: AVATAR_PATH,
   limits: {
     fileSize: 2048 * 1000, // 限制文件大小（2M)
     files: 1, // 限制文件数量
@@ -38,7 +34,7 @@ export async function avatarUpload(req: Request, res: Response) {
     const { uuid } = req.cookies;
     // @ts-ignore
     const { token } = req.session;
-    if (!(await hasPermission(uuid, token))) {
+    if (!isDevelopment && !(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -46,9 +42,6 @@ export async function avatarUpload(req: Request, res: Response) {
       });
     }
 
-    if (!fse.existsSync(AVATAR_PATH)) {
-      await fse.mkdir(AVATAR_PATH);
-    }
     avatarUploadConfig.single('avatar')(req, res, async (err: any) => {
       if (err) {
         return res.status(500).json({
@@ -59,43 +52,31 @@ export async function avatarUpload(req: Request, res: Response) {
       }
       try {
         const file = req.file;
-        const { userId } = req.body;
-        const { mimetype, originalname, path: filePath } = file as any;
-        const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
-        const hostIP = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces()); // 获取主机IP地址
-
-        const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
-        const tempAvatarDir = path.resolve(AVATAR_PATH, `${userId}`);
-        const tempAvatarPath = path.resolve(tempAvatarDir, `${userId}-${suffix}.${fileType}`);
-
-        if (!fse.existsSync(tempAvatarDir)) {
-          await fse.mkdir(tempAvatarDir);
+        if (!file) {
+          throw new Error('Can not read file');
         }
-        fse.renameSync(filePath, tempAvatarPath); // 重写头像的路径
 
-        const avatarSrc = `http://${
-          isDevelopment ? 'localhost:4001' : hostIP
-        }/static/user/avatar/${userId}/${userId}-${suffix}.${fileType}`;
+        const { userId } = req.body;
+        const { mimetype, originalname, buffer } = file;
 
-        schedule.scheduleJob(new Date(new Date().getTime() + 1800000), () => {
-          // 临时文件夹的有效期为半个小时
-          if (fse.existsSync(tempAvatarDir)) {
-            rimraf(tempAvatarDir, (e) => {
-              if (e) {
-                isDevelopment && console.error('Error: ', e);
-              }
-            });
-          }
-        });
+        // 生成随机文件名
+        const fileType = mimetype.split('/')[1] || extractExt(originalname); // 提取文件类型
+        const suffix = crypto.randomBytes(16).toString('hex'); // 生成16位随机的hash值作为后缀
+        const fileKey = `${process.env.CDN_PREFIX}/${userId}/${suffix}.${fileType}`; // fileKey
 
+        // buffer to stream
+        const bufferStream = new stream.PassThrough();
+        const streams = bufferStream.end(buffer);
+
+        const result = await uploadFile(streams, fileKey);
         return res.status(200).json({
           code: 0,
           data: {
-            src: avatarSrc,
+            src: result,
           },
           msg: 'upload success',
         });
-      } catch (e: any) {
+      } catch (e) {
         isDevelopment && console.error('Error: ', e);
         return res.status(500).json({
           code: 1,
@@ -104,7 +85,7 @@ export async function avatarUpload(req: Request, res: Response) {
         });
       }
     });
-  } catch (e: any) {
+  } catch (e) {
     isDevelopment && console.error('Error: ', e);
     return res.status(500).json({
       code: 1,

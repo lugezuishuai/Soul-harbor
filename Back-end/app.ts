@@ -16,7 +16,6 @@ import dotenv from 'dotenv';
 
 import { jwtSecret } from './config/token/token';
 import { notTokenPath } from './config/token/path';
-// import indexRouter from './routes/index';
 import { router as userRouter } from './routes/user'; // 用户相关
 import { router as fileRouter } from './routes/file'; // 文件相关
 import { router as chatRouter } from './routes/chat'; // 聊天相关
@@ -105,11 +104,11 @@ app.use(
     path: '/',
   })
 );
-app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
+if (!isDevelopment) {
+  app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
+}
 app.use(passport.initialize()); // 初始化passport
 
-// app.use('/', indexRouter);
-app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/api/employee', employeeRouter); // TODO: 后续要换成博客的路由
 app.use('/api/user', userRouter);
 app.use('/api/file', fileRouter);

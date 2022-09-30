@@ -7,6 +7,7 @@ import { MemberInfo } from '../../../type/type';
 import { UnSuccessCodeType } from '../code-type';
 import { format } from 'sqlstring';
 import { batchInsertMembers } from '../utils/batchInsertMembers';
+import { isDevelopment } from '../../../config/constant';
 
 const { noPermission } = UnSuccessCodeType;
 
@@ -21,7 +22,7 @@ export async function createNewGroupChat(req: Request, res: Response) {
     const { uuid } = req.cookies;
     // @ts-ignore
     const { token } = req.session;
-    if (!(await hasPermission(uuid, token))) {
+    if (!isDevelopment && !(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},

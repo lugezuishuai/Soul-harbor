@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { isDevelopment } from '../../../config/constant';
 import { hasPermission } from '../../../utils/hasPermission';
 import { UnSuccessCodeType } from '../code-type';
 
@@ -8,7 +9,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
   const { uuid } = req.cookies;
   // @ts-ignore
   const { token } = req.session;
-  if (!(await hasPermission(uuid, token))) {
+  if (!isDevelopment && !(await hasPermission(uuid, token))) {
     return res.status(403).json({
       code: noPermission,
       data: {},

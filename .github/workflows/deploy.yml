@@ -36,20 +36,31 @@ jobs:
         uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
-            Front-end/+(src|config|public)/**/*
+            Front-end/**/*
+            !Front-end/+(deploy.js|typings.d.ts)
       - name: Output Codes Diff # 输出codes diff
         run: echo '${{ env.GIT_DIFF }}'
       - name: Build Dist # 构建dist
         run: |
           cd Front-end
           npm run build
-        # if: env.GIT_DIFF
+        if: env.GIT_DIFF
         env:
           PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      - name: Upload dist to cdn # 上传dist到cdn
+        run: |
+          cd Front-end
+          npm run upload
+        if: env.GIT_DIFF
+        env:
+          CDN_ACCESS_KEY: ${{ secrets.CDN_ACCESS_KEY }}
+          CDN_SECRET_KEY: ${{ secrets.CDN_SECRET_KEY }}
+          CDN_BUCKET: ${{ secrets.CDN_BUCKET }}
+          CDN_FRONT_PREFIX: ${{ secrets.CDN_FRONT_PREFIX }}
       - name: Remove front-end dist # 删除前端产物
         uses: appleboy/ssh-action@master
-        # if: env.GIT_DIFF
+        if: env.GIT_DIFF
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
@@ -57,13 +68,13 @@ jobs:
           script: |
             cd ${{ secrets.REMOTE_FRONT_END_TARGET }}
             rm -rf *
-      - name: Upload front-end dist # 上传前端产物
+      - name: Upload index.html # 上传index.html文件
         uses: easingthemes/ssh-deploy@main
-        # if: env.GIT_DIFF
+        if: env.GIT_DIFF
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rltgoDzvO"
-          SOURCE: "Front-end/dist/"
+          SOURCE: "Front-end/dist/index.html"
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_FRONT_END_TARGET }}
@@ -81,8 +92,7 @@ jobs:
         with:
           PATTERNS: |
             Back-end/**/*
-            !Back-end/deploy.ts
-            !Back-end/deploy-docker.ts
+            !Back-end/+(deploy.ts|deploy-docker.ts)
       - name: Output Codes Diff # 输出codes diff
         run: echo '${{ env.GIT_DIFF }}'
       - name: Build And Push image # 构建和推送镜像
@@ -91,10 +101,10 @@ jobs:
           docker build -t soul-harbor:latest -f ./Back-end/Dockerfile ./Back-end
           docker tag soul-harbor registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
           docker push registry.cn-shenzhen.aliyuncs.com/humorsoul/soul-harbor:latest
-        # if: env.GIT_DIFF
+        if: env.GIT_DIFF
       - name: Pull Image And Restart Service # 拉取最新镜像和重启服务
         uses: appleboy/ssh-action@master
-        # if: env.GIT_DIFF
+        if: env.GIT_DIFF
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}

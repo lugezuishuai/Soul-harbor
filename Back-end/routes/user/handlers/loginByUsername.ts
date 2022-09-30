@@ -1,13 +1,8 @@
 import { Request, Response } from 'express';
 import passport from 'passport';
-import { format } from 'sqlstring';
 import md5 from 'md5';
-import { query } from '../../../utils/query';
-import os from 'os';
 import dayjs from 'dayjs';
 import { UnSuccessCodeType } from '../code-type';
-import { matchUrls } from '../../../utils/matchUrl';
-import { getIPAddress } from '../../../utils/getIPAddress';
 import { setToken } from '../../../config/token/token';
 import { isDevelopment } from '../../../config/constant';
 
@@ -40,24 +35,7 @@ export function loginByUsername(req: Request, res: Response) {
     } else {
       req.logIn(user, async () => {
         try {
-          const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth } = user;
-          let { soul_avatar } = user;
-
-          if (soul_avatar) {
-            const oldIPAddress = matchUrls(soul_avatar)?.address; // 防止因为网络发生变化导致ip地址发生变化
-            const newIPAddress = process.env.SERVER_HOST || getIPAddress(os.networkInterfaces());
-
-            if (oldIPAddress !== newIPAddress) {
-              // 如果IP地址发生了改变，要修改头像链接的IP地址
-              soul_avatar = soul_avatar.replace(oldIPAddress, newIPAddress);
-              const updateAvatar = format('update soul_user_info set soul_avatar = ? where soul_uuid = ?', [
-                soul_avatar,
-                soul_uuid,
-              ]);
-              await query(updateAvatar);
-            }
-          }
-
+          const { soul_username, soul_uuid, soul_email, soul_signature, soul_birth, soul_avatar } = user;
           const userInfo = {
             username: soul_username,
             uid: soul_uuid,

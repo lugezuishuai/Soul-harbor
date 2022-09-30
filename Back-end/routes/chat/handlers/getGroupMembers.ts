@@ -4,6 +4,7 @@ import { hasPermission } from '../../../utils/hasPermission';
 import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
 import { escape } from 'sqlstring';
+import { isDevelopment } from '../../../config/constant';
 
 const { noPermission } = UnSuccessCodeType;
 
@@ -13,7 +14,7 @@ export async function getGroupMembers(req: Request, res: Response) {
     const { uuid } = req.cookies;
     // @ts-ignore
     const { token } = req.session;
-    if (!(await hasPermission(uuid, token))) {
+    if (!isDevelopment && !(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},

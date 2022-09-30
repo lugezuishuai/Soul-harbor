@@ -1,25 +1,19 @@
 import { Request, Response } from 'express';
-import path from 'path';
-import fse from 'fs-extra';
-import { escape, format } from 'sqlstring';
+import { format } from 'sqlstring';
 import { hasPermission } from '../../../utils/hasPermission';
 import { UnSuccessCodeType } from '../code-type';
-import { getDirectories } from '../../../utils/getDirectories';
-import { listFile } from '../../../utils/listFile';
 import { query } from '../../../utils/query';
-import { getAvatarUrl } from '../../../utils/getAvatarUrl';
 import { batchSetSessionsAvatar } from '../../../utils/redis';
 import { isDevelopment } from '../../../config/constant';
 
-const { noPermission, invalidUuid } = UnSuccessCodeType;
-const AVATAR_PATH = path.join(__dirname, '../../../public/user/avatar');
+const { noPermission } = UnSuccessCodeType;
 
 export async function changeBasicInfo(req: Request, res: Response) {
   try {
     const { uuid } = req.cookies;
     // @ts-ignore
     const { token } = req.session;
-    if (!(await hasPermission(uuid, token))) {
+    if (!isDevelopment && !(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
@@ -27,78 +21,10 @@ export async function changeBasicInfo(req: Request, res: Response) {
       });
     }
 
-    const { userId, signature, birth } = req.body;
-    let { avatar } = req.body;
-
+    const { signature, birth, avatar } = req.body;
     const soul_uuid = uuid || '',
       soul_signature = signature || '',
       soul_birth = birth || '';
-
-    if (avatar) {
-      if (!fse.existsSync(AVATAR_PATH)) {
-        await fse.mkdir(AVATAR_PATH);
-      }
-      const avatarNameArr = avatar.split('/');
-      const avatarName = avatarNameArr[avatarNameArr.length - 1];
-      const tempAvatarPath = path.resolve(AVATAR_PATH, `${userId}`, `${avatarName}`); // 临时的图片路径
-      const realAvatarPath = path.resolve(AVATAR_PATH, `${avatarName}`); // 真正的图片路径
-
-      if (!fse.existsSync(realAvatarPath)) {
-        if (!fse.existsSync(tempAvatarPath)) {
-          return res.status(404).json({
-            code: 404,
-            data: {},
-            msg: 'Image not found or expired',
-          });
-        }
-
-        fse.copyFileSync(tempAvatarPath, realAvatarPath);
-        const directoriesList = getDirectories(AVATAR_PATH); // 文件夹目录
-        let filesList: string[] = [];
-        directoriesList.forEach((dir) => {
-          const files = listFile(dir);
-          filesList = filesList.concat(files);
-        });
-
-        if (filesList.length > 0) {
-          filesList.forEach((path) => {
-            if (fse.existsSync(path)) {
-              fse.unlink(path, (e) => {
-                if (e) {
-                  throw e;
-                }
-              });
-            }
-          });
-        }
-
-        const searchOldAvatar = `select soul_avatar from soul_user_info where soul_uuid = ${escape(uuid)}`;
-        const result: Array<any> = await query(searchOldAvatar);
-
-        if (!result || result.length !== 1) {
-          return res.status(400).json({
-            code: invalidUuid,
-            data: {},
-            msg: 'invalid uuid',
-          });
-        }
-
-        if (result[0]?.soul_avatar) {
-          const oldAvatarFileArr = result[0].soul_avatar.split('/');
-          const oldAvatarFileName = oldAvatarFileArr[oldAvatarFileArr.length - 1]; // 老头像的文件名
-          const oldAvatarFilePath = path.resolve(AVATAR_PATH, oldAvatarFileName); // 老头像的文件路径
-
-          if (fse.existsSync(oldAvatarFilePath)) {
-            fse.unlink(oldAvatarFilePath, (e) => {
-              if (e) {
-                throw e;
-              }
-            });
-          }
-        }
-      }
-      avatar = getAvatarUrl(`/static/user/avatar/${avatarName}`);
-    }
 
     // soul_user_info
     const updateBasicInfo = avatar

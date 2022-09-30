@@ -9,7 +9,8 @@
     "node_modules",
     "build",
     "dist",
-    "deploy.js"
+    "deploy.js",
+    "upload-dist.js"
   ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */

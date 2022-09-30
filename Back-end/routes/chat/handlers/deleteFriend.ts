@@ -4,6 +4,7 @@ import { query } from '../../../utils/query';
 import { redisDel, redisGet } from '../../../utils/redis';
 import { UnSuccessCodeType } from '../code-type';
 import { format } from 'sqlstring';
+import { isDevelopment } from '../../../config/constant';
 
 const { noPermission, clientError } = UnSuccessCodeType;
 
@@ -13,7 +14,7 @@ export async function deleteFriend(req: Request, res: Response) {
     const { uuid } = req.cookies;
     // @ts-ignore
     const { token } = req.session;
-    if (!(await hasPermission(uuid, token))) {
+    if (!isDevelopment && !(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},

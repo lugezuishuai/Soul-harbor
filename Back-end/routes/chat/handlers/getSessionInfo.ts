@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { isDevelopment } from '../../../config/constant';
 import { SessionInfo } from '../../../type/type';
 import { hasPermission } from '../../../utils/hasPermission';
 import { redisGet } from '../../../utils/redis';
@@ -12,7 +13,7 @@ export async function getSessionInfo(req: Request, res: Response) {
     const { uuid } = req.cookies;
     // @ts-ignore
     const { token } = req.session;
-    if (!(await hasPermission(uuid, token))) {
+    if (!isDevelopment && !(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},

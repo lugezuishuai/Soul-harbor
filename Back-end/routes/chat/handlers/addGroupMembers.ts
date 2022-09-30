@@ -5,6 +5,7 @@ import { query } from '../../../utils/query';
 import { UnSuccessCodeType } from '../code-type';
 import { batchInsertMembers } from '../utils/batchInsertMembers';
 import { escape } from 'sqlstring';
+import { isDevelopment } from '../../../config/constant';
 
 const { noPermission, clientError } = UnSuccessCodeType;
 
@@ -19,7 +20,7 @@ export async function addGroupMembers(req: Request, res: Response) {
     const { uuid } = req.cookies;
     // @ts-ignore
     const { token } = req.session;
-    if (!(await hasPermission(uuid, token))) {
+    if (!isDevelopment && !(await hasPermission(uuid, token))) {
       return res.status(403).json({
         code: noPermission,
         data: {},
