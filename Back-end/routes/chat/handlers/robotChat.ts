@@ -92,7 +92,7 @@ export async function robotChat(req: Request, res: Response) {
 
     const { data } = await axios({
       method: 'get',
-      baseURL: 'http://api.qingyunke.com',
+      baseURL: 'https://api.qingyunke.com',
       url: encodeURI(`/api.php?key=free&appid=0&msg=${message}`),
     });
 

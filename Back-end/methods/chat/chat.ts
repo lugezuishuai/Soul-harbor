@@ -10,11 +10,13 @@ import { UserInfo, SessionInfo, MsgInfo, MessageBody, RoomInfo } from '../../typ
 import cookie from 'cookie';
 import dotenv from 'dotenv';
 import { stringifySessionInfo } from '../../helpers/fastJson';
-import { ENV_PATH } from '../../config/constant';
+import { ENV_PATH, isDevelopment } from '../../config/constant';
 dotenv.config({ path: ENV_PATH });
 
 export function createSocketIo(server: HttpServer) {
-  const corsOrigin = `http://${process.env.SERVER_HOST || getIPAddress(os.networkInterfaces())}`;
+  const corsOrigin = isDevelopment
+    ? 'http://localhost'
+    : `https://${process.env.SERVER_HOST || getIPAddress(os.networkInterfaces())}`;
   const io = new Server(server, {
     cors: {
       origin: corsOrigin,

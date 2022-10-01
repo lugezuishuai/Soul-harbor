@@ -17,6 +17,7 @@ import { Action } from '@/redux/actions';
 import { apiPost } from '@/utils/request';
 import io from 'socket.io-client';
 import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
+import { host, isDevelopment } from '@/constants/env';
 import './index.less';
 
 export type MenuItemType = 'login' | 'register' | 'forgetPw';
@@ -61,10 +62,7 @@ function SignUp(props: Props) {
         .then((res: LoginResponse) => {
           message.success('登录成功');
           const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
-          const socket = io(
-            process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : `http://${process.env.REMOTE_HOST}`,
-            { forceNew: true },
-          );
+          const socket = io(isDevelopment ? 'http://localhost:5000' : `https://${host}`, { forceNew: true });
           socket.emit('login', uid);
 
           res.data.token && Cookies.set('token', res.data.token, { expires: 1, path: '/' });

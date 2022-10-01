@@ -17,6 +17,7 @@ import { SelectParam } from 'antd/lib/menu';
 import { MenuConfig, loginMenu, noLoginMenu } from './menu-config';
 import classnames from 'classnames';
 import io from 'socket.io-client';
+import { host, isDevelopment } from '@/constants/env';
 import './index.less';
 
 const { Item, Divider } = Menu;
@@ -82,10 +83,7 @@ function Header(props: HeaderProps) {
     try {
       const res = await apiGet(INIT);
       const uid = res.data.userInfo?.uid?.slice(0, 8) || '';
-      const socket = io(
-        process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : `http://${process.env.REMOTE_HOST}`,
-        { forceNew: true },
-      );
+      const socket = io(isDevelopment ? 'http://localhost:5000' : `https://${host}`, { forceNew: true });
       socket.emit('login', uid);
       // 建立socket连接
       dispatch({
