@@ -1,0 +1,14 @@
+{
+  "ext": ".ts,.js",
+  "ignore": [
+    "**/dist/**",
+    "**/logs/**",
+    "**/node_modules/**",
+    "eslintrc.js",
+    "copyStatic.ts",
+    "deploy-docker.ts",
+    "deploy.ts",
+    "ecosystem.config.js"
+  ],
+  "exec": "ts-node ./bin/server.ts"
+}

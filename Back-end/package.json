@@ -18,8 +18,8 @@
     "show": "pm2 show soul-harbor",
     "logs": "pm2 logs",
     "flush": "pm2 flush",
-    "watch": "cross-env NODE_ENV=development nodemon ./dist/bin/server.js",
-    "watchDev": "cross-env NODE_ENV=development nodemon -e ts,tsx --exec npx ts-node ./bin/server.ts",
+    "watch": "cross-env NODE_ENV=production nodemon --config ./nodemon.dist.json ./dist/bin/server.js",
+    "watch:dev": "cross-env NODE_ENV=development nodemon",
     "build-ts": "tsc",
     "copy-static": "ts-node copyStatic.ts",
     "build": "npm run build-ts && npm run copy-static"
