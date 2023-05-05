@@ -6,14 +6,14 @@ import { apiGet } from '@/utils/request';
 import { GET_UNREAD_MSG } from '@/constants/urls';
 import { GetUnreadMsgRes } from '@/interface/chat/getUnreadMsg';
 import { SET_AUTHED, UNREAD_MESSAGE_COUNT } from '@/redux/actions/action_types';
-import { RouteType } from '@/config/types/route-type';
 import Header from '@/pages/home/header';
 import { Footer } from '@/pages/home/footer';
 import { WrapScrollToTop } from './scroll-to-top';
-import { renderRoutes } from '@/utils/routers/renderRoutes';
+import { renderRoutes } from '@/routers/renderRoutes';
 import { State } from '@/redux/reducers/state';
 import { NoPermission } from '../no-permission';
 import { isNullOrUndefined } from '@/utils/isNullOrUndefined';
+import { RouteType } from '@/routers/config';
 import './index.less';
 
 export interface SetAuthedPayload {

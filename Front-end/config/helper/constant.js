@@ -11,7 +11,10 @@ dotenv.config({ path: isEnvProduction ? '.env' : '.env.development' });
 const isAnalyse = env.ANALYSE_ENABLED === 'true';
 const publicPath = isEnvProduction ? env.PUBLIC_PATH : '/';
 const srcPath = resolve('src');
-const distPath = resolve('dist');
+const clientDistPath = resolve('dist/client'); // 客户端打包产物
+const serverDistPath = resolve('dist/server'); // SSR打包产物
+const resolveExtensions = ['.web.tsx', '.web.ts', '.web.jsx', '.web.js', '.tsx', '.ts', '.jsx', '.js', '.mjs', '.json']; // 客户端resolve.extensions
+const resolveExtensionsSSR = ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json']; // SSR resolve.extensions
 
 module.exports = {
   isEnvProduction,
@@ -19,5 +22,8 @@ module.exports = {
   isAnalyse,
   publicPath,
   srcPath,
-  distPath,
+  clientDistPath,
+  serverDistPath,
+  resolveExtensions,
+  resolveExtensionsSSR
 };

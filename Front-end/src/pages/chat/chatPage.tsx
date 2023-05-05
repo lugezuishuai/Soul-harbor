@@ -64,8 +64,8 @@ import { ContractCardSkeleton } from './component/contractCardSkeleton';
 import { DeleteFriendReq } from '@/interface/chat/deleteFriend';
 import Cookies from 'js-cookie';
 import { FoldingPanel } from '@/components/folding-panel';
-import { RouteType } from '@/config/types/route-type';
-import { renderRoutes } from '@/utils/routers/renderRoutes';
+import { renderRoutes } from '@/routers/renderRoutes';
+import { RouteType } from '@/routers/config';
 import './index.less';
 
 const { confirm } = Modal;
@@ -691,7 +691,7 @@ function ChatPage(props: ChatPageProps) {
 
   return isMobile ? (
     <div className="chat-page__mobile">
-      {renderRoutes(route.routes, authed, renderRoutesExtraProps, `/chat/${activeMenu}`)}
+      {route.routes?.length && renderRoutes(route.routes, authed, renderRoutesExtraProps, `/chat/${activeMenu}`)}
       {showChatFooter && (
         <ChatFooterMobile activeMenu={activeMenu} dispatch={dispatch} history={history} location={location} />
       )}

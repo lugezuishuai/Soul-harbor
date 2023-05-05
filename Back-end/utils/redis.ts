@@ -5,6 +5,10 @@ import { SessionInfo } from '../type/type';
 import { query } from './query';
 const client = redis.createClient(redisConfig);
 
+export function redisExpire(key: string, seconds: number) {
+  client.expire(key, seconds);
+}
+
 export function redisGet(key: string): Promise<any> {
   return new Promise((resolve, reject) => {
     client.get(key, (err, reply) => {

@@ -1,16 +1,9 @@
 {
   "include": [
-    "src/**/*",
-    "config/**/*",
-    "scripts/*",
-    "typings.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "build",
-    "dist",
-    "deploy.js",
-    "upload-dist.js"
+    "src",
+    "config",
+    "scripts",
+    "*.d.ts"
   ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */

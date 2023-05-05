@@ -43,6 +43,7 @@
     "file-stream-rotator": "^0.5.7",
     "formidable": "^1.2.2",
     "fs-extra": "^8.1.0",
+    "handlebars": "^4.7.7",
     "helmet": "^4.6.0",
     "http-errors": "~1.6.3",
     "install": "^0.13.0",

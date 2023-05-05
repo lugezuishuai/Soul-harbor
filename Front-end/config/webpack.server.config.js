@@ -1,15 +1,14 @@
 /* eslint-disable */
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin'); // 单独抽离css文件
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const WebpackBar = require('webpackbar');
 const resolve = require('./helper/resolve');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
-const { isEnvProduction, publicPath, srcPath, clientDistPath, resolveExtensions } = require('./helper/constant');
+const { isEnvProduction, publicPath, srcPath, serverDistPath, resolveExtensionsSSR } = require('./helper/constant');
 dotenv.config({ path: isEnvProduction ? '.env' : '.env.development' });
 
-const miniCssLoader = isEnvProduction ? MiniCssExtractPlugin.loader : 'style-loader';
+const miniCssLoader = MiniCssExtractPlugin.loader;
 
 const cssLoader = {
   loader: 'css-loader',
@@ -40,7 +39,6 @@ const postcssPlugins = [
     },
   ],
 ];
-
 const postcssLoader = {
   loader: 'postcss-loader',
   options: {
@@ -90,27 +88,29 @@ const babelLoader = {
 };
 
 module.exports = {
+  target: 'node', // webpack 将在类 Node.js 环境编译代码
+  mode: isEnvProduction ? 'production' : 'development',
+  externalsPresets: { node: true },
+  // externals: [nodeExternals()], // 不把node_modules里面的modules打包进产物
   entry: {
-    app: './src/index.tsx',
+    app: './src/server.tsx',
   },
   output: {
-    filename: isEnvProduction ? 'js/[name].[contenthash:8].js' : '[name].[hash:8].js',
-    chunkFilename: isEnvProduction ? 'js/[name].[contenthash:8].js' : '[name].[hash:8].js',
-    path: clientDistPath,
+    path: serverDistPath,
+    filename: 'js/[name].js',
+    libraryTarget: 'commonjs2',
+    chunkLoading: 'async-node',
     publicPath,
+    clean: true,
+  },
+  optimization: {
+    mangleExports: false, // 导出保留原名，利于阅读和调试
+    minimize: false, // 不需要压缩
   },
   resolve: {
-    extensions: resolveExtensions,
+    extensions: resolveExtensionsSSR,
     alias: {
       '@': srcPath,
-    },
-  },
-  cache: {
-    type: 'filesystem',
-    buildDependencies: {
-      defaultWebpack: ['webpack/lib/'],
-      config: [__filename],
-      tsconfig: [resolve('tsconfig.json')],
     },
   },
   module: {
@@ -182,16 +182,9 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': JSON.stringify(process.env),
     }),
-    new HtmlWebpackPlugin({
-      template: './public/index.html',
-      favicon: './public/favicon.ico',
-      filename: 'index.html',
-      env: process.env.NODE_ENV,
-      minify: true,
-    }),
     new MiniCssExtractPlugin({
-      filename: 'css/[name].[contenthash:8].css',
-      chunkFilename: 'css/[name].[contenthash:8].css',
+      filename: 'css/[name].css',
+      chunkFilename: 'css/[id].css',
     }),
     new AntdDayjsWebpackPlugin({
       preset: 'antdv3',

@@ -1,7 +1,7 @@
 import React from 'react';
-import { RouteType } from '@/config/types/route-type';
 import { Switch, Route, SwitchProps, Redirect } from 'react-router-dom';
-import { isNullOrUndefined } from '../isNullOrUndefined';
+import { isNullOrUndefined } from '../utils/isNullOrUndefined';
+import { RouteType } from './config';
 import { hasAuthority } from './utils';
 
 export function renderRoutes(
@@ -15,7 +15,7 @@ export function renderRoutes(
     routes.length && (
       <Switch {...switchProps}>
         {routes.map((route, i) => {
-          const { key, path, exact, strict, render, component: Component, auth, replaceComponent, redirect } = route;
+          const { key, path, exact, strict, component: Component, auth, replaceComponent, redirect } = route;
 
           return (
             <Route
@@ -25,16 +25,9 @@ export function renderRoutes(
               strict={!isNullOrUndefined(strict) ? strict : false}
               render={(props) => {
                 function renderComponent() {
-                  if (render) {
-                    return !isNullOrUndefined(extraProps[i])
-                      ? render({ ...props, ...extraProps[i], route })
-                      : render({ ...props, route });
-                  } else if (Component) {
-                    return !isNullOrUndefined(extraProps[i]) ? (
-                      <Component {...props} {...extraProps[i]} route={route} />
-                    ) : (
-                      <Component {...props} route={route} />
-                    );
+                  if (Component) {
+                    // @ts-ignore
+                    return <Component {...props} {...extraProps?.[i]} route={route} />;
                   } else {
                     return <Redirect to="/exception/404" />;
                   }

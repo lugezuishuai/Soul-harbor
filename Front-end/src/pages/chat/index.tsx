@@ -1,4 +1,4 @@
-import { RouteType } from '@/config/types/route-type';
+import { RouteType } from '@/routers/config';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { WrapChatPage as ChatPage } from './chatPage';

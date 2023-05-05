@@ -19,6 +19,7 @@ import { notTokenPath } from './config/token/path';
 import { router as userRouter } from './routes/user'; // 用户相关
 import { router as fileRouter } from './routes/file'; // 文件相关
 import { router as chatRouter } from './routes/chat'; // 聊天相关
+import { ssr } from './routes/ssr';
 import employeeRouter from './routes/employee';
 import { getIPAddress } from './utils/getIPAddress';
 import { accessLog, accessLogDev, accessLogErr } from './helpers/logger';
@@ -106,11 +107,11 @@ app.use(
     path: '/',
   })
 );
-if (!isDevelopment) {
-  app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
-}
+app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
 app.use(passport.initialize()); // 初始化passport
 
+app.use('/', ssr);
+app.use('/home', ssr);
 app.use('/api/employee', employeeRouter); // TODO: 后续要换成博客的路由
 app.use('/api/user', userRouter);
 app.use('/api/file', fileRouter);
