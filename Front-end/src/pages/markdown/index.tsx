@@ -3,7 +3,7 @@ import { MarkdownNav } from './markdown-nav';
 import testMd from './data/test1.md';
 import './index.less';
 
-const ReactMarkdown = lazy(() => import(/* webpackChunkName: 'reactMarkdown' */ './react-markdown'));
+const ReactMarkdown = lazy(() => import(/* webpackChunkName: 'reactmarkdown' */ './react-markdown'));
 
 export function MarkDownCom() {
   return (

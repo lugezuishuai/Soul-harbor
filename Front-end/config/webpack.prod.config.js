@@ -1,15 +1,12 @@
 /* eslint-disable */
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const { isAnalyse } = require('./helper/constant');
 
 module.exports = {
   mode: 'production',
-  plugins: [
-    new CleanWebpackPlugin(),
-    isAnalyse && new BundleAnalyzerPlugin(),
-  ].filter(Boolean),
+  plugins: [new CleanWebpackPlugin(), isAnalyse && new BundleAnalyzerPlugin()].filter(Boolean),
   optimization: {
     minimizer: [
       // 在 webpack@5 中，你可以使用 `...` 语法来扩展现有的 minimizer（即 `terser-webpack-plugin`），将下一行取消注释
@@ -32,9 +29,9 @@ module.exports = {
           name: 'vendors',
           priority: -10,
         },
-        reactBase: {
+        reactbase: {
           test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|react-use|react-redux|redux)[\\/]/,
-          name: 'reactBase',
+          name: 'reactbase',
           priority: 0,
         },
       },
