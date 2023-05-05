@@ -106,9 +106,7 @@ app.use(
     path: '/',
   })
 );
-if (!isDevelopment) {
-  app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
-}
+app.use(csrf({ cookie: { httpOnly: true } })); // CSRF防御
 app.use(passport.initialize()); // 初始化passport
 
 app.use('/api/employee', employeeRouter); // TODO: 后续要换成博客的路由
