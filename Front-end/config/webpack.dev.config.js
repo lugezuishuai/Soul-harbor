@@ -1,13 +1,13 @@
 /* eslint-disable */
 const devServerConfig = require('./setupProxy');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const { developServer: { proxy } } = devServerConfig;
+const {
+  developServer: { proxy },
+} = devServerConfig;
 
 module.exports = {
   mode: 'development',
-  plugins: [
-    new ReactRefreshWebpackPlugin(),
-  ],
+  plugins: [new ReactRefreshWebpackPlugin()],
   devtool: 'source-map',
   devServer: {
     client: {
@@ -22,7 +22,7 @@ module.exports = {
     },
     historyApiFallback: true,
     open: true,
-    port: 5000,
+    port: process.env.PORT || 5000,
     proxy,
     watchFiles: {
       options: {
