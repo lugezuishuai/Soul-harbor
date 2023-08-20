@@ -73,6 +73,7 @@ app.use(
   expressJWT({
     secret: jwtSecret,
     algorithms: ['HS256'],
+    requestProperty: 'user',
   }).unless({
     path: notTokenPath,
   })
